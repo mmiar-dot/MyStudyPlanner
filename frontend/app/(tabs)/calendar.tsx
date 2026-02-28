@@ -586,6 +586,9 @@ export default function CalendarScreen() {
               onChangeText={setEventDescription}
               multiline
               numberOfLines={3}
+              blurOnSubmit={true}
+              onSubmitEditing={() => Keyboard.dismiss()}
+              returnKeyType="done"
             />
 
             <View style={styles.timeRow}>
