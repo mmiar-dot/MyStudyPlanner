@@ -21,6 +21,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onComplete,
   onSkip,
   showActions = true,
+  onStatusChange,
 }) => {
   const { uncompleteSession, rescheduleSession, courseNotes, fetchCourseNotes, addCourseNote } = useSessionStore();
   
