@@ -792,6 +792,131 @@ export default function ProfileScreen() {
             : 0,
         }}
       />
+
+      {/* Settings Modal */}
+      <Modal visible={showSettingsModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 450 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Paramètres du compte</Text>
+              <TouchableOpacity onPress={() => {
+                setShowSettingsModal(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setDeleteConfirmation('');
+              }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Tabs */}
+            <View style={styles.settingsTabs}>
+              <TouchableOpacity
+                style={[styles.settingsTab, settingsTab === 'password' && styles.settingsTabActive]}
+                onPress={() => setSettingsTab('password')}
+              >
+                <Ionicons name="key" size={18} color={settingsTab === 'password' ? '#3B82F6' : '#6B7280'} />
+                <Text style={[styles.settingsTabText, settingsTab === 'password' && styles.settingsTabTextActive]}>
+                  Mot de passe
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.settingsTab, settingsTab === 'delete' && styles.settingsTabDanger]}
+                onPress={() => setSettingsTab('delete')}
+              >
+                <Ionicons name="trash" size={18} color={settingsTab === 'delete' ? '#EF4444' : '#6B7280'} />
+                <Text style={[styles.settingsTabText, settingsTab === 'delete' && { color: '#EF4444' }]}>
+                  Supprimer
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.settingsContent}>
+              {settingsTab === 'password' ? (
+                <View>
+                  <Text style={styles.settingsDescription}>
+                    Modifiez votre mot de passe. Vous devrez vous reconnecter après.
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Mot de passe actuel"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nouveau mot de passe"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirmer le nouveau mot de passe"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                  />
+                  <TouchableOpacity
+                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    onPress={handleChangePassword}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.submitButtonText}>Modifier le mot de passe</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <View style={styles.dangerZone}>
+                    <Ionicons name="warning" size={32} color="#EF4444" />
+                    <Text style={styles.dangerTitle}>Supprimer mon compte</Text>
+                    <Text style={styles.dangerDescription}>
+                      Cette action est irréversible. Toutes vos données seront définitivement supprimées :
+                      sessions, cours, événements, notes, etc.
+                    </Text>
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Votre mot de passe"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.dangerInput]}
+                    placeholder="Tapez SUPPRIMER pour confirmer"
+                    placeholderTextColor="#9CA3AF"
+                    value={deleteConfirmation}
+                    onChangeText={setDeleteConfirmation}
+                    autoCapitalize="characters"
+                  />
+                  <TouchableOpacity
+                    style={[styles.dangerButton, isSubmitting && styles.submitButtonDisabled]}
+                    onPress={handleDeleteAccount}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.dangerButtonText}>Supprimer définitivement mon compte</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
