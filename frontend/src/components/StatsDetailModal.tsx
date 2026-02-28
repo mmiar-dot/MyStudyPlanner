@@ -537,4 +537,54 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
+  courseDetails: {
+    flex: 1,
+  },
+  courseMethodLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  breakdownSection: {
+    marginTop: 20,
+    width: '100%',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  breakdownTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 12,
+  },
+  breakdownList: {
+    gap: 8,
+  },
+  breakdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  breakdownDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  breakdownLabel: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4B5563',
+  },
+  breakdownValue: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
 });
