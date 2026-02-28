@@ -1662,6 +1662,35 @@ async def delete_ics_subscription(subscription_id: str, user: dict = Depends(get
     await db.ics_events_cache.delete_many({"subscription_id": subscription_id})
     return {"message": "Abonnement supprimé"}
 
+class ICSSubscriptionUpdate(BaseModel):
+    name: Optional[str] = None
+    color: Optional[str] = None
+
+@api_router.put("/ics/{subscription_id}")
+async def update_ics_subscription(
+    subscription_id: str, 
+    data: ICSSubscriptionUpdate,
+    user: dict = Depends(get_current_user)
+):
+    """Update ICS subscription name and/or color"""
+    sub = await db.ics_subscriptions.find_one({"id": subscription_id, "user_id": user["id"]})
+    if not sub:
+        raise HTTPException(status_code=404, detail="Abonnement non trouvé")
+    
+    update_data = {}
+    if data.name is not None:
+        update_data["name"] = data.name
+    if data.color is not None:
+        update_data["color"] = data.color
+    
+    if update_data:
+        await db.ics_subscriptions.update_one(
+            {"id": subscription_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Abonnement mis à jour"}
+
 @api_router.get("/calendar/all-events")
 async def get_all_calendar_events(
     start_date: str,
