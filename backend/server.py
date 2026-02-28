@@ -1074,6 +1074,15 @@ async def generate_sessions_for_item(user_id: str, item_id: str, settings: dict)
     
     item_title = item["title"]
     
+    # First, delete any pending future sessions for this item
+    today = datetime.utcnow().date().isoformat()
+    await db.study_sessions.delete_many({
+        "user_id": user_id,
+        "item_id": item_id,
+        "status": SessionStatus.PENDING,
+        "scheduled_date": {"$gte": today}
+    })
+    
     if method == RevisionMethod.J_METHOD:
         j_settings = settings.get("j_settings", {})
         start_date_str = j_settings.get("start_date", datetime.utcnow().date().isoformat())
