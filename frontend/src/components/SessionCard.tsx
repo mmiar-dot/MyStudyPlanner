@@ -65,6 +65,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     try {
       setIsLoading(true);
       await uncompleteSession(session.id);
+      // Force close modal immediately for better UX
       setShowOptionsModal(false);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'annuler la complétion');
