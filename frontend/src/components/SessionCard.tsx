@@ -700,4 +700,100 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  calendarToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    gap: 10,
+  },
+  calendarToggleText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+  },
+  calendarContainer: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+  },
+  viewUpcomingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  viewUpcomingText: {
+    fontSize: 14,
+    color: '#3B82F6',
+  },
+  // Upcoming modal
+  upcomingModal: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    marginTop: 'auto',
+    maxHeight: '70%',
+  },
+  upcomingSubtitle: {
+    fontSize: 15,
+    color: '#3B82F6',
+    fontWeight: '500',
+    marginBottom: 16,
+  },
+  upcomingList: {
+    maxHeight: 400,
+  },
+  upcomingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  upcomingItemCompleted: {
+    opacity: 0.6,
+  },
+  upcomingItemCurrent: {
+    backgroundColor: '#EBF5FF',
+    marginHorizontal: -12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  upcomingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 12,
+  },
+  upcomingInfo: {
+    flex: 1,
+  },
+  upcomingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  upcomingDate: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  upcomingStatus: {
+    alignItems: 'center',
+  },
+  upcomingLateText: {
+    fontSize: 12,
+    color: '#EF4444',
+    fontWeight: '500',
+  },
 });
