@@ -198,6 +198,42 @@ export default function CoursesScreen() {
     }
   };
 
+  const handleOpenRenameModal = (item: CatalogItem | CustomSection, type: 'course' | 'section') => {
+    setRenameItem(item);
+    setRenameType(type);
+    setNewName('name' in item ? item.name : item.title);
+    setShowRenameModal(true);
+  };
+
+  const handleRename = async () => {
+    if (!newName.trim() || !renameItem) {
+      Alert.alert('Erreur', 'Le nom est requis');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      if (renameType === 'course' && 'title' in renameItem) {
+        // Only personal courses can be renamed
+        if (!renameItem.is_personal) {
+          Alert.alert('Erreur', 'Seuls les cours personnels peuvent être renommés');
+          return;
+        }
+        await renameCourse(renameItem.id, newName.trim());
+      } else if (renameType === 'section' && 'color' in renameItem) {
+        await updateSection(renameItem.id, newName.trim(), renameItem.color);
+      }
+      setShowRenameModal(false);
+      setRenameItem(null);
+      setNewName('');
+      Alert.alert('Succès', 'Nom modifié');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de modifier le nom');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getItemSettings = (itemId: string) => {
     return userSettings.find((s) => s.item_id === itemId);
   };
