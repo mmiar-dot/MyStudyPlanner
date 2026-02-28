@@ -39,6 +39,8 @@ export default function ProfileScreen() {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false);
   const [showEditICSModal, setShowEditICSModal] = useState(false);
+  const [showStatsDetailModal, setShowStatsDetailModal] = useState(false);
+  const [statsDetailType, setStatsDetailType] = useState<'today' | 'late' | 'completion' | 'courses' | 'streak'>('today');
   
   // ICS form
   const [icsName, setIcsName] = useState('');
