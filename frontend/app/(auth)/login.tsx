@@ -72,7 +72,7 @@ export default function LoginScreen() {
                   </View>
                   <Text style={styles.brandTitle}>MyStudyPlanner</Text>
                   <Text style={styles.brandSubtitle}>
-                    Votre calendrier de révision intelligent pour les études de médecine
+                    Votre calendrier de révision, votre meilleur compagnon
                   </Text>
                   <View style={styles.features}>
                     <View style={styles.featureItem}>
