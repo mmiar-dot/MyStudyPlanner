@@ -370,7 +370,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={() => setShowRescheduleModal(true)}
+                onPress={() => {
+                  setShowOptionsModal(false);
+                  // Délai pour éviter le conflit de modals sur mobile
+                  setTimeout(() => setShowRescheduleModal(true), 100);
+                }}
               >
                 <Ionicons name="calendar" size={20} color="#3B82F6" />
                 <Text style={[styles.actionText, { color: '#3B82F6' }]}>Déplacer</Text>
