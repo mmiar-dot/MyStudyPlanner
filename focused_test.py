@@ -76,7 +76,7 @@ def test_calendar_all_events(token):
         "color": "#ef4444"
     }
     
-    ics_response = requests.post(f"{BACKEND_URL}/calendar/ics", json=ics_data, headers=headers)
+    ics_response = requests.post(f"{BACKEND_URL}/ics/subscribe", json=ics_data, headers=headers)
     if ics_response.status_code in [200, 201]:
         print("✅ Test ICS subscription created")
     else:
