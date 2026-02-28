@@ -1235,4 +1235,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Hidden items styles
+  filterButtonHidden: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#EF4444',
+  },
+  hiddenSection: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  hiddenSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  hiddenItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  hiddenItemInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  hiddenItemTitle: {
+    fontSize: 14,
+    color: '#4B5563',
+    flex: 1,
+  },
+  unhideButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EBF5FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  unhideButtonText: {
+    fontSize: 13,
+    color: '#3B82F6',
+    fontWeight: '500',
+  },
+  emptyHiddenSection: {
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  emptyHiddenText: {
+    fontSize: 14,
+    color: '#10B981',
+    marginTop: 8,
+  },
 });
