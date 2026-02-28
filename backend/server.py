@@ -1363,6 +1363,32 @@ async def set_session_time(session_id: str, time: str, user: dict = Depends(get_
         raise HTTPException(status_code=404, detail="Session non trouvée")
     return {"message": "Horaire défini"}
 
+@api_router.get("/sessions/item/{item_id}")
+async def get_sessions_for_item(item_id: str, user: dict = Depends(get_current_user)):
+    """Get all sessions for a specific item (course)"""
+    sessions = await db.study_sessions.find({
+        "user_id": user["id"],
+        "item_id": item_id
+    }).sort("scheduled_date", 1).to_list(100)
+    
+    return [
+        StudySessionResponse(
+            id=s["id"],
+            user_id=s["user_id"],
+            item_id=s["item_id"],
+            item_title=s["item_title"],
+            scheduled_date=s["scheduled_date"],
+            method=s["method"],
+            status=s["status"],
+            j_day=s.get("j_day"),
+            tour_number=s.get("tour_number"),
+            srs_rating=s.get("srs_rating"),
+            scheduled_time=s.get("scheduled_time"),
+            completed_at=s.get("completed_at"),
+        )
+        for s in sessions
+    ]
+
 @api_router.post("/sessions/{session_id}/uncomplete")
 async def uncomplete_session(session_id: str, user: dict = Depends(get_current_user)):
     """Cancel completion of a session - mark it as pending again"""
