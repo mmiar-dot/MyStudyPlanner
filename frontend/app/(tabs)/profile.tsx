@@ -48,9 +48,16 @@ export default function ProfileScreen() {
   const [editICSName, setEditICSName] = useState('');
   const [editICSColor, setEditICSColor] = useState('#10B981');
 
+  // Notification settings
+  const [notifSettings, setNotifSettings] = useState<NotificationSettings>(notificationService.getSettings());
+
   useEffect(() => {
     fetchProgress();
     fetchICSSubscriptions();
+    // Initialize notifications on mobile
+    if (Platform.OS !== 'web') {
+      notificationService.init();
+    }
   }, []);
 
   const handleLogout = async () => {
