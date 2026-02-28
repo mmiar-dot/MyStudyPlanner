@@ -508,11 +508,18 @@ export default function ProfileScreen() {
               <View style={styles.notifItem}>
                 <View style={styles.notifInfo}>
                   <Text style={styles.notifTitle}>Rappels de révision</Text>
-                  <Text style={styles.notifSubtitle}>Recevoir une notification pour les sessions du jour</Text>
+                  <Text style={styles.notifSubtitle}>Notification quotidienne pour vos sessions</Text>
                 </View>
-                <View style={[styles.toggle, styles.toggleActive]}>
-                  <View style={[styles.toggleKnob, styles.toggleKnobActive]} />
-                </View>
+                <Switch
+                  value={notifSettings.dailyReminder}
+                  onValueChange={(value) => {
+                    const newSettings = { ...notifSettings, dailyReminder: value };
+                    setNotifSettings(newSettings);
+                    notificationService.updateSettings(newSettings);
+                  }}
+                  trackColor={{ false: '#E5E7EB', true: '#93C5FD' }}
+                  thumbColor={notifSettings.dailyReminder ? '#3B82F6' : '#F4F4F5'}
+                />
               </View>
 
               <View style={styles.notifItem}>
@@ -520,9 +527,16 @@ export default function ProfileScreen() {
                   <Text style={styles.notifTitle}>Sessions en retard</Text>
                   <Text style={styles.notifSubtitle}>Alerte pour les révisions manquées</Text>
                 </View>
-                <View style={[styles.toggle, styles.toggleActive]}>
-                  <View style={[styles.toggleKnob, styles.toggleKnobActive]} />
-                </View>
+                <Switch
+                  value={notifSettings.lateSessionAlerts}
+                  onValueChange={(value) => {
+                    const newSettings = { ...notifSettings, lateSessionAlerts: value };
+                    setNotifSettings(newSettings);
+                    notificationService.updateSettings(newSettings);
+                  }}
+                  trackColor={{ false: '#E5E7EB', true: '#FCA5A5' }}
+                  thumbColor={notifSettings.lateSessionAlerts ? '#EF4444' : '#F4F4F5'}
+                />
               </View>
 
               <View style={styles.notifItem}>
@@ -530,15 +544,40 @@ export default function ProfileScreen() {
                   <Text style={styles.notifTitle}>Rappel matinal</Text>
                   <Text style={styles.notifSubtitle}>Résumé des tâches à 8h00</Text>
                 </View>
-                <View style={styles.toggle}>
-                  <View style={styles.toggleKnob} />
-                </View>
+                <Switch
+                  value={notifSettings.morningBrief}
+                  onValueChange={(value) => {
+                    const newSettings = { ...notifSettings, morningBrief: value };
+                    setNotifSettings(newSettings);
+                    notificationService.updateSettings(newSettings);
+                  }}
+                  trackColor={{ false: '#E5E7EB', true: '#86EFAC' }}
+                  thumbColor={notifSettings.morningBrief ? '#10B981' : '#F4F4F5'}
+                />
               </View>
             </View>
 
-            <Text style={styles.notifNote}>
-              Les notifications push nécessitent l'application mobile pour fonctionner.
-            </Text>
+            {Platform.OS === 'web' ? (
+              <View style={styles.notifNoteBox}>
+                <Ionicons name="information-circle-outline" size={20} color="#F59E0B" />
+                <Text style={styles.notifNote}>
+                  Les notifications push nécessitent l'application mobile. Scannez le QR code pour télécharger l'app.
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                style={styles.testNotifButton}
+                onPress={() => {
+                  notificationService.sendImmediateNotification(
+                    'Test de notification',
+                    'Les notifications fonctionnent correctement !'
+                  );
+                }}
+              >
+                <Ionicons name="notifications" size={18} color="#3B82F6" />
+                <Text style={styles.testNotifText}>Tester les notifications</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Modal>
