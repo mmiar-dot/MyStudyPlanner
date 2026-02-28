@@ -1431,4 +1431,79 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#3B82F6',
   },
+  // Settings modal styles
+  settingsTabs: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  settingsTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  settingsTabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#3B82F6',
+  },
+  settingsTabDanger: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#EF4444',
+  },
+  settingsTabText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  settingsTabTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  settingsContent: {
+    padding: 20,
+    maxHeight: 400,
+  },
+  settingsDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  dangerZone: {
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+  },
+  dangerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#DC2626',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  dangerDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  dangerInput: {
+    borderColor: '#FECACA',
+  },
+  dangerButton: {
+    backgroundColor: '#DC2626',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  dangerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
