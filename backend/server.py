@@ -114,6 +114,19 @@ class CatalogItemResponse(BaseModel):
     level: int = 0
     children_count: int = 0
     created_at: datetime
+    is_personal: bool = False  # True if created by user
+    owner_id: Optional[str] = None  # User ID if personal
+    is_hidden: bool = False  # If user hid this admin course
+
+# Personal course create model
+class PersonalCourseCreate(BaseModel):
+    title: str
+    parent_id: Optional[str] = None  # Can be under an existing chapter
+    description: Optional[str] = None
+
+# Hidden items model
+class HiddenItemCreate(BaseModel):
+    item_id: str
 
 # User Item Settings (revision method per course)
 class JMethodSettings(BaseModel):
