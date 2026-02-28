@@ -196,14 +196,37 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
                 {(selectedMethod === 'j_method' || selectedMethod === 'srs') && (
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Date de début</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={startDate}
-                      onChangeText={setStartDate}
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#9CA3AF"
-                    />
+                    <Text style={styles.inputLabel}>Date de début (J0)</Text>
+                    <TouchableOpacity 
+                      style={styles.datePickerButton}
+                      onPress={() => setShowCalendar(!showCalendar)}
+                    >
+                      <Ionicons name="calendar" size={20} color="#3B82F6" />
+                      <Text style={styles.datePickerText}>
+                        {format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })}
+                      </Text>
+                      <Ionicons name={showCalendar ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+                    </TouchableOpacity>
+                    {showCalendar && (
+                      <View style={styles.calendarContainer}>
+                        <Calendar
+                          current={startDate}
+                          onDayPress={(day: any) => {
+                            setStartDate(day.dateString);
+                            setShowCalendar(false);
+                          }}
+                          markedDates={{
+                            [startDate]: { selected: true, selectedColor: '#3B82F6' }
+                          }}
+                          minDate={format(new Date(), 'yyyy-MM-dd')}
+                          theme={{
+                            todayTextColor: '#3B82F6',
+                            selectedDayBackgroundColor: '#3B82F6',
+                            arrowColor: '#3B82F6',
+                          }}
+                        />
+                      </View>
+                    )}
                   </View>
                 )}
 
@@ -211,13 +234,36 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
                   <>
                     <View style={styles.inputGroup}>
                       <Text style={styles.inputLabel}>Date de début</Text>
-                      <TextInput
-                        style={styles.input}
-                        value={startDate}
-                        onChangeText={setStartDate}
-                        placeholder="YYYY-MM-DD"
-                        placeholderTextColor="#9CA3AF"
-                      />
+                      <TouchableOpacity 
+                        style={styles.datePickerButton}
+                        onPress={() => setShowCalendar(!showCalendar)}
+                      >
+                        <Ionicons name="calendar" size={20} color="#3B82F6" />
+                        <Text style={styles.datePickerText}>
+                          {format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })}
+                        </Text>
+                        <Ionicons name={showCalendar ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+                      </TouchableOpacity>
+                      {showCalendar && (
+                        <View style={styles.calendarContainer}>
+                          <Calendar
+                            current={startDate}
+                            onDayPress={(day: any) => {
+                              setStartDate(day.dateString);
+                              setShowCalendar(false);
+                            }}
+                            markedDates={{
+                              [startDate]: { selected: true, selectedColor: '#10B981' }
+                            }}
+                            minDate={format(new Date(), 'yyyy-MM-dd')}
+                            theme={{
+                              todayTextColor: '#10B981',
+                              selectedDayBackgroundColor: '#10B981',
+                              arrowColor: '#10B981',
+                            }}
+                          />
+                        </View>
+                      )}
                     </View>
                     <View style={styles.inputRow}>
                       <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
