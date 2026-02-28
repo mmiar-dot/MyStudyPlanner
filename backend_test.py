@@ -277,30 +277,300 @@ class BackendTester:
             except Exception as e:
                 self.log_result(f"Auth Required - {method} {url.split('/')[-2:]}", False, f"Exception: {str(e)}")
 
+    def admin_login(self, email="admin@mystudyplanner.com", password="Admin123!"):
+        """Login as admin to get access token"""
+        try:
+            response = requests.post(
+                f"{self.base_url}/auth/login",
+                json={"email": email, "password": password},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                admin_token = data["access_token"]
+                admin_user_id = data["user"]["id"]
+                self.log_result("Admin Login", True, f"Successfully logged in as {email}")
+                return admin_token, admin_user_id
+            else:
+                self.log_result("Admin Login", False, f"Status: {response.status_code}, Response: {response.text}")
+                return None, None
+                
+        except Exception as e:
+            self.log_result("Admin Login", False, f"Exception: {str(e)}")
+            return None, None
+
+    def test_account_password_change(self):
+        """Test account password change functionality"""
+        try:
+            # Test password change
+            change_data = {
+                "current_password": "demo123",
+                "new_password": "newdemo456"
+            }
+            
+            response = requests.put(
+                f"{self.base_url}/account/password",
+                json=change_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                self.log_result("Change Password", True, "Password changed successfully")
+                
+                # Test login with new password
+                new_login_response = requests.post(
+                    f"{self.base_url}/auth/login",
+                    json={"email": "demo@test.com", "password": "newdemo456"},
+                    timeout=30
+                )
+                
+                if new_login_response.status_code == 200:
+                    self.log_result("Login with New Password", True, "Successfully logged in with new password")
+                    
+                    # Reset password back to original
+                    reset_data = {
+                        "current_password": "newdemo456",
+                        "new_password": "demo123"
+                    }
+                    
+                    new_token = new_login_response.json()["access_token"]
+                    reset_headers = {"Authorization": f"Bearer {new_token}"}
+                    
+                    reset_response = requests.put(
+                        f"{self.base_url}/account/password",
+                        json=reset_data,
+                        headers=reset_headers,
+                        timeout=30
+                    )
+                    
+                    if reset_response.status_code == 200:
+                        self.log_result("Reset Password", True, "Successfully reset password to original")
+                    else:
+                        self.log_result("Reset Password", False, f"Failed to reset password: {reset_response.text}")
+                else:
+                    self.log_result("Login with New Password", False, f"Failed to login with new password: {new_login_response.text}")
+            else:
+                self.log_result("Change Password", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Change Password", False, f"Exception: {str(e)}")
+
+    def test_account_password_validation(self):
+        """Test password change validation"""
+        try:
+            # Test wrong current password
+            wrong_password_data = {
+                "current_password": "wrongpassword",
+                "new_password": "newdemo456"
+            }
+            
+            response = requests.put(
+                f"{self.base_url}/account/password",
+                json=wrong_password_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 400:
+                self.log_result("Wrong Current Password Validation", True, "Correctly rejected wrong current password")
+            else:
+                self.log_result("Wrong Current Password Validation", False, f"Expected 400, got {response.status_code}")
+                
+            # Test short new password
+            short_password_data = {
+                "current_password": "demo123",
+                "new_password": "123"
+            }
+            
+            response = requests.put(
+                f"{self.base_url}/account/password",
+                json=short_password_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 400:
+                self.log_result("Short Password Validation", True, "Correctly rejected short password")
+            else:
+                self.log_result("Short Password Validation", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Password Validation", False, f"Exception: {str(e)}")
+
+    def test_admin_user_management(self):
+        """Test admin user management functionality"""
+        admin_token, admin_user_id = self.admin_login()
+        if not admin_token:
+            self.log_result("Admin User Management", False, "Cannot test without admin access")
+            return
+            
+        admin_headers = {"Authorization": f"Bearer {admin_token}"}
+        
+        try:
+            # Test 1: Get all users
+            response = requests.get(
+                f"{self.base_url}/admin/users",
+                headers=admin_headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                users = response.json()
+                self.log_result("Get All Users", True, f"Retrieved {len(users)} users")
+                
+                # Find a regular user for testing block/unblock
+                regular_user = None
+                for user in users:
+                    if user["role"] != "admin":
+                        regular_user = user
+                        break
+                
+                if regular_user:
+                    user_id = regular_user["id"]
+                    
+                    # Test 2: Block user
+                    block_response = requests.post(
+                        f"{self.base_url}/admin/users/{user_id}/block",
+                        json={"reason": "Test block reason"},
+                        headers=admin_headers,
+                        timeout=30
+                    )
+                    
+                    if block_response.status_code == 200:
+                        self.log_result("Block User", True, f"Successfully blocked user {user_id}")
+                        
+                        # Test 3: Unblock user
+                        unblock_response = requests.post(
+                            f"{self.base_url}/admin/users/{user_id}/unblock",
+                            headers=admin_headers,
+                            timeout=30
+                        )
+                        
+                        if unblock_response.status_code == 200:
+                            self.log_result("Unblock User", True, f"Successfully unblocked user {user_id}")
+                        else:
+                            self.log_result("Unblock User", False, f"Status: {unblock_response.status_code}")
+                    else:
+                        self.log_result("Block User", False, f"Status: {block_response.status_code}")
+                else:
+                    self.log_result("Find Regular User", False, "No regular users found for block/unblock testing")
+            else:
+                self.log_result("Get All Users", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Admin User Management", False, f"Exception: {str(e)}")
+
+    def test_hidden_items_management(self):
+        """Test hidden items management"""
+        try:
+            # First get catalog to find an item to hide
+            catalog_response = requests.get(
+                f"{self.base_url}/catalog/all",
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if catalog_response.status_code == 200:
+                catalog_items = catalog_response.json()
+                admin_item = None
+                
+                # Find an admin item (not personal)
+                for item in catalog_items:
+                    if not item.get("is_personal", False):
+                        admin_item = item
+                        break
+                
+                if admin_item:
+                    item_id = admin_item["id"]
+                    
+                    # Test 1: Hide item
+                    hide_response = requests.post(
+                        f"{self.base_url}/user/hidden",
+                        json={"item_id": item_id},
+                        headers=self.get_headers(),
+                        timeout=30
+                    )
+                    
+                    if hide_response.status_code == 200:
+                        self.log_result("Hide Item", True, f"Successfully hid item {item_id}")
+                        
+                        # Test 2: Get hidden items
+                        hidden_response = requests.get(
+                            f"{self.base_url}/user/hidden",
+                            headers=self.get_headers(),
+                            timeout=30
+                        )
+                        
+                        if hidden_response.status_code == 200:
+                            hidden_items = hidden_response.json()
+                            hidden_ids = [item["id"] for item in hidden_items]
+                            
+                            if item_id in hidden_ids:
+                                self.log_result("Get Hidden Items", True, f"Hidden item correctly appears in list")
+                                
+                                # Test 3: Unhide item
+                                unhide_response = requests.delete(
+                                    f"{self.base_url}/user/hidden/{item_id}",
+                                    headers=self.get_headers(),
+                                    timeout=30
+                                )
+                                
+                                if unhide_response.status_code == 200:
+                                    self.log_result("Unhide Item", True, f"Successfully unhid item {item_id}")
+                                else:
+                                    self.log_result("Unhide Item", False, f"Status: {unhide_response.status_code}")
+                            else:
+                                self.log_result("Get Hidden Items", False, f"Hidden item not found in list")
+                        else:
+                            self.log_result("Get Hidden Items", False, f"Status: {hidden_response.status_code}")
+                    else:
+                        self.log_result("Hide Item", False, f"Status: {hide_response.status_code}")
+                else:
+                    self.log_result("Find Admin Item", False, "No admin items found for hiding test")
+            else:
+                self.log_result("Get Catalog", False, f"Status: {catalog_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Hidden Items Management", False, f"Exception: {str(e)}")
+
     def run_all_tests(self):
         """Run all tests in sequence"""
-        self.log("=== MyStudyPlanner Backend Notes Functionality Test ===")
+        self.log("=== MyStudyPlanner Backend Account Settings & Admin Test ===")
         
         # Test 1: Login
         if not self.login():
             self.log("CRITICAL: Cannot proceed without login", "ERROR")
             return False
             
-        # Test 2: Authentication requirements
+        # Test 2: Account Settings - Password Change
+        self.test_account_password_change()
+        
+        # Test 3: Account Settings - Password Validation
+        self.test_account_password_validation()
+        
+        # Test 4: Admin User Management
+        self.test_admin_user_management()
+        
+        # Test 5: Hidden Items Management
+        self.test_hidden_items_management()
+        
+        # Test 6: Authentication requirements
         self.test_authentication_requirements()
         
-        # Test 3: Hidden items endpoint
+        # Test 7: Hidden items endpoint details
         self.test_hidden_items_endpoint()
         
-        # Test 4: Create test course for notes testing
+        # Test 8: Create test course for notes testing
         course_id = self.create_test_course()
         if not course_id:
             self.log("ERROR: Cannot test notes without a course", "ERROR")
         else:
-            # Test 5: Course notes CRUD operations
+            # Test 9: Course notes CRUD operations
             self.test_course_notes_crud(course_id)
             
-            # Test 6: Personal course deletion
+            # Test 10: Personal course deletion
             self.test_personal_course_deletion(course_id)
         
         return True
