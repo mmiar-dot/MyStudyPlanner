@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   Platform,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useAnalyticsStore } from '../../src/store/analyticsStore';
 import { useEventStore } from '../../src/store/eventStore';
 import { ColorPicker } from '../../src/components/ColorPicker';
+import notificationService, { NotificationSettings } from '../../src/services/notificationService';
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();
