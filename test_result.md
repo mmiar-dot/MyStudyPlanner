@@ -218,15 +218,18 @@ backend:
 
   - task: "Course Rename API"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "PUT /api/user/courses/{item_id} endpoint to rename personal courses"
+      - working: true
+        agent: "testing"
+        comment: "Course Rename API fully tested and working. Successfully tested: PUT /api/user/courses/{item_id} with JSON body {title: 'new name'}, personal course creation and renaming, database persistence verification, proper 404 response for non-existent courses, correct prevention of admin course renaming (404), authentication requirement, and proper input validation. API correctly restricts renaming to personal courses only."
 
   - task: "Analytics/Progress"
     implemented: true
