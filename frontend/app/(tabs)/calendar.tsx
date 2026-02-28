@@ -340,16 +340,16 @@ export default function CalendarScreen() {
             </Text>
 
             {/* Personal Events */}
-            {dayEvents.length > 0 && (
+            {personalEvents.length > 0 && (
               <View style={styles.eventsSection}>
-                <Text style={styles.eventsSectionTitle}>Événements</Text>
-                {dayEvents.map((event) => (
+                <Text style={styles.eventsSectionTitle}>Événements personnels</Text>
+                {personalEvents.map((event) => (
                   <View key={event.id} style={styles.eventCard}>
                     <View style={[styles.eventColor, { backgroundColor: event.color }]} />
                     <View style={styles.eventInfo}>
                       <Text style={styles.eventTitle}>{event.title}</Text>
                       <Text style={styles.eventTime}>
-                        {format(parseISO(event.start_time), 'HH:mm')} - {format(parseISO(event.end_time), 'HH:mm')}
+                        {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
                       </Text>
                       {event.description && (
                         <Text style={styles.eventDescription}>{event.description}</Text>
@@ -363,6 +363,33 @@ export default function CalendarScreen() {
                     }}>
                       <Ionicons name="trash-outline" size={18} color="#EF4444" />
                     </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* ICS Events (University Calendar) */}
+            {icsEvents.length > 0 && (
+              <View style={styles.eventsSection}>
+                <Text style={styles.eventsSectionTitle}>
+                  <Ionicons name="school-outline" size={14} color="#10B981" /> Calendrier universitaire
+                </Text>
+                {icsEvents.map((event) => (
+                  <View key={event.id} style={styles.icsEventCard}>
+                    <View style={[styles.eventColor, { backgroundColor: event.color }]} />
+                    <View style={styles.eventInfo}>
+                      <Text style={styles.eventTitle}>{event.title}</Text>
+                      <Text style={styles.eventTime}>
+                        {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
+                      </Text>
+                      {event.location && (
+                        <View style={styles.locationRow}>
+                          <Ionicons name="location-outline" size={12} color="#9CA3AF" />
+                          <Text style={styles.eventLocation}>{event.location}</Text>
+                        </View>
+                      )}
+                      <Text style={styles.eventSource}>{event.source}</Text>
+                    </View>
                   </View>
                 ))}
               </View>
