@@ -710,6 +710,47 @@ export default function CoursesScreen() {
         </View>
       </Modal>
 
+      {/* Rename Modal */}
+      <Modal visible={showRenameModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {renameType === 'course' ? 'Renommer le cours' : 'Renommer la section'}
+              </Text>
+              <TouchableOpacity onPress={() => {
+                setShowRenameModal(false);
+                setRenameItem(null);
+                setNewName('');
+              }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Nouveau nom"
+              placeholderTextColor="#9CA3AF"
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+            />
+
+            <TouchableOpacity
+              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              onPress={handleRename}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.createButtonText}>Renommer</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Method Selector Modal */}
       <MethodSelector
         visible={showMethodSelector}
