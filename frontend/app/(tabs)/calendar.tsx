@@ -774,6 +774,33 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginTop: 4,
   },
+  icsEventCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F0FDF4',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    gap: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#10B981',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  eventLocation: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  eventSource: {
+    fontSize: 11,
+    color: '#10B981',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
   emptyState: {
     alignItems: 'center',
     padding: 40,
