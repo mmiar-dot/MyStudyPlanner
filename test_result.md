@@ -201,6 +201,30 @@ backend:
         agent: "testing"
         comment: "ICS Subscriptions fully tested and working. Successfully tested: Create ICS subscription with URL/name/color, retrieve subscriptions list, trigger background sync, fetch parsed ICS events (406 events retrieved from test calendar), and delete subscriptions. ICS parsing with icalendar library working correctly."
 
+  - task: "ICS Events in Calendar Endpoint"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "New endpoint /api/calendar/all-events that aggregates personal events and ICS events within a date range"
+
+  - task: "Course Rename API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "PUT /api/user/courses/{item_id} endpoint to rename personal courses"
+
   - task: "Analytics/Progress"
     implemented: true
     working: true
