@@ -40,6 +40,7 @@ export default function CoursesScreen() {
     createPersonalCourse,
     renameCourse,
     hideItem,
+    unhideItem,
     createSection,
     updateSection,
     deleteSection,
@@ -52,6 +53,8 @@ export default function CoursesScreen() {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
   const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [showHiddenItems, setShowHiddenItems] = useState(false);
+  const [hiddenItems, setHiddenItems] = useState<CatalogItem[]>([]);
   
   // Add course modal
   const [showAddCourse, setShowAddCourse] = useState(false);
