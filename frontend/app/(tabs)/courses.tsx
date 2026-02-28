@@ -419,6 +419,22 @@ export default function CoursesScreen() {
                 <Text style={[styles.filterText, activeFilter === section.id && { color: section.color }]}>
                   {section.name}
                 </Text>
+                {/* Desktop edit button */}
+                {isDesktop && (
+                  <TouchableOpacity
+                    style={styles.sectionEditButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      Alert.alert('Section', `Que voulez-vous faire avec "${section.name}" ?`, [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Renommer', onPress: () => handleOpenRenameModal(section, 'section') },
+                        { text: 'Supprimer', style: 'destructive', onPress: () => deleteSection(section.id) }
+                      ]);
+                    }}
+                  >
+                    <Ionicons name="ellipsis-vertical" size={14} color="#9CA3AF" />
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
             ))}
 
