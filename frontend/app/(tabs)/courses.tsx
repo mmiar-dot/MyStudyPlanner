@@ -512,11 +512,27 @@ export default function CoursesScreen() {
                         <TouchableOpacity 
                           onPress={(e) => {
                             e.stopPropagation();
-                            handleDeleteItem(chapter);
+                            if (chapter.is_personal) {
+                              handleDeleteItem(chapter);
+                            } else {
+                              // Hide admin course
+                              Alert.alert(
+                                'Masquer le chapitre',
+                                `Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`,
+                                [
+                                  { text: 'Annuler', style: 'cancel' },
+                                  { text: 'Masquer', onPress: () => hideItem(chapter.id) }
+                                ]
+                              );
+                            }
                           }}
                           style={styles.actionButton}
                         >
-                          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                          <Ionicons 
+                            name={chapter.is_personal ? "trash-outline" : "eye-off-outline"} 
+                            size={18} 
+                            color={chapter.is_personal ? "#EF4444" : "#6B7280"} 
+                          />
                         </TouchableOpacity>
                         <Ionicons
                           name={isExpanded ? 'chevron-up' : 'chevron-down'}
