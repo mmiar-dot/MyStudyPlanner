@@ -135,16 +135,29 @@ export default function CalendarScreen() {
     
     try {
       setIsSubmitting(true);
-      const startDateTime = `${selectedDate}T${eventStartTime}:00`;
-      const endDateTime = `${selectedDate}T${eventEndTime}:00`;
+      const eventDate = editingEvent ? editingEvent.start_time.split('T')[0] : selectedDate;
+      const startDateTime = `${eventDate}T${eventStartTime}:00`;
+      const endDateTime = `${eventDate}T${eventEndTime}:00`;
       
-      await createEvent({
-        title: eventTitle.trim(),
-        start_time: startDateTime,
-        end_time: endDateTime,
-        description: eventDescription.trim() || undefined,
-        color: eventColor,
-      });
+      if (editingEvent) {
+        // Update existing event
+        await updateEvent(editingEvent.id, {
+          title: eventTitle.trim(),
+          start_time: startDateTime,
+          end_time: endDateTime,
+          description: eventDescription.trim() || undefined,
+          color: eventColor,
+        });
+      } else {
+        // Create new event
+        await createEvent({
+          title: eventTitle.trim(),
+          start_time: startDateTime,
+          end_time: endDateTime,
+          description: eventDescription.trim() || undefined,
+          color: eventColor,
+        });
+      }
       
       // Refresh all calendar events
       const monthStart = startOfMonth(currentMonth);
@@ -156,9 +169,34 @@ export default function CalendarScreen() {
       setShowEventModal(false);
       resetEventForm();
     } catch (error) {
-      Alert.alert('Erreur', 'Impossible de créer l\'événement');
+      Alert.alert('Erreur', editingEvent ? 'Impossible de modifier l\'événement' : 'Impossible de créer l\'événement');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteEvent = (eventId: string, title: string) => {
+    setDeleteEventId(eventId);
+    setDeleteEventTitle(title);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteEvent = async () => {
+    if (!deleteEventId) return;
+    try {
+      await deleteEvent(deleteEventId);
+      // Refresh all calendar events
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(currentMonth);
+      const startDate = format(subMonths(monthStart, 1), 'yyyy-MM-dd');
+      const endDate = format(addMonths(monthEnd, 1), 'yyyy-MM-dd');
+      await fetchAllCalendarEvents(startDate, endDate);
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de supprimer l\'événement');
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteEventId(null);
+      setDeleteEventTitle('');
     }
   };
 
