@@ -431,13 +431,14 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
                     {/* Custom intervals toggle */}
                     <TouchableOpacity
-                      style={styles.customIntervalsToggle}
+                      style={[styles.customIntervalsToggle, showCustomIntervals && styles.customIntervalsToggleActive]}
                       onPress={() => setShowCustomIntervals(!showCustomIntervals)}
                     >
+                      <Ionicons name="create-outline" size={18} color="#3B82F6" />
                       <Text style={styles.customIntervalsLabel}>
-                        Intervalles: {customIntervals.map(i => `J${i}`).join(', ')}
+                        {showCustomIntervals ? 'Masquer les intervalles' : `Modifier: ${customIntervals.map(i => `J${i}`).join(', ')}`}
                       </Text>
-                      <Ionicons name={showCustomIntervals ? 'chevron-up' : 'pencil'} size={18} color="#3B82F6" />
+                      <Ionicons name={showCustomIntervals ? 'chevron-up' : 'chevron-down'} size={18} color="#6B7280" />
                     </TouchableOpacity>
 
                     {showCustomIntervals && (
