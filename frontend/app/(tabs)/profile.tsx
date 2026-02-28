@@ -533,6 +533,46 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Edit ICS Modal */}
+      <Modal visible={showEditICSModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Modifier le calendrier</Text>
+              <TouchableOpacity onPress={() => {
+                setShowEditICSModal(false);
+                setEditingICS(null);
+              }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Nom du calendrier"
+              placeholderTextColor="#9CA3AF"
+              value={editICSName}
+              onChangeText={setEditICSName}
+            />
+
+            <Text style={styles.colorLabel}>Couleur</Text>
+            <ColorPicker selectedColor={editICSColor} onColorSelect={setEditICSColor} />
+
+            <TouchableOpacity
+              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              onPress={handleUpdateICS}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Enregistrer</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
