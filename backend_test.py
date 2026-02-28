@@ -592,27 +592,30 @@ class BackendTester:
         # Test 3: Account Settings - Password Validation
         self.test_account_password_validation()
         
-        # Test 4: Admin User Management
+        # Test 4: Account Settings - Account Deletion Validation
+        self.test_account_deletion_validation()
+        
+        # Test 5: Admin User Management
         self.test_admin_user_management()
         
-        # Test 5: Hidden Items Management
+        # Test 6: Hidden Items Management
         self.test_hidden_items_management()
         
-        # Test 6: Authentication requirements
+        # Test 7: Authentication requirements
         self.test_authentication_requirements()
         
-        # Test 7: Hidden items endpoint details
+        # Test 8: Hidden items endpoint details
         self.test_hidden_items_endpoint()
         
-        # Test 8: Create test course for notes testing
+        # Test 9: Create test course for notes testing
         course_id = self.create_test_course()
         if not course_id:
             self.log("ERROR: Cannot test notes without a course", "ERROR")
         else:
-            # Test 9: Course notes CRUD operations
+            # Test 10: Course notes CRUD operations
             self.test_course_notes_crud(course_id)
             
-            # Test 10: Personal course deletion
+            # Test 11: Personal course deletion
             self.test_personal_course_deletion(course_id)
         
         return True
