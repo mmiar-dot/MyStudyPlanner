@@ -475,22 +475,53 @@ export default function ProfileScreen() {
 
             {progress && (
               <View style={styles.statsGrid}>
-                <View style={styles.statBox}>
+                <TouchableOpacity 
+                  style={styles.statBox}
+                  onPress={() => {
+                    setShowStatsModal(false);
+                    setStatsDetailType('streak');
+                    setShowStatsDetailModal(true);
+                  }}
+                >
                   <Ionicons name="flame" size={32} color="#F59E0B" />
                   <Text style={styles.statBoxValue}>{progress.streak}</Text>
                   <Text style={styles.statBoxLabel}>Jours consécutifs</Text>
-                </View>
-                <View style={styles.statBox}>
+                  <Text style={styles.statBoxHint}>Tap pour voir le calendrier</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statBox}
+                  onPress={() => {
+                    setShowStatsModal(false);
+                    setStatsDetailType('completion');
+                    setShowStatsDetailModal(true);
+                  }}
+                >
                   <Ionicons name="checkmark-done" size={32} color="#10B981" />
                   <Text style={styles.statBoxValue}>{progress.completed_sessions}</Text>
                   <Text style={styles.statBoxLabel}>Sessions terminées</Text>
-                </View>
-                <View style={styles.statBox}>
+                  <Text style={styles.statBoxHint}>Tap pour les détails</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statBox}
+                  onPress={() => {
+                    setShowStatsModal(false);
+                    setStatsDetailType('courses');
+                    setShowStatsDetailModal(true);
+                  }}
+                >
                   <Ionicons name="book" size={32} color="#3B82F6" />
                   <Text style={styles.statBoxValue}>{progress.active_items}</Text>
                   <Text style={styles.statBoxLabel}>Cours en révision</Text>
-                </View>
-                <View style={styles.statBox}>
+                  <Text style={styles.statBoxHint}>Tap pour la liste</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statBox}
+                  onPress={() => {
+                    setShowStatsModal(false);
+                    setStatsDetailType('completion');
+                    setShowStatsDetailModal(true);
+                  }}
+                >
                   <Ionicons name="trending-up" size={32} color="#8B5CF6" />
                   <Text style={styles.statBoxValue}>
                     {progress.completed_sessions > 0 
@@ -498,7 +529,8 @@ export default function ProfileScreen() {
                       : 0}%
                   </Text>
                   <Text style={styles.statBoxLabel}>Taux de complétion</Text>
-                </View>
+                  <Text style={styles.statBoxHint}>Tap pour les détails</Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>
