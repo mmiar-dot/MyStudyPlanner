@@ -552,14 +552,16 @@ export default function CalendarScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouvel événement</Text>
+              <Text style={styles.modalTitle}>
+                {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
+              </Text>
               <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
                 <Ionicons name="close" size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
             <Text style={styles.modalDate}>
-              {format(new Date(selectedDate), "EEEE d MMMM yyyy", { locale: fr })}
+              {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : selectedDate), "EEEE d MMMM yyyy", { locale: fr })}
             </Text>
 
             <TextInput
