@@ -105,6 +105,42 @@
 user_problem_statement: "Application calendrier intelligent pour externes en médecine (France) avec planification des révisions, méthodes de révision (J, SRS, Tours), calendrier, gestion des retards, interface admin"
 
 backend:
+  - task: "Course Notes CRUD Operations"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Course Notes CRUD fully tested and working. Successfully tested: POST /api/courses/{item_id}/notes (create note), GET /api/courses/{item_id}/notes (get notes for course), PUT /api/courses/{item_id}/notes/{note_id} (update note), DELETE /api/courses/{item_id}/notes/{note_id} (delete note). All operations working correctly with proper authentication, data persistence, and verification of CRUD operations."
+
+  - task: "Personal Course Deletion"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Personal Course Deletion fully tested and working. Successfully tested: DELETE /api/user/courses/{item_id} endpoint correctly deletes personal courses, removes from catalog, and verification confirmed course is no longer accessible. Proper authentication and ownership validation working."
+
+  - task: "Hidden Items Details Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Hidden Items Endpoint fully tested and working. Successfully tested: GET /api/user/hidden endpoint returns correct structure with item details including id, title, level, parent_id, and is_personal fields as required. Authentication properly enforced."
+
   - task: "Authentication (Register/Login/JWT)"
     implemented: true
     working: true
