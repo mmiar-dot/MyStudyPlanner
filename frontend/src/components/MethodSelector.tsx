@@ -450,6 +450,9 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
                     {showCustomIntervals && (
                       <View style={styles.customIntervalsSection}>
+                        <Text style={styles.customIntervalsHint}>
+                          Modifiez les valeurs puis triez pour réorganiser
+                        </Text>
                         <View style={styles.intervalsGrid}>
                           {customIntervals.map((interval, idx) => (
                             <View key={idx} style={styles.intervalItem}>
@@ -459,19 +462,30 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
                                 value={interval.toString()}
                                 onChangeText={(val) => updateInterval(idx, val)}
                                 keyboardType="number-pad"
+                                selectTextOnFocus
+                                onBlur={sortIntervals}
                               />
                               {customIntervals.length > 2 && (
-                                <TouchableOpacity onPress={() => removeInterval(idx)}>
-                                  <Ionicons name="close-circle" size={20} color="#EF4444" />
+                                <TouchableOpacity 
+                                  onPress={() => removeInterval(idx)}
+                                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                >
+                                  <Ionicons name="close-circle" size={22} color="#EF4444" />
                                 </TouchableOpacity>
                               )}
                             </View>
                           ))}
                         </View>
-                        <TouchableOpacity style={styles.addIntervalButton} onPress={addInterval}>
-                          <Ionicons name="add" size={18} color="#3B82F6" />
-                          <Text style={styles.addIntervalText}>Ajouter un intervalle</Text>
-                        </TouchableOpacity>
+                        <View style={styles.intervalActions}>
+                          <TouchableOpacity style={styles.addIntervalButton} onPress={addInterval}>
+                            <Ionicons name="add" size={18} color="#3B82F6" />
+                            <Text style={styles.addIntervalText}>Ajouter</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.sortButton} onPress={sortIntervals}>
+                            <Ionicons name="swap-vertical" size={18} color="#10B981" />
+                            <Text style={styles.sortButtonText}>Trier</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     )}
 
