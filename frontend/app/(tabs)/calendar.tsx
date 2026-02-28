@@ -52,14 +52,22 @@ export default function CalendarScreen() {
 
   const { fetchSessionsByDate, completeSession } = useSessionStore();
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
-  const { events, icsSubscriptions, fetchEvents, fetchICSSubscriptions, createEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
+  const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
 
   const loadMonthData = useCallback(async () => {
     const month = currentMonth.getMonth() + 1;
     const year = currentMonth.getFullYear();
+    
+    // Calculate date range for the month (plus buffer for calendar display)
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const startDate = format(subMonths(monthStart, 1), 'yyyy-MM-dd');
+    const endDate = format(addMonths(monthEnd, 1), 'yyyy-MM-dd');
+    
     await Promise.all([
       fetchCalendarData(month, year),
       fetchEvents(),
+      fetchAllCalendarEvents(startDate, endDate),
       fetchICSSubscriptions(),
     ]);
   }, [currentMonth]);
