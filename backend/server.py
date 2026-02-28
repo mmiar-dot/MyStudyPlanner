@@ -722,6 +722,30 @@ async def delete_personal_course(item_id: str, user: dict = Depends(get_current_
     await delete_recursive(item_id)
     return {"message": "Cours personnel supprimé"}
 
+# Course/Chapter Rename Model
+class ItemRename(BaseModel):
+    title: str
+
+@api_router.put("/user/courses/{item_id}")
+async def update_personal_course(item_id: str, data: ItemRename, user: dict = Depends(get_current_user)):
+    """Update a personal course title"""
+    item = await db.catalog_items.find_one({"id": item_id, "owner_id": user["id"]})
+    if not item:
+        raise HTTPException(status_code=404, detail="Cours personnel non trouvé")
+    
+    await db.catalog_items.update_one(
+        {"id": item_id, "owner_id": user["id"]},
+        {"$set": {"title": data.title}}
+    )
+    
+    # Also update title in study sessions
+    await db.study_sessions.update_many(
+        {"user_id": user["id"], "item_id": item_id},
+        {"$set": {"item_title": data.title}}
+    )
+    
+    return {"message": "Cours mis à jour", "title": data.title}
+
 # =====================================
 # HIDDEN ITEMS (User can hide admin courses)
 # =====================================
