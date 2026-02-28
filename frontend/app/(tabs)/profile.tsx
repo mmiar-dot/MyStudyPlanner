@@ -41,7 +41,15 @@ export default function ProfileScreen() {
   const [showNotifModal, setShowNotifModal] = useState(false);
   const [showEditICSModal, setShowEditICSModal] = useState(false);
   const [showStatsDetailModal, setShowStatsDetailModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [statsDetailType, setStatsDetailType] = useState<'today' | 'late' | 'completion' | 'courses' | 'streak'>('today');
+  
+  // Settings form
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [settingsTab, setSettingsTab] = useState<'password' | 'delete'>('password');
   
   // ICS form
   const [icsName, setIcsName] = useState('');
