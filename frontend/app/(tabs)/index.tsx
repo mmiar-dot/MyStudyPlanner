@@ -31,10 +31,30 @@ export default function TodayScreen() {
   const [srsSession, setSrsSession] = useState<StudySession | null>(null);
   const [selectedWeekDay, setSelectedWeekDay] = useState(new Date());
   const [weekSessions, setWeekSessions] = useState<Record<string, StudySession[]>>({});
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
+  const isCurrentWeek = isSameWeek(currentWeekStart, today, { weekStartsOn: 1 });
+
+  // Week navigation
+  const goToPreviousWeek = () => {
+    const newWeekStart = subWeeks(currentWeekStart, 1);
+    setCurrentWeekStart(newWeekStart);
+    setSelectedWeekDay(newWeekStart);
+  };
+
+  const goToNextWeek = () => {
+    const newWeekStart = addWeeks(currentWeekStart, 1);
+    setCurrentWeekStart(newWeekStart);
+    setSelectedWeekDay(newWeekStart);
+  };
+
+  const goToCurrentWeek = () => {
+    const newWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    setCurrentWeekStart(newWeekStart);
+    setSelectedWeekDay(today);
+  };
 
   const loadData = useCallback(async () => {
     await Promise.all([
