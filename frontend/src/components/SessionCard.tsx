@@ -13,6 +13,7 @@ interface SessionCardProps {
   onComplete: (session: StudySession) => void;
   onSkip?: (session: StudySession) => void;
   showActions?: boolean;
+  onStatusChange?: () => void; // Called when session status changes (uncomplete, reschedule, etc.)
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
