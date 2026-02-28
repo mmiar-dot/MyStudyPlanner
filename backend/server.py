@@ -91,6 +91,9 @@ class UserResponse(BaseModel):
     role: str
     created_at: datetime
     settings: Dict[str, Any] = {}
+    profile_photo: Optional[str] = None
+    photo_type: Optional[str] = None
+    avatar_id: Optional[str] = None
 
 # Catalog Models
 class CatalogItemCreate(BaseModel):
