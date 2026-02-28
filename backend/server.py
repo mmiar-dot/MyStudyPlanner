@@ -1363,6 +1363,124 @@ async def set_session_time(session_id: str, time: str, user: dict = Depends(get_
         raise HTTPException(status_code=404, detail="Session non trouvée")
     return {"message": "Horaire défini"}
 
+@api_router.post("/sessions/{session_id}/uncomplete")
+async def uncomplete_session(session_id: str, user: dict = Depends(get_current_user)):
+    """Cancel completion of a session - mark it as pending again"""
+    session = await db.study_sessions.find_one({"id": session_id, "user_id": user["id"]})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+    
+    if session.get("status") != SessionStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="La session n'est pas marquée comme terminée")
+    
+    await db.study_sessions.update_one(
+        {"id": session_id},
+        {"$set": {"status": SessionStatus.PENDING, "completed_at": None, "rating": None}}
+    )
+    return {"message": "Session réinitialisée"}
+
+class SessionReschedule(BaseModel):
+    new_date: str  # YYYY-MM-DD format
+
+@api_router.put("/sessions/{session_id}/reschedule")
+async def reschedule_session(session_id: str, data: SessionReschedule, user: dict = Depends(get_current_user)):
+    """Move a session to a different date"""
+    session = await db.study_sessions.find_one({"id": session_id, "user_id": user["id"]})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+    
+    # Validate date format
+    try:
+        datetime.strptime(data.new_date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Format de date invalide (YYYY-MM-DD)")
+    
+    await db.study_sessions.update_one(
+        {"id": session_id},
+        {"$set": {"scheduled_date": data.new_date, "status": SessionStatus.PENDING}}
+    )
+    return {"message": f"Session déplacée au {data.new_date}"}
+
+# =====================================
+# COURSE NOTES
+# =====================================
+class CourseNoteCreate(BaseModel):
+    content: str
+
+class CourseNoteResponse(BaseModel):
+    id: str
+    user_id: str
+    item_id: str
+    content: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+@api_router.get("/courses/{item_id}/notes")
+async def get_course_notes(item_id: str, user: dict = Depends(get_current_user)):
+    """Get all notes for a course"""
+    notes = await db.course_notes.find({"user_id": user["id"], "item_id": item_id}).sort("created_at", -1).to_list(100)
+    return [
+        CourseNoteResponse(
+            id=n["id"],
+            user_id=n["user_id"],
+            item_id=n["item_id"],
+            content=n["content"],
+            created_at=n["created_at"],
+            updated_at=n.get("updated_at")
+        )
+        for n in notes
+    ]
+
+@api_router.post("/courses/{item_id}/notes")
+async def add_course_note(item_id: str, note: CourseNoteCreate, user: dict = Depends(get_current_user)):
+    """Add a note to a course"""
+    note_id = str(uuid.uuid4())
+    note_data = {
+        "id": note_id,
+        "user_id": user["id"],
+        "item_id": item_id,
+        "content": note.content,
+        "created_at": datetime.utcnow(),
+        "updated_at": None
+    }
+    await db.course_notes.insert_one(note_data)
+    return CourseNoteResponse(
+        id=note_id,
+        user_id=user["id"],
+        item_id=item_id,
+        content=note.content,
+        created_at=note_data["created_at"],
+        updated_at=None
+    )
+
+@api_router.put("/courses/{item_id}/notes/{note_id}")
+async def update_course_note(item_id: str, note_id: str, note: CourseNoteCreate, user: dict = Depends(get_current_user)):
+    """Update a note"""
+    result = await db.course_notes.update_one(
+        {"id": note_id, "user_id": user["id"], "item_id": item_id},
+        {"$set": {"content": note.content, "updated_at": datetime.utcnow()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Note non trouvée")
+    
+    updated = await db.course_notes.find_one({"id": note_id})
+    return CourseNoteResponse(
+        id=updated["id"],
+        user_id=updated["user_id"],
+        item_id=updated["item_id"],
+        content=updated["content"],
+        created_at=updated["created_at"],
+        updated_at=updated.get("updated_at")
+    )
+
+@api_router.delete("/courses/{item_id}/notes/{note_id}")
+async def delete_course_note(item_id: str, note_id: str, user: dict = Depends(get_current_user)):
+    """Delete a note"""
+    result = await db.course_notes.delete_one({"id": note_id, "user_id": user["id"], "item_id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note non trouvée")
+    return {"message": "Note supprimée"}
+
 # =====================================
 # PERSONAL EVENTS
 # =====================================
