@@ -344,7 +344,7 @@ export default function ProfileScreen() {
         </>
       )}
 
-      <Text style={styles.version}>RevisionMed v1.0.0</Text>
+      <Text style={styles.version}>MyStudyPlanner v1.0.0</Text>
     </>
   );
 
