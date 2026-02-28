@@ -964,6 +964,11 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 6,
   },
+  planChapterButton: {
+    backgroundColor: '#D1FAE5',
+    borderRadius: 6,
+    marginRight: 4,
+  },
   personalBadge: {
     backgroundColor: '#F3E8FF',
     padding: 4,
