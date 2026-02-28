@@ -69,6 +69,12 @@ export default function CoursesScreen() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [colorPickerItem, setColorPickerItem] = useState<CatalogItem | null>(null);
   const [tempColor, setTempColor] = useState('#3B82F6');
+  
+  // Rename modal
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameItem, setRenameItem] = useState<CatalogItem | CustomSection | null>(null);
+  const [renameType, setRenameType] = useState<'course' | 'section'>('course');
+  const [newName, setNewName] = useState('');
 
   const loadData = useCallback(async () => {
     await Promise.all([
