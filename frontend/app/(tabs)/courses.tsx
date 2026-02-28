@@ -382,6 +382,21 @@ export default function CoursesScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* Hidden Items Toggle */}
+            <TouchableOpacity
+              style={[styles.filterButton, showHiddenItems && styles.filterButtonHidden]}
+              onPress={() => setShowHiddenItems(!showHiddenItems)}
+            >
+              <Ionicons 
+                name={showHiddenItems ? "eye" : "eye-off"} 
+                size={16} 
+                color={showHiddenItems ? '#EF4444' : '#6B7280'} 
+              />
+              <Text style={[styles.filterText, showHiddenItems && { color: '#EF4444' }]}>
+                Masqués
+              </Text>
+            </TouchableOpacity>
+
             {/* Custom Sections */}
             {customSections.map((section) => (
               <TouchableOpacity
