@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons'
-import { format, startOfWeek, addDays, isSameDay, isToday } from 'date-fns';
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSessionStore } from '../../src/store/sessionStore';
 import { useAnalyticsStore } from '../../src/store/analyticsStore';
