@@ -31,6 +31,7 @@ interface EventState {
   deleteEvent: (eventId: string) => Promise<void>;
   fetchICSSubscriptions: () => Promise<void>;
   subscribeICS: (name: string, url: string, color: string) => Promise<void>;
+  updateICSSubscription: (subscriptionId: string, name?: string, color?: string) => Promise<void>;
   syncICS: (subscriptionId: string) => Promise<void>;
   deleteICSSubscription: (subscriptionId: string) => Promise<void>;
   fetchICSEvents: (subscriptionId: string) => Promise<void>;
