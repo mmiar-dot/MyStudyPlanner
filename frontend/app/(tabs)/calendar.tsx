@@ -142,9 +142,15 @@ export default function CalendarScreen() {
         color: eventColor,
       });
       
+      // Refresh all calendar events
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(currentMonth);
+      const startDate = format(subMonths(monthStart, 1), 'yyyy-MM-dd');
+      const endDate = format(addMonths(monthEnd, 1), 'yyyy-MM-dd');
+      await fetchAllCalendarEvents(startDate, endDate);
+      
       setShowEventModal(false);
       resetEventForm();
-      Alert.alert('Succès', 'Événement créé');
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de créer l\'événement');
     } finally {
