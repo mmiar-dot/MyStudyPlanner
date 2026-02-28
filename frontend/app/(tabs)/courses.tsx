@@ -1012,6 +1012,9 @@ const styles = StyleSheet.create({
   colorButton: {
     padding: 10,
   },
+  editButton: {
+    padding: 10,
+  },
   deleteButton: {
     padding: 10,
   },
