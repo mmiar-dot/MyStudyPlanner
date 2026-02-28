@@ -303,7 +303,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.rescheduleLabel}>Choisir une nouvelle date :</Text>
+            <Text style={styles.rescheduleLabel}>Dates rapides :</Text>
 
             <View style={styles.quickDates}>
               {quickDates.map((qd) => (
@@ -319,13 +319,40 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               ))}
             </View>
 
-            <TextInput
-              style={styles.dateInput}
-              placeholder="Ou entrez une date (YYYY-MM-DD)"
-              placeholderTextColor="#9CA3AF"
-              value={selectedDate}
-              onChangeText={setSelectedDate}
-            />
+            <Text style={styles.rescheduleLabel}>Ou choisir une date :</Text>
+            
+            <TouchableOpacity 
+              style={styles.calendarToggle}
+              onPress={() => setShowCalendarPicker(!showCalendarPicker)}
+            >
+              <Ionicons name="calendar" size={20} color="#3B82F6" />
+              <Text style={styles.calendarToggleText}>
+                {format(new Date(selectedDate), 'dd MMMM yyyy', { locale: fr })}
+              </Text>
+              <Ionicons name={showCalendarPicker ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+            </TouchableOpacity>
+
+            {showCalendarPicker && (
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  current={selectedDate}
+                  onDayPress={(day: any) => {
+                    setSelectedDate(day.dateString);
+                    setShowCalendarPicker(false);
+                  }}
+                  markedDates={{
+                    [selectedDate]: { selected: true, selectedColor: '#3B82F6' },
+                    [session.scheduled_date]: { marked: true, dotColor: '#EF4444' }
+                  }}
+                  minDate={format(new Date(), 'yyyy-MM-dd')}
+                  theme={{
+                    todayTextColor: '#3B82F6',
+                    selectedDayBackgroundColor: '#3B82F6',
+                    arrowColor: '#3B82F6',
+                  }}
+                />
+              </View>
+            )}
 
             <TouchableOpacity
               style={[styles.rescheduleButton, isLoading && styles.buttonDisabled]}
@@ -338,6 +365,84 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 <Text style={styles.rescheduleButtonText}>Confirmer</Text>
               )}
             </TouchableOpacity>
+
+            {/* View upcoming sessions */}
+            <TouchableOpacity
+              style={styles.viewUpcomingButton}
+              onPress={() => {
+                fetchUpcomingSessions();
+                setShowUpcomingModal(true);
+              }}
+            >
+              <Ionicons name="list" size={18} color="#3B82F6" />
+              <Text style={styles.viewUpcomingText}>Voir toutes les sessions de ce cours</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Upcoming Sessions Modal */}
+      <Modal visible={showUpcomingModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.upcomingModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sessions planifiées</Text>
+              <TouchableOpacity onPress={() => setShowUpcomingModal(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.upcomingSubtitle}>{session.item_title}</Text>
+
+            <ScrollView style={styles.upcomingList}>
+              {upcomingSessions.map((s, idx) => {
+                const isPast = new Date(s.scheduled_date) < new Date();
+                const isCurrent = s.id === session.id;
+                
+                return (
+                  <View 
+                    key={s.id} 
+                    style={[
+                      styles.upcomingItem,
+                      s.status === 'completed' && styles.upcomingItemCompleted,
+                      isCurrent && styles.upcomingItemCurrent
+                    ]}
+                  >
+                    <View style={[
+                      styles.upcomingDot,
+                      { backgroundColor: s.status === 'completed' ? '#10B981' : isPast ? '#EF4444' : '#3B82F6' }
+                    ]} />
+                    <View style={styles.upcomingInfo}>
+                      <Text style={styles.upcomingLabel}>
+                        {s.j_day !== undefined ? `J${s.j_day}` : s.tour_number ? `Tour ${s.tour_number}` : 'SRS'}
+                        {isCurrent && ' (actuel)'}
+                      </Text>
+                      <Text style={styles.upcomingDate}>
+                        {format(new Date(s.scheduled_date), 'dd MMMM yyyy', { locale: fr })}
+                      </Text>
+                    </View>
+                    <View style={styles.upcomingStatus}>
+                      {s.status === 'completed' ? (
+                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                      ) : s.status === 'skipped' ? (
+                        <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                      ) : isPast ? (
+                        <Text style={styles.upcomingLateText}>En retard</Text>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={async () => {
+                            await rescheduleSession(s.id, format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd'));
+                            fetchUpcomingSessions();
+                          }}
+                        >
+                          <Ionicons name="arrow-forward" size={20} color="#6B7280" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
