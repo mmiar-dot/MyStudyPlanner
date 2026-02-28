@@ -225,6 +225,12 @@ export default function CalendarScreen() {
     }
   };
 
+  const openEventModal = (date?: string) => {
+    setEventDate(date || selectedDate);
+    setShowEventDatePicker(false);
+    setShowEventModal(true);
+  };
+
   const resetEventForm = () => {
     setEventTitle('');
     setEventDescription('');
