@@ -24,6 +24,9 @@ export interface CatalogItem {
   level: number;
   children_count: number;
   created_at: string;
+  is_personal?: boolean;
+  owner_id?: string;
+  is_hidden?: boolean;
 }
 
 // Revision Method Types
