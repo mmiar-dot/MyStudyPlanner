@@ -689,10 +689,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#374151',
   },
+  noteFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
   noteDate: {
     fontSize: 11,
     color: '#9CA3AF',
-    marginTop: 4,
+  },
+  noteActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  noteActionButton: {
+    padding: 4,
+  },
+  editNoteContainer: {
+    flex: 1,
+  },
+  editNoteInput: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    minHeight: 60,
+  },
+  editNoteActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 8,
+  },
+  editNoteCancel: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#F3F4F6',
+  },
+  editNoteCancelText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  editNoteSave: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#3B82F6',
+  },
+  editNoteSaveText: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   noNotes: {
     fontSize: 13,
