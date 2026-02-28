@@ -215,8 +215,8 @@ export default function CalendarScreen() {
     };
   });
 
-  // Mark event dates
-  events.forEach(event => {
+  // Mark all calendar event dates (personal + ICS)
+  allCalendarEvents.forEach(event => {
     const eventDate = event.start_time.split('T')[0];
     if (markedDates[eventDate]) {
       markedDates[eventDate].dots = [
