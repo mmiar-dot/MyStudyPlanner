@@ -43,6 +43,10 @@ export default function CalendarScreen() {
   const [eventEndTime, setEventEndTime] = useState('10:00');
   const [eventColor, setEventColor] = useState('#3B82F6');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const [deleteEventTitle, setDeleteEventTitle] = useState('');
   
   // ICS modal states
   const [showICSModal, setShowICSModal] = useState(false);
@@ -52,7 +56,7 @@ export default function CalendarScreen() {
 
   const { fetchSessionsByDate, completeSession } = useSessionStore();
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
-  const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
+  const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, updateEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
 
   // Helper function to format event time (handles both datetime and date-only formats)
   const formatEventTime = (timeStr: string): string => {
