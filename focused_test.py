@@ -241,7 +241,7 @@ def main():
     setup_test_users()
     
     # Login
-    token = login_user("test@test.com", "testpassword")
+    token = login_user("testuser@test.com", "testpassword")
     if not token:
         print("❌ Cannot proceed without authentication")
         return False
