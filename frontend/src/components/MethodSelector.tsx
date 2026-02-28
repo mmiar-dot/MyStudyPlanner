@@ -33,6 +33,7 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
   
   const [selectedMethod, setSelectedMethod] = useState<RevisionMethod>(currentMethod || 'none');
   const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [showCalendar, setShowCalendar] = useState(false);
   const [totalTours, setTotalTours] = useState('3');
   const [tourDuration, setTourDuration] = useState('30');
 
