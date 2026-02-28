@@ -144,28 +144,32 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   const handleDeleteNote = async (noteId: string) => {
-    Alert.alert(
-      'Supprimer la note',
-      'Êtes-vous sûr de vouloir supprimer cette note ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true);
-              await api.delete(`/courses/${session.item_id}/notes/${noteId}`);
-              await fetchCourseNotes(session.item_id);
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible de supprimer la note');
-            } finally {
-              setIsLoading(false);
-            }
-          }
-        }
-      ]
-    );
+    const doDelete = async () => {
+      try {
+        setIsLoading(true);
+        await api.delete(`/courses/${session.item_id}/notes/${noteId}`);
+        await fetchCourseNotes(session.item_id);
+      } catch (error) {
+        Alert.alert('Erreur', 'Impossible de supprimer la note');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+        await doDelete();
+      }
+    } else {
+      Alert.alert(
+        'Supprimer la note',
+        'Êtes-vous sûr de vouloir supprimer cette note ?',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Supprimer', style: 'destructive', onPress: doDelete }
+        ]
+      );
+    }
   };
 
   const quickDates = [
