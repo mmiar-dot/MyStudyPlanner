@@ -84,6 +84,27 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleOpenEditICS = (sub: typeof icsSubscriptions[0]) => {
+    setEditingICS(sub);
+    setEditICSName(sub.name);
+    setEditICSColor(sub.color);
+    setShowEditICSModal(true);
+  };
+
+  const handleUpdateICS = async () => {
+    if (!editingICS || !editICSName.trim()) return;
+    try {
+      setIsSubmitting(true);
+      await updateICSSubscription(editingICS.id, editICSName.trim(), editICSColor);
+      setShowEditICSModal(false);
+      setEditingICS(null);
+    } catch (error) {
+      console.error('Error updating ICS:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const isAdmin = user?.role === 'admin';
 
   const renderContent = () => (
