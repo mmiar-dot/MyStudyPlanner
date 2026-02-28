@@ -401,15 +401,27 @@ export default function TodayScreen() {
                   <Text style={styles.progressTitle}>Progression</Text>
                   
                   <View style={styles.progressGrid}>
-                    <View style={styles.progressGridItem}>
+                    <TouchableOpacity 
+                      style={styles.progressGridItem}
+                      onPress={() => {
+                        setStatsType('today');
+                        setShowStatsModal(true);
+                      }}
+                    >
                       <View style={[styles.progressGridIcon, { backgroundColor: '#EBF5FF' }]}>
                         <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
                       </View>
                       <Text style={styles.progressGridValue}>{progress.today_completed}</Text>
                       <Text style={styles.progressGridLabel}>Aujourd'hui</Text>
-                    </View>
+                    </TouchableOpacity>
                     
-                    <View style={styles.progressGridItem}>
+                    <TouchableOpacity 
+                      style={styles.progressGridItem}
+                      onPress={() => {
+                        setStatsType('late');
+                        setShowStatsModal(true);
+                      }}
+                    >
                       <View style={[styles.progressGridIcon, { backgroundColor: '#FEF2F2' }]}>
                         <Ionicons name="warning" size={20} color="#EF4444" />
                       </View>
@@ -417,34 +429,52 @@ export default function TodayScreen() {
                         {progress.late_sessions}
                       </Text>
                       <Text style={styles.progressGridLabel}>En retard</Text>
-                    </View>
+                    </TouchableOpacity>
                     
-                    <View style={styles.progressGridItem}>
+                    <TouchableOpacity 
+                      style={styles.progressGridItem}
+                      onPress={() => {
+                        setStatsType('completion');
+                        setShowStatsModal(true);
+                      }}
+                    >
                       <View style={[styles.progressGridIcon, { backgroundColor: '#D1FAE5' }]}>
                         <Ionicons name="trending-up" size={20} color="#10B981" />
                       </View>
                       <Text style={styles.progressGridValue}>{progress.completion_rate}%</Text>
                       <Text style={styles.progressGridLabel}>Complétion</Text>
-                    </View>
+                    </TouchableOpacity>
                     
-                    <View style={styles.progressGridItem}>
+                    <TouchableOpacity 
+                      style={styles.progressGridItem}
+                      onPress={() => {
+                        setStatsType('courses');
+                        setShowStatsModal(true);
+                      }}
+                    >
                       <View style={[styles.progressGridIcon, { backgroundColor: '#FEF3C7' }]}>
                         <Ionicons name="library" size={20} color="#F59E0B" />
                       </View>
                       <Text style={styles.progressGridValue}>{progress.active_items}</Text>
                       <Text style={styles.progressGridLabel}>Cours actifs</Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
                 </View>
               )}
 
               {/* Total Sessions Card */}
               {progress && (
-                <View style={styles.totalCard}>
+                <TouchableOpacity 
+                  style={styles.totalCard}
+                  onPress={() => {
+                    setStatsType('completion');
+                    setShowStatsModal(true);
+                  }}
+                >
                   <Ionicons name="trophy" size={32} color="#FFFFFF" />
                   <Text style={styles.totalValue}>{progress.completed_sessions}</Text>
                   <Text style={styles.totalLabel}>Sessions terminées</Text>
-                </View>
+                </TouchableOpacity>
               )}
 
               {/* Streak Card */}
