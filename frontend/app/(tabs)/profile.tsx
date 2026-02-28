@@ -1,148 +1,506 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import { useAnalyticsStore } from '../../src/store/analyticsStore';
-import { useEffect } from 'react';
+import { useEventStore } from '../../src/store/eventStore';
+import { ColorPicker } from '../../src/components/ColorPicker';
 
 export default function ProfileScreen() {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  
   const { user, logout } = useAuthStore();
   const { progress, fetchProgress } = useAnalyticsStore();
+  const { icsSubscriptions, fetchICSSubscriptions, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
+
+  // Modal states
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showICSModal, setShowICSModal] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [showEditICSModal, setShowEditICSModal] = useState(false);
+  
+  // ICS form
+  const [icsName, setIcsName] = useState('');
+  const [icsUrl, setIcsUrl] = useState('');
+  const [icsColor, setIcsColor] = useState('#10B981');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProgress();
+    fetchICSSubscriptions();
   }, []);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnexion',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/(auth)/login');
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    await logout();
+    setShowLogoutModal(false);
+    router.replace('/(auth)/login');
+  };
+
+  const handleAddICS = async () => {
+    if (!icsName.trim() || !icsUrl.trim()) return;
+    try {
+      setIsSubmitting(true);
+      await subscribeICS(icsName.trim(), icsUrl.trim(), icsColor);
+      setIcsName('');
+      setIcsUrl('');
+      setIcsColor('#10B981');
+      setShowICSModal(false);
+    } catch (error) {
+      console.error('Error adding ICS:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSyncICS = async (subId: string) => {
+    try {
+      setSyncingId(subId);
+      await syncICS(subId);
+    } catch (error) {
+      console.error('Error syncing ICS:', error);
+    } finally {
+      setSyncingId(null);
+    }
   };
 
   const isAdmin = user?.role === 'admin';
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          </View>
-          <Text style={styles.name}>{user?.name || 'Utilisateur'}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
-          {isAdmin && (
-            <View style={styles.adminBadge}>
-              <Ionicons name="shield-checkmark" size={14} color="#8B5CF6" />
-              <Text style={styles.adminText}>Administrateur</Text>
-            </View>
-          )}
+  const renderContent = () => (
+    <>
+      {/* Header */}
+      <View style={[styles.header, isDesktop && styles.headerDesktop]}>
+        <View style={[styles.avatar, isDesktop && styles.avatarDesktop]}>
+          <Text style={[styles.avatarText, isDesktop && styles.avatarTextDesktop]}>
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </Text>
         </View>
-
-        {/* Stats */}
-        {progress && (
-          <View style={styles.statsCard}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{progress.streak}</Text>
-              <Text style={styles.statLabel}>Jours de suite</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{progress.completed_sessions}</Text>
-              <Text style={styles.statLabel}>Sessions terminées</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{progress.active_items}</Text>
-              <Text style={styles.statLabel}>Cours actifs</Text>
-            </View>
+        <Text style={[styles.name, isDesktop && styles.nameDesktop]}>{user?.name || 'Utilisateur'}</Text>
+        <Text style={styles.email}>{user?.email}</Text>
+        {isAdmin && (
+          <View style={styles.adminBadge}>
+            <Ionicons name="shield-checkmark" size={14} color="#8B5CF6" />
+            <Text style={styles.adminText}>Administrateur</Text>
           </View>
         )}
+      </View>
 
-        {/* Menu */}
-        <View style={styles.menuSection}>
-          {isAdmin && (
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => router.push('/admin')}
-            >
-              <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
-                <Ionicons name="settings" size={20} color="#8B5CF6" />
+      {/* Stats Card */}
+      {progress && (
+        <View style={[styles.statsCard, isDesktop && styles.statsCardDesktop]}>
+          <View style={styles.statItem}>
+            <Ionicons name="flame" size={24} color="#F59E0B" />
+            <Text style={styles.statValue}>{progress.streak}</Text>
+            <Text style={styles.statLabel}>Jours de suite</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+            <Text style={styles.statValue}>{progress.completed_sessions}</Text>
+            <Text style={styles.statLabel}>Sessions terminées</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Ionicons name="book" size={24} color="#3B82F6" />
+            <Text style={styles.statValue}>{progress.active_items}</Text>
+            <Text style={styles.statLabel}>Cours actifs</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Desktop Layout */}
+      {isDesktop ? (
+        <View style={styles.desktopGrid}>
+          {/* Left Column - Menu */}
+          <View style={styles.desktopColumn}>
+            <View style={styles.menuSection}>
+              <Text style={styles.sectionTitle}>Paramètres</Text>
+              
+              {isAdmin && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => router.push('/admin')}
+                >
+                  <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
+                    <Ionicons name="settings" size={20} color="#8B5CF6" />
+                  </View>
+                  <View style={styles.menuContent}>
+                    <Text style={styles.menuTitle}>Administration</Text>
+                    <Text style={styles.menuSubtitle}>Gérer les cours et utilisateurs</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity style={styles.menuItem} onPress={() => setShowICSModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: '#EBF5FF' }]}>
+                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Calendriers ICS</Text>
+                  <Text style={styles.menuSubtitle}>{icsSubscriptions.length} abonnement(s)</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuItem} onPress={() => setShowNotifModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+                  <Ionicons name="notifications" size={20} color="#10B981" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Notifications</Text>
+                  <Text style={styles.menuSubtitle}>Rappels et alertes</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuItem} onPress={() => setShowStatsModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="bar-chart" size={20} color="#F59E0B" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Statistiques</Text>
+                  <Text style={styles.menuSubtitle}>Votre progression détaillée</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.logoutButton} onPress={() => setShowLogoutModal(true)}>
+              <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+              <Text style={styles.logoutText}>Déconnexion</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Column - ICS Calendars */}
+          <View style={styles.desktopColumn}>
+            <View style={styles.icsSection}>
+              <View style={styles.icsSectionHeader}>
+                <Text style={styles.sectionTitle}>Calendriers ICS</Text>
+                <TouchableOpacity style={styles.addICSButton} onPress={() => setShowICSModal(true)}>
+                  <Ionicons name="add" size={20} color="#FFFFFF" />
+                  <Text style={styles.addICSButtonText}>Ajouter</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {icsSubscriptions.length === 0 ? (
+                <View style={styles.emptyICS}>
+                  <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
+                  <Text style={styles.emptyICSText}>Aucun calendrier ICS</Text>
+                  <Text style={styles.emptyICSSubtext}>Ajoutez un lien ICS pour synchroniser votre emploi du temps</Text>
+                </View>
+              ) : (
+                icsSubscriptions.map((sub) => (
+                  <View key={sub.id} style={styles.icsItem}>
+                    <View style={[styles.icsColor, { backgroundColor: sub.color }]} />
+                    <View style={styles.icsInfo}>
+                      <Text style={styles.icsName}>{sub.name}</Text>
+                      <Text style={styles.icsUrl} numberOfLines={1}>{sub.url}</Text>
+                      {sub.last_synced && (
+                        <Text style={styles.icsLastSync}>
+                          Dernière synchro: {new Date(sub.last_synced).toLocaleString('fr-FR')}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.icsActions}>
+                      <TouchableOpacity 
+                        style={styles.icsActionButton}
+                        onPress={() => handleSyncICS(sub.id)}
+                        disabled={syncingId === sub.id}
+                      >
+                        {syncingId === sub.id ? (
+                          <ActivityIndicator size="small" color="#3B82F6" />
+                        ) : (
+                          <Ionicons name="sync" size={18} color="#3B82F6" />
+                        )}
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.icsActionButton}
+                        onPress={() => deleteICSSubscription(sub.id)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+          </View>
+        </View>
+      ) : (
+        // Mobile Layout
+        <>
+          <View style={styles.menuSection}>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => router.push('/admin')}
+              >
+                <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
+                  <Ionicons name="settings" size={20} color="#8B5CF6" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Administration</Text>
+                  <Text style={styles.menuSubtitle}>Gérer les cours et utilisateurs</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => setShowICSModal(true)}>
+              <View style={[styles.menuIcon, { backgroundColor: '#EBF5FF' }]}>
+                <Ionicons name="calendar" size={20} color="#3B82F6" />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Administration</Text>
-                <Text style={styles.menuSubtitle}>Gérer les cours et utilisateurs</Text>
+                <Text style={styles.menuTitle}>Calendriers ICS</Text>
+                <Text style={styles.menuSubtitle}>{icsSubscriptions.length} abonnement(s)</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
-          )}
 
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={[styles.menuIcon, { backgroundColor: '#EBF5FF' }]}>
-              <Ionicons name="calendar" size={20} color="#3B82F6" />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuTitle}>Calendriers ICS</Text>
-              <Text style={styles.menuSubtitle}>Abonnements faculté</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <TouchableOpacity style={styles.menuItem} onPress={() => setShowNotifModal(true)}>
+              <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+                <Ionicons name="notifications" size={20} color="#10B981" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Notifications</Text>
+                <Text style={styles.menuSubtitle}>Rappels et alertes</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => setShowStatsModal(true)}>
+              <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="bar-chart" size={20} color="#F59E0B" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Statistiques</Text>
+                <Text style={styles.menuSubtitle}>Votre progression détaillée</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={() => setShowLogoutModal(true)}>
+            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+            <Text style={styles.logoutText}>Déconnexion</Text>
           </TouchableOpacity>
+        </>
+      )}
 
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
-              <Ionicons name="notifications" size={20} color="#10B981" />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuTitle}>Notifications</Text>
-              <Text style={styles.menuSubtitle}>Rappels et alertes</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
+      <Text style={styles.version}>RevisionMed v1.0.0</Text>
+    </>
+  );
 
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
-              <Ionicons name="bar-chart" size={20} color="#F59E0B" />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuTitle}>Statistiques</Text>
-              <Text style={styles.menuSubtitle}>Votre progression détaillée</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-          <Text style={styles.logoutText}>Déconnexion</Text>
-        </TouchableOpacity>
-
-        {/* Version */}
-        <Text style={styles.version}>RevisionMed v1.0.0</Text>
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}>
+        {isDesktop && <Text style={styles.pageTitle}>Profil</Text>}
+        {renderContent()}
       </ScrollView>
+
+      {/* Logout Modal */}
+      <Modal visible={showLogoutModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.confirmModal]}>
+            <Ionicons name="log-out-outline" size={48} color="#EF4444" />
+            <Text style={styles.confirmTitle}>Déconnexion</Text>
+            <Text style={styles.confirmText}>Êtes-vous sûr de vouloir vous déconnecter ?</Text>
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity 
+                style={[styles.confirmButton, styles.cancelButton]}
+                onPress={() => setShowLogoutModal(false)}
+              >
+                <Text style={styles.cancelButtonText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.confirmButton, styles.dangerButton]}
+                onPress={handleLogout}
+              >
+                <Text style={styles.dangerButtonText}>Déconnexion</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ICS Modal */}
+      <Modal visible={showICSModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajouter un calendrier ICS</Text>
+              <TouchableOpacity onPress={() => setShowICSModal(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Nom du calendrier (ex: EDT Médecine)"
+              placeholderTextColor="#9CA3AF"
+              value={icsName}
+              onChangeText={setIcsName}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="URL du fichier ICS"
+              placeholderTextColor="#9CA3AF"
+              value={icsUrl}
+              onChangeText={setIcsUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+
+            <Text style={styles.colorLabel}>Couleur</Text>
+            <ColorPicker selectedColor={icsColor} onColorSelect={setIcsColor} />
+
+            <TouchableOpacity
+              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              onPress={handleAddICS}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Ajouter le calendrier</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Existing subscriptions */}
+            {icsSubscriptions.length > 0 && (
+              <View style={styles.existingICS}>
+                <Text style={styles.existingICSTitle}>Calendriers existants</Text>
+                {icsSubscriptions.map((sub) => (
+                  <View key={sub.id} style={styles.icsItemCompact}>
+                    <View style={[styles.icsColorDot, { backgroundColor: sub.color }]} />
+                    <Text style={styles.icsItemName} numberOfLines={1}>{sub.name}</Text>
+                    <TouchableOpacity onPress={() => handleSyncICS(sub.id)}>
+                      {syncingId === sub.id ? (
+                        <ActivityIndicator size="small" color="#3B82F6" />
+                      ) : (
+                        <Ionicons name="sync" size={18} color="#3B82F6" />
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => deleteICSSubscription(sub.id)}>
+                      <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Stats Modal */}
+      <Modal visible={showStatsModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Statistiques détaillées</Text>
+              <TouchableOpacity onPress={() => setShowStatsModal(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {progress && (
+              <View style={styles.statsGrid}>
+                <View style={styles.statBox}>
+                  <Ionicons name="flame" size={32} color="#F59E0B" />
+                  <Text style={styles.statBoxValue}>{progress.streak}</Text>
+                  <Text style={styles.statBoxLabel}>Jours consécutifs</Text>
+                </View>
+                <View style={styles.statBox}>
+                  <Ionicons name="checkmark-done" size={32} color="#10B981" />
+                  <Text style={styles.statBoxValue}>{progress.completed_sessions}</Text>
+                  <Text style={styles.statBoxLabel}>Sessions terminées</Text>
+                </View>
+                <View style={styles.statBox}>
+                  <Ionicons name="book" size={32} color="#3B82F6" />
+                  <Text style={styles.statBoxValue}>{progress.active_items}</Text>
+                  <Text style={styles.statBoxLabel}>Cours en révision</Text>
+                </View>
+                <View style={styles.statBox}>
+                  <Ionicons name="trending-up" size={32} color="#8B5CF6" />
+                  <Text style={styles.statBoxValue}>
+                    {progress.completed_sessions > 0 
+                      ? Math.round((progress.completed_sessions / (progress.completed_sessions + progress.active_items)) * 100) 
+                      : 0}%
+                  </Text>
+                  <Text style={styles.statBoxLabel}>Taux de complétion</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Notifications Modal */}
+      <Modal visible={showNotifModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Notifications</Text>
+              <TouchableOpacity onPress={() => setShowNotifModal(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.notifSection}>
+              <View style={styles.notifItem}>
+                <View style={styles.notifInfo}>
+                  <Text style={styles.notifTitle}>Rappels de révision</Text>
+                  <Text style={styles.notifSubtitle}>Recevoir une notification pour les sessions du jour</Text>
+                </View>
+                <View style={[styles.toggle, styles.toggleActive]}>
+                  <View style={[styles.toggleKnob, styles.toggleKnobActive]} />
+                </View>
+              </View>
+
+              <View style={styles.notifItem}>
+                <View style={styles.notifInfo}>
+                  <Text style={styles.notifTitle}>Sessions en retard</Text>
+                  <Text style={styles.notifSubtitle}>Alerte pour les révisions manquées</Text>
+                </View>
+                <View style={[styles.toggle, styles.toggleActive]}>
+                  <View style={[styles.toggleKnob, styles.toggleKnobActive]} />
+                </View>
+              </View>
+
+              <View style={styles.notifItem}>
+                <View style={styles.notifInfo}>
+                  <Text style={styles.notifTitle}>Rappel matinal</Text>
+                  <Text style={styles.notifSubtitle}>Résumé des tâches à 8h00</Text>
+                </View>
+                <View style={styles.toggle}>
+                  <View style={styles.toggleKnob} />
+                </View>
+              </View>
+            </View>
+
+            <Text style={styles.notifNote}>
+              Les notifications push nécessitent l'application mobile pour fonctionner.
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -154,10 +512,29 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 100,
+  },
+  scrollContentDesktop: {
+    padding: 32,
+    maxWidth: 1200,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 24,
   },
   header: {
     alignItems: 'center',
     marginBottom: 24,
+  },
+  headerDesktop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+    marginBottom: 32,
   },
   avatar: {
     width: 80,
@@ -168,15 +545,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  avatarDesktop: {
+    marginBottom: 0,
+  },
   avatarText: {
     fontSize: 32,
     fontWeight: '700',
     color: '#FFFFFF',
   },
+  avatarTextDesktop: {
+    fontSize: 32,
+  },
   name: {
     fontSize: 24,
     fontWeight: '700',
     color: '#1F2937',
+  },
+  nameDesktop: {
+    marginBottom: 0,
   },
   email: {
     fontSize: 16,
@@ -210,24 +596,43 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+  statsCardDesktop: {
+    padding: 24,
+    marginBottom: 32,
+  },
   statItem: {
     flex: 1,
     alignItems: 'center',
+    gap: 8,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: '#1F2937',
   },
   statLabel: {
     fontSize: 12,
     color: '#6B7280',
-    marginTop: 4,
     textAlign: 'center',
   },
   statDivider: {
     width: 1,
     backgroundColor: '#E5E7EB',
+    marginHorizontal: 8,
+  },
+  desktopGrid: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  desktopColumn: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   menuSection: {
     backgroundColor: '#FFFFFF',
@@ -287,5 +692,299 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 14,
     marginTop: 24,
+  },
+  // ICS Section
+  icsSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  icsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addICSButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 4,
+  },
+  addICSButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyICS: {
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyICSText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 12,
+  },
+  emptyICSSubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  icsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    marginBottom: 8,
+    gap: 12,
+  },
+  icsColor: {
+    width: 8,
+    height: 40,
+    borderRadius: 4,
+  },
+  icsInfo: {
+    flex: 1,
+  },
+  icsName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  icsUrl: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  icsLastSync: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 4,
+  },
+  icsActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  icsActionButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  modalContentDesktop: {
+    width: 480,
+  },
+  confirmModal: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  confirmTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 16,
+  },
+  confirmText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  confirmButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  dangerButton: {
+    backgroundColor: '#EF4444',
+  },
+  dangerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  input: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 16,
+    color: '#1F2937',
+  },
+  colorLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  submitButton: {
+    backgroundColor: '#3B82F6',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  existingICS: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  existingICSTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  icsItemCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    gap: 12,
+  },
+  icsColorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  icsItemName: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+  },
+  // Stats Modal
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statBox: {
+    width: '47%',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  statBoxValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  statBoxLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  // Notifications
+  notifSection: {
+    marginBottom: 16,
+  },
+  notifItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  notifInfo: {
+    flex: 1,
+  },
+  notifTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  notifSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  toggle: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  toggleActive: {
+    backgroundColor: '#3B82F6',
+  },
+  toggleKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#FFFFFF',
+  },
+  toggleKnobActive: {
+    alignSelf: 'flex-end',
+  },
+  notifNote: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
