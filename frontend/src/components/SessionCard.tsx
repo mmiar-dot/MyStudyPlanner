@@ -213,10 +213,57 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 <ScrollView style={styles.notesList} nestedScrollEnabled>
                   {notes.map((note) => (
                     <View key={note.id} style={styles.noteItem}>
-                      <Text style={styles.noteContent}>{note.content}</Text>
-                      <Text style={styles.noteDate}>
-                        {format(new Date(note.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
-                      </Text>
+                      {editingNoteId === note.id ? (
+                        <View style={styles.editNoteContainer}>
+                          <TextInput
+                            style={styles.editNoteInput}
+                            value={editNoteContent}
+                            onChangeText={setEditNoteContent}
+                            multiline
+                            autoFocus
+                          />
+                          <View style={styles.editNoteActions}>
+                            <TouchableOpacity 
+                              onPress={() => setEditingNoteId(null)}
+                              style={styles.editNoteCancel}
+                            >
+                              <Text style={styles.editNoteCancelText}>Annuler</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                              onPress={() => handleUpdateNote(note.id)}
+                              style={styles.editNoteSave}
+                            >
+                              <Text style={styles.editNoteSaveText}>Sauvegarder</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <>
+                          <Text style={styles.noteContent}>{note.content}</Text>
+                          <View style={styles.noteFooter}>
+                            <Text style={styles.noteDate}>
+                              {format(new Date(note.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                            </Text>
+                            <View style={styles.noteActions}>
+                              <TouchableOpacity 
+                                onPress={() => {
+                                  setEditingNoteId(note.id);
+                                  setEditNoteContent(note.content);
+                                }}
+                                style={styles.noteActionButton}
+                              >
+                                <Ionicons name="pencil" size={16} color="#3B82F6" />
+                              </TouchableOpacity>
+                              <TouchableOpacity 
+                                onPress={() => handleDeleteNote(note.id)}
+                                style={styles.noteActionButton}
+                              >
+                                <Ionicons name="trash" size={16} color="#EF4444" />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        </>
+                      )}
                     </View>
                   ))}
                 </ScrollView>
