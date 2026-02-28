@@ -146,7 +146,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               onComplete(session);
             }}
           >
-            <Ionicons name="checkmark-circle" size={32} color={isLate ? '#EF4444' : '#3B82F6'} />
+            <Ionicons name="ellipse-outline" size={32} color={isLate ? '#EF4444' : '#3B82F6'} />
           </TouchableOpacity>
         )}
 
