@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MyStudyPlanner Backend API Test Script
-Tests specific functionality: Course Notes CRUD, Personal Course Deletion, Hidden Items
+Tests functionality: Account Settings (Password Change, Account Deletion), Admin User Management, Hidden Items
 """
 
 import requests
