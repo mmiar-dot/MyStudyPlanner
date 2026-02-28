@@ -18,6 +18,7 @@ import { useCatalogStore, CustomSection } from '../../src/store/catalogStore';
 import { MethodSelector } from '../../src/components/MethodSelector';
 import { ColorPicker } from '../../src/components/ColorPicker';
 import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '../../src/types';
+import api from '../../src/services/api';
 
 type FilterType = 'all' | 'personal' | string; // string for custom section IDs
 
