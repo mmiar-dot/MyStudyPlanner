@@ -93,6 +93,35 @@ export default function CoursesScreen() {
     loadData();
   }, []);
 
+  // Load hidden items when toggle is enabled
+  const loadHiddenItems = async () => {
+    try {
+      const response = await api.get('/user/hidden');
+      setHiddenItems(response.data);
+    } catch (error) {
+      console.error('Error loading hidden items:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (showHiddenItems) {
+      loadHiddenItems();
+    }
+  }, [showHiddenItems]);
+
+  const handleUnhideItem = async (itemId: string) => {
+    try {
+      await unhideItem(itemId);
+      // Remove from local list
+      setHiddenItems(prev => prev.filter(item => item.id !== itemId));
+      // Refresh catalog
+      await loadData();
+      Alert.alert('Succès', 'Cours restauré');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de restaurer le cours');
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
