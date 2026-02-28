@@ -264,7 +264,35 @@ export default function TodayScreen() {
           {isDesktop && (
             <View style={styles.centerColumn}>
               <View style={styles.weekCalendarCard}>
-                <Text style={styles.weekCalendarTitle}>Cette semaine</Text>
+                {/* Week Navigation Header */}
+                <View style={styles.weekNavHeader}>
+                  <TouchableOpacity 
+                    style={styles.weekNavButton}
+                    onPress={goToPreviousWeek}
+                  >
+                    <Ionicons name="chevron-back" size={20} color="#3B82F6" />
+                  </TouchableOpacity>
+                  
+                  <View style={styles.weekNavCenter}>
+                    <Text style={styles.weekCalendarTitle}>
+                      {isCurrentWeek 
+                        ? 'Cette semaine' 
+                        : `Semaine du ${format(currentWeekStart, 'd MMM', { locale: fr })}`}
+                    </Text>
+                    {!isCurrentWeek && (
+                      <TouchableOpacity onPress={goToCurrentWeek}>
+                        <Text style={styles.backToTodayText}>Revenir à aujourd'hui</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  <TouchableOpacity 
+                    style={styles.weekNavButton}
+                    onPress={goToNextWeek}
+                  >
+                    <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+                  </TouchableOpacity>
+                </View>
                 
                 <View style={styles.weekDays}>
                   {weekDays.map((day) => {
