@@ -568,9 +568,36 @@ export default function CalendarScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalDate}>
-              {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : selectedDate), "EEEE d MMMM yyyy", { locale: fr })}
-            </Text>
+            {/* Date selector */}
+            <TouchableOpacity 
+              style={styles.dateSelector}
+              onPress={() => setShowEventDatePicker(!showEventDatePicker)}
+            >
+              <Ionicons name="calendar" size={20} color="#3B82F6" />
+              <Text style={styles.dateSelectorText}>
+                {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : eventDate), "EEEE d MMMM yyyy", { locale: fr })}
+              </Text>
+              <Ionicons name={showEventDatePicker ? "chevron-up" : "chevron-down"} size={20} color="#6B7280" />
+            </TouchableOpacity>
+
+            {showEventDatePicker && (
+              <Calendar
+                current={eventDate}
+                onDayPress={(day) => {
+                  setEventDate(day.dateString);
+                  setShowEventDatePicker(false);
+                }}
+                markedDates={{
+                  [eventDate]: { selected: true, selectedColor: '#3B82F6' }
+                }}
+                theme={{
+                  todayTextColor: '#3B82F6',
+                  selectedDayBackgroundColor: '#3B82F6',
+                }}
+                firstDay={1}
+                style={styles.eventDateCalendar}
+              />
+            )}
 
             <TextInput
               style={styles.input}
