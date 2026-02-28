@@ -418,8 +418,15 @@ async def register(user_data: UserCreate):
 @api_router.post("/auth/login")
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email})
-    if not user or not verify_password(credentials.password, user["password"]):
+    if not user or not verify_password(credentials.password, user.get("hashed_password", "")):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    
+    # Check if user is blocked
+    if user.get("is_blocked"):
+        raise HTTPException(status_code=403, detail="Votre compte a été bloqué. Contactez l'administrateur.")
+    
+    # Update last login
+    await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.utcnow()}})
     
     token = create_access_token({"sub": user["id"]})
     user_response = {
