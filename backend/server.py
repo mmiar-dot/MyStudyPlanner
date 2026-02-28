@@ -434,10 +434,13 @@ async def login(credentials: UserLogin):
     user_response = {
         "id": user["id"],
         "email": user["email"],
-        "name": user["name"],
-        "role": user["role"],
+        "name": user.get("name", user["email"].split("@")[0]),
+        "role": user.get("role", UserRole.USER),
         "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
-        "settings": user.get("settings", {})
+        "settings": user.get("settings", {}),
+        "profile_photo": user.get("profile_photo"),
+        "photo_type": user.get("photo_type"),
+        "avatar_id": user.get("avatar_id")
     }
     
     return {"access_token": token, "token_type": "bearer", "user": user_response}
