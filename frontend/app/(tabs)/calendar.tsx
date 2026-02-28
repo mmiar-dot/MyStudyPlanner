@@ -225,6 +225,7 @@ export default function CalendarScreen() {
     setEventStartTime('09:00');
     setEventEndTime('10:00');
     setEventColor('#3B82F6');
+    setEditingEvent(null);
   };
 
   const resetICSForm = () => {
