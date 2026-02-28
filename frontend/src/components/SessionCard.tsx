@@ -817,6 +817,10 @@ const styles = StyleSheet.create({
     margin: 20,
     marginTop: 'auto',
     marginBottom: 'auto',
+    maxHeight: '80%',
+  },
+  rescheduleContent: {
+    maxHeight: 400,
   },
   rescheduleLabel: {
     fontSize: 14,
