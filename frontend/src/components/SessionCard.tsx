@@ -388,6 +388,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   <Text style={[styles.actionText, { color: '#9CA3AF' }]}>Ignorer</Text>
                 </TouchableOpacity>
               )}
+
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => {
+                  fetchUpcomingSessions();
+                  setShowOptionsModal(false);
+                  setShowUpcomingModal(true);
+                }}
+              >
+                <Ionicons name="list" size={20} color="#6B7280" />
+                <Text style={[styles.actionText, { color: '#6B7280' }]}>Toutes les sessions</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
