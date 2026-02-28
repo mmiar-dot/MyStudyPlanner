@@ -2212,6 +2212,230 @@ async def seed_demo_data(admin: dict = Depends(get_admin_user)):
     return {"message": "Données de démonstration créées", "chapters": len(chapters)}
 
 # =====================================
+# ADMIN MANAGEMENT
+# =====================================
+
+async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify admin user"""
+    user = await get_current_user(credentials)
+    if user.get("role") != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
+    return user
+
+class AdminUserResponse(BaseModel):
+    id: str
+    email: str
+    role: str
+    is_blocked: bool = False
+    created_at: Optional[datetime] = None
+    last_login: Optional[datetime] = None
+    sessions_count: int = 0
+    courses_count: int = 0
+
+class BlockUserRequest(BaseModel):
+    reason: Optional[str] = None
+
+@api_router.get("/admin/users", response_model=List[AdminUserResponse])
+async def admin_get_all_users(admin: dict = Depends(get_admin_user)):
+    """Get all users (admin only)"""
+    users = await db.users.find({}).to_list(1000)
+    result = []
+    
+    for u in users:
+        # Count sessions and courses for each user
+        sessions_count = await db.study_sessions.count_documents({"user_id": u["id"]})
+        courses_count = await db.user_item_settings.count_documents({"user_id": u["id"]})
+        
+        result.append(AdminUserResponse(
+            id=u["id"],
+            email=u["email"],
+            role=u.get("role", "user"),
+            is_blocked=u.get("is_blocked", False),
+            created_at=u.get("created_at"),
+            last_login=u.get("last_login"),
+            sessions_count=sessions_count,
+            courses_count=courses_count
+        ))
+    
+    return result
+
+@api_router.post("/admin/users/{user_id}/block")
+async def admin_block_user(user_id: str, request: BlockUserRequest, admin: dict = Depends(get_admin_user)):
+    """Block a user (admin only)"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    if user.get("role") == UserRole.ADMIN:
+        raise HTTPException(status_code=400, detail="Impossible de bloquer un administrateur")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_blocked": True, "blocked_reason": request.reason, "blocked_at": datetime.utcnow()}}
+    )
+    
+    return {"message": "Utilisateur bloqué", "user_id": user_id}
+
+@api_router.post("/admin/users/{user_id}/unblock")
+async def admin_unblock_user(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Unblock a user (admin only)"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_blocked": False}, "$unset": {"blocked_reason": "", "blocked_at": ""}}
+    )
+    
+    return {"message": "Utilisateur débloqué", "user_id": user_id}
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Delete a user and all their data (GDPR compliant) - admin only"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    if user.get("role") == UserRole.ADMIN:
+        raise HTTPException(status_code=400, detail="Impossible de supprimer un administrateur")
+    
+    # Delete all user data (GDPR compliant)
+    deleted_data = {
+        "study_sessions": (await db.study_sessions.delete_many({"user_id": user_id})).deleted_count,
+        "user_item_settings": (await db.user_item_settings.delete_many({"user_id": user_id})).deleted_count,
+        "personal_events": (await db.personal_events.delete_many({"user_id": user_id})).deleted_count,
+        "ics_subscriptions": (await db.ics_subscriptions.delete_many({"user_id": user_id})).deleted_count,
+        "ics_events_cache": 0,  # Will be handled below
+        "item_notes": (await db.item_notes.delete_many({"user_id": user_id})).deleted_count,
+        "analytics_logs": (await db.analytics_logs.delete_many({"user_id": user_id})).deleted_count,
+        "hidden_items": (await db.hidden_items.delete_many({"user_id": user_id})).deleted_count,
+        "custom_sections": (await db.custom_sections.delete_many({"user_id": user_id})).deleted_count,
+        "user_item_colors": (await db.user_item_colors.delete_many({"user_id": user_id})).deleted_count,
+        "user_item_sections": (await db.user_item_sections.delete_many({"user_id": user_id})).deleted_count,
+        "catalog_items_personal": (await db.catalog_items.delete_many({"owner_id": user_id})).deleted_count,
+    }
+    
+    # Delete ICS events cache for user's subscriptions
+    user_subs = await db.ics_subscriptions.find({"user_id": user_id}).to_list(100)
+    for sub in user_subs:
+        deleted_data["ics_events_cache"] += (await db.ics_events_cache.delete_many({"subscription_id": sub["id"]})).deleted_count
+    
+    # Finally delete the user
+    await db.users.delete_one({"id": user_id})
+    
+    return {
+        "message": "Utilisateur et toutes ses données supprimés (conformité RGPD)",
+        "user_id": user_id,
+        "deleted_data": deleted_data
+    }
+
+@api_router.post("/admin/create")
+async def create_admin_user():
+    """Create default admin user if not exists"""
+    admin_email = "admin@mystudyplanner.com"
+    admin_password = "Admin123!"
+    
+    existing = await db.users.find_one({"email": admin_email})
+    if existing:
+        return {"message": "Admin déjà existant", "email": admin_email}
+    
+    user_id = str(uuid.uuid4())
+    hashed_password = pwd_context.hash(admin_password)
+    
+    admin_user = {
+        "id": user_id,
+        "email": admin_email,
+        "hashed_password": hashed_password,
+        "role": UserRole.ADMIN,
+        "created_at": datetime.utcnow(),
+        "is_blocked": False
+    }
+    
+    await db.users.insert_one(admin_user)
+    
+    return {
+        "message": "Administrateur créé",
+        "email": admin_email,
+        "password": admin_password,
+        "note": "Changez ce mot de passe après la première connexion!"
+    }
+
+# =====================================
+# USER PROFILE PHOTO
+# =====================================
+
+class ProfilePhotoRequest(BaseModel):
+    photo_base64: str  # Base64 encoded image
+    photo_type: str = "custom"  # "custom" or "avatar"
+
+class AvatarOption(BaseModel):
+    id: str
+    name: str
+    url: str
+
+AVATAR_OPTIONS = [
+    {"id": "avatar1", "name": "Médecin", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=doctor"},
+    {"id": "avatar2", "name": "Étudiant", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=student"},
+    {"id": "avatar3", "name": "Scientifique", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=scientist"},
+    {"id": "avatar4", "name": "Chercheur", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=researcher"},
+    {"id": "avatar5", "name": "Infirmier", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=nurse"},
+    {"id": "avatar6", "name": "Pharmacien", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=pharmacist"},
+    {"id": "avatar7", "name": "Biologiste", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=biologist"},
+    {"id": "avatar8", "name": "Chirurgien", "url": "https://api.dicebear.com/7.x/avataaars/svg?seed=surgeon"},
+]
+
+@api_router.get("/profile/avatars")
+async def get_avatar_options():
+    """Get predefined avatar options"""
+    return AVATAR_OPTIONS
+
+@api_router.put("/profile/photo")
+async def update_profile_photo(request: ProfilePhotoRequest, user: dict = Depends(get_current_user)):
+    """Update user profile photo"""
+    update_data = {
+        "profile_photo": request.photo_base64,
+        "photo_type": request.photo_type,
+        "photo_updated_at": datetime.utcnow()
+    }
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Photo de profil mise à jour"}
+
+@api_router.put("/profile/avatar/{avatar_id}")
+async def set_profile_avatar(avatar_id: str, user: dict = Depends(get_current_user)):
+    """Set user profile to predefined avatar"""
+    avatar = next((a for a in AVATAR_OPTIONS if a["id"] == avatar_id), None)
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar non trouvé")
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "profile_photo": avatar["url"],
+            "photo_type": "avatar",
+            "avatar_id": avatar_id,
+            "photo_updated_at": datetime.utcnow()
+        }}
+    )
+    
+    return {"message": "Avatar défini", "avatar": avatar}
+
+@api_router.delete("/profile/photo")
+async def delete_profile_photo(user: dict = Depends(get_current_user)):
+    """Delete user profile photo"""
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$unset": {"profile_photo": "", "photo_type": "", "avatar_id": "", "photo_updated_at": ""}}
+    )
+    
+    return {"message": "Photo de profil supprimée"}
+
+# =====================================
 # ROOT & HEALTH
 # =====================================
 @api_router.get("/")
