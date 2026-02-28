@@ -342,7 +342,7 @@ def distribute_tours_items(item_ids: List[str], tour_durations: List[int], start
 # =====================================
 # AUTH ROUTES
 # =====================================
-@api_router.post("/auth/register", response_model=Token)
+@api_router.post("/auth/register")
 async def register(user_data: UserCreate):
     # Check if email exists
     existing = await db.users.find_one({"email": user_data.email})
@@ -364,10 +364,16 @@ async def register(user_data: UserCreate):
     
     # Create token
     token = create_access_token({"sub": user_id})
-    user_response = {k: v for k, v in user.items() if k != "password"}
-    user_response["created_at"] = user_response["created_at"].isoformat()
+    user_response = {
+        "id": user["id"],
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "created_at": user["created_at"].isoformat(),
+        "settings": user.get("settings", {})
+    }
     
-    return Token(access_token=token, user=user_response)
+    return {"access_token": token, "token_type": "bearer", "user": user_response}
 
 @api_router.post("/auth/login", response_model=Token)
 async def login(credentials: UserLogin):
