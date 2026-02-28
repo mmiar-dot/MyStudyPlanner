@@ -482,7 +482,7 @@ async def get_me(user: dict = Depends(get_current_user)):
     return UserResponse(
         id=user["id"],
         email=user["email"],
-        name=user["name"],
+        name=user.get("name", user["email"].split("@")[0]),
         role=user["role"],
         created_at=user["created_at"],
         settings=user.get("settings", {}),
