@@ -98,12 +98,14 @@ class CatalogItemCreate(BaseModel):
     parent_id: Optional[str] = None
     order: int = 0
     description: Optional[str] = None
+    color: str = "#3B82F6"
 
 class CatalogItemUpdate(BaseModel):
     title: Optional[str] = None
     parent_id: Optional[str] = None
     order: Optional[int] = None
     description: Optional[str] = None
+    color: Optional[str] = None
 
 class CatalogItemResponse(BaseModel):
     id: str
@@ -117,16 +119,38 @@ class CatalogItemResponse(BaseModel):
     is_personal: bool = False  # True if created by user
     owner_id: Optional[str] = None  # User ID if personal
     is_hidden: bool = False  # If user hid this admin course
+    color: str = "#3B82F6"
+    section_id: Optional[str] = None  # Custom section ID
 
 # Personal course create model
 class PersonalCourseCreate(BaseModel):
     title: str
     parent_id: Optional[str] = None  # Can be under an existing chapter
     description: Optional[str] = None
+    color: str = "#3B82F6"
+    section_id: Optional[str] = None
 
 # Hidden items model
 class HiddenItemCreate(BaseModel):
     item_id: str
+
+# Custom Section model
+class CustomSectionCreate(BaseModel):
+    name: str
+    color: str = "#8B5CF6"
+
+class CustomSectionResponse(BaseModel):
+    id: str
+    user_id: str
+    name: str
+    color: str
+    order: int
+    created_at: datetime
+
+# User color preferences
+class UserColorPreference(BaseModel):
+    item_id: str
+    color: str
 
 # User Item Settings (revision method per course)
 class JMethodSettings(BaseModel):
