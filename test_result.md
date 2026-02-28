@@ -158,15 +158,18 @@ backend:
 
   - task: "Tours Method"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Tours method implemented but needs testing"
+      - working: true
+        agent: "testing"
+        comment: "Tours method fully tested and working. Successfully tested: Tours settings creation with configurable tour count/durations, session generation across multiple tours, and session completion tracking. Sessions are properly scheduled during tour periods and track tour numbers correctly."
 
   - task: "Personal Events CRUD"
     implemented: true
