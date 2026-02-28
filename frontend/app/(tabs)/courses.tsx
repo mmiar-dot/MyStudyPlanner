@@ -555,14 +555,24 @@ export default function CoursesScreen() {
                               handleDeleteItem(chapter);
                             } else {
                               // Hide admin course
-                              Alert.alert(
-                                'Masquer le chapitre',
-                                `Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`,
-                                [
-                                  { text: 'Annuler', style: 'cancel' },
-                                  { text: 'Masquer', onPress: () => hideItem(chapter.id) }
-                                ]
-                              );
+                              const doHide = async () => {
+                                await hideItem(chapter.id);
+                                loadData();
+                              };
+                              if (Platform.OS === 'web') {
+                                if (window.confirm(`Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`)) {
+                                  doHide();
+                                }
+                              } else {
+                                Alert.alert(
+                                  'Masquer le chapitre',
+                                  `Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`,
+                                  [
+                                    { text: 'Annuler', style: 'cancel' },
+                                    { text: 'Masquer', onPress: doHide }
+                                  ]
+                                );
+                              }
                             }
                           }}
                           style={styles.actionButton}
