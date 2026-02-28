@@ -179,7 +179,7 @@ export default function LoginScreen() {
                 <View style={styles.logo}>
                   <Ionicons name="book" size={40} color="#3B82F6" />
                 </View>
-                <Text style={styles.title}>RevisionMed</Text>
+                <Text style={styles.title}>MyStudyPlanner</Text>
                 <Text style={styles.subtitle}>Calendrier de révision intelligent</Text>
               </View>
 
