@@ -430,6 +430,17 @@ export default function CoursesScreen() {
                         </Text>
                       </View>
                       <View style={styles.chapterActions}>
+                        {chapter.is_personal && (
+                          <TouchableOpacity 
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleOpenRenameModal(chapter, 'course');
+                            }}
+                            style={styles.actionButton}
+                          >
+                            <Ionicons name="pencil-outline" size={18} color="#3B82F6" />
+                          </TouchableOpacity>
+                        )}
                         <TouchableOpacity 
                           onPress={(e) => {
                             e.stopPropagation();
