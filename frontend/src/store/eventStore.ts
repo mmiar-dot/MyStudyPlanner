@@ -2,13 +2,30 @@ import { create } from 'zustand';
 import api from '../services/api';
 import { PersonalEvent, ICSSubscription, ICSEvent, RecurrenceRule } from '../types';
 
+// Combined calendar event type
+export interface CalendarEvent {
+  id: string;
+  type: 'personal' | 'ics';
+  title: string;
+  start_time: string;
+  end_time: string;
+  description?: string;
+  location?: string;
+  color: string;
+  source: string;
+  subscription_id?: string;
+  is_recurring?: boolean;
+}
+
 interface EventState {
   events: PersonalEvent[];
+  allCalendarEvents: CalendarEvent[];
   icsSubscriptions: ICSSubscription[];
   icsEvents: Record<string, ICSEvent[]>;
   isLoading: boolean;
   error: string | null;
   fetchEvents: (startDate?: string, endDate?: string) => Promise<void>;
+  fetchAllCalendarEvents: (startDate: string, endDate: string) => Promise<void>;
   createEvent: (event: Omit<PersonalEvent, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   updateEvent: (eventId: string, event: Omit<PersonalEvent, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteEvent: (eventId: string) => Promise<void>;
