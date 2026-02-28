@@ -141,9 +141,9 @@ export default function CalendarScreen() {
     
     try {
       setIsSubmitting(true);
-      const eventDate = editingEvent ? editingEvent.start_time.split('T')[0] : selectedDate;
-      const startDateTime = `${eventDate}T${eventStartTime}:00`;
-      const endDateTime = `${eventDate}T${eventEndTime}:00`;
+      const finalEventDate = editingEvent ? editingEvent.start_time.split('T')[0] : eventDate;
+      const startDateTime = `${finalEventDate}T${eventStartTime}:00`;
+      const endDateTime = `${finalEventDate}T${eventEndTime}:00`;
       
       if (editingEvent) {
         // Update existing event
