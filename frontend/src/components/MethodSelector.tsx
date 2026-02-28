@@ -206,10 +206,17 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
   const updateInterval = (index: number, value: string) => {
     const newIntervals = [...customIntervals];
-    newIntervals[index] = parseInt(value) || 0;
-    // Sort to maintain order
-    newIntervals.sort((a, b) => a - b);
+    // Allow empty string for easier editing, treat as 0
+    const numValue = value === '' ? 0 : parseInt(value) || 0;
+    newIntervals[index] = numValue;
+    // Don't sort during editing - let user arrange manually
     setCustomIntervals(newIntervals);
+  };
+  
+  // Sort intervals when user finishes editing
+  const sortIntervals = () => {
+    const sorted = [...customIntervals].sort((a, b) => a - b);
+    setCustomIntervals(sorted);
   };
 
   const addInterval = () => {
