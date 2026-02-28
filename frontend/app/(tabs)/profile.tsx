@@ -163,23 +163,41 @@ export default function ProfileScreen() {
       {/* Stats Card */}
       {progress && (
         <View style={[styles.statsCard, isDesktop && styles.statsCardDesktop]}>
-          <View style={styles.statItem}>
+          <TouchableOpacity 
+            style={styles.statItem}
+            onPress={() => {
+              setStatsDetailType('streak');
+              setShowStatsDetailModal(true);
+            }}
+          >
             <Ionicons name="flame" size={24} color="#F59E0B" />
             <Text style={styles.statValue}>{progress.streak}</Text>
             <Text style={styles.statLabel}>Jours de suite</Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.statDivider} />
-          <View style={styles.statItem}>
+          <TouchableOpacity 
+            style={styles.statItem}
+            onPress={() => {
+              setStatsDetailType('completion');
+              setShowStatsDetailModal(true);
+            }}
+          >
             <Ionicons name="checkmark-circle" size={24} color="#10B981" />
             <Text style={styles.statValue}>{progress.completed_sessions}</Text>
             <Text style={styles.statLabel}>Sessions terminées</Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.statDivider} />
-          <View style={styles.statItem}>
+          <TouchableOpacity 
+            style={styles.statItem}
+            onPress={() => {
+              setStatsDetailType('courses');
+              setShowStatsDetailModal(true);
+            }}
+          >
             <Ionicons name="book" size={24} color="#3B82F6" />
             <Text style={styles.statValue}>{progress.active_items}</Text>
             <Text style={styles.statLabel}>Cours actifs</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       )}
 
