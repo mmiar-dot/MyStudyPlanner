@@ -616,9 +616,42 @@ export default function CalendarScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.createButtonText}>Créer l'événement</Text>
+                <Text style={styles.createButtonText}>
+                  {editingEvent ? 'Enregistrer' : 'Créer l\'événement'}
+                </Text>
               )}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal visible={showDeleteConfirm} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.deleteConfirmModal}>
+            <Ionicons name="trash" size={48} color="#EF4444" />
+            <Text style={styles.deleteConfirmTitle}>Supprimer l'événement ?</Text>
+            <Text style={styles.deleteConfirmText}>
+              "{deleteEventTitle}" sera définitivement supprimé.
+            </Text>
+            <View style={styles.deleteConfirmButtons}>
+              <TouchableOpacity 
+                style={[styles.deleteConfirmBtn, styles.cancelBtn]}
+                onPress={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteEventId(null);
+                  setDeleteEventTitle('');
+                }}
+              >
+                <Text style={styles.cancelBtnText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.deleteConfirmBtn, styles.deleteBtn]}
+                onPress={confirmDeleteEvent}
+              >
+                <Text style={styles.deleteBtnText}>Supprimer</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
