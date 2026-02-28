@@ -228,7 +228,7 @@ export default function CalendarScreen() {
   const openEventModal = (date?: string) => {
     setEventDate(date || selectedDate);
     setShowEventDatePicker(false);
-    openEventModal();
+    setShowEventModal(true);
   };
 
   const resetEventForm = () => {
