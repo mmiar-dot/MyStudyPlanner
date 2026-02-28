@@ -198,24 +198,45 @@ export default function CoursesScreen() {
   };
 
   const handleDeleteItem = (item: CatalogItem) => {
-    const message = item.is_personal 
-      ? `Supprimer "${item.title}" ?` 
-      : `Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer plus tard.`;
-    
-    Alert.alert(
-      item.is_personal ? 'Supprimer' : 'Masquer',
-      message,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: item.is_personal ? 'Supprimer' : 'Masquer',
-          style: 'destructive',
-          onPress: async () => {
-            await hideItem(item.id);
+    if (item.is_personal) {
+      // Really delete personal courses
+      Alert.alert(
+        'Supprimer',
+        `Supprimer définitivement "${item.title}" et toutes ses données ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Supprimer',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deletePersonalCourse(item.id);
+                await loadData(); // Refresh
+                Alert.alert('Succès', 'Cours supprimé');
+              } catch (error) {
+                Alert.alert('Erreur', 'Impossible de supprimer le cours');
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } else {
+      // Hide admin courses
+      Alert.alert(
+        'Masquer',
+        `Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Masquer',
+            style: 'destructive',
+            onPress: async () => {
+              await hideItem(item.id);
+            },
+          },
+        ]
+      );
+    }
   };
 
   const handleOpenColorPicker = (item: CatalogItem) => {
