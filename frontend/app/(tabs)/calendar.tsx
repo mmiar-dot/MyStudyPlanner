@@ -170,11 +170,15 @@ export default function CalendarScreen() {
     setIcsColor('#10B981');
   };
 
-  // Get events for selected date
-  const dayEvents = events.filter(e => {
+  // Get events for selected date (combine personal + ICS events)
+  const dayEvents = allCalendarEvents.filter(e => {
     const eventDate = e.start_time.split('T')[0];
     return eventDate === selectedDate;
   });
+
+  // Separate personal events and ICS events
+  const personalEvents = dayEvents.filter(e => e.type === 'personal');
+  const icsEvents = dayEvents.filter(e => e.type === 'ics');
 
   // Generate marked dates for calendar
   const markedDates: any = {};
