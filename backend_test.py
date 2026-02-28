@@ -399,6 +399,48 @@ class BackendTester:
         except Exception as e:
             self.log_result("Password Validation", False, f"Exception: {str(e)}")
 
+    def test_account_deletion_validation(self):
+        """Test account deletion validation (without actually deleting)"""
+        try:
+            # Test wrong password
+            wrong_password_data = {
+                "password": "wrongpassword",
+                "confirmation": "SUPPRIMER"
+            }
+            
+            response = requests.delete(
+                f"{self.base_url}/account",
+                json=wrong_password_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 400:
+                self.log_result("Account Deletion - Wrong Password", True, "Correctly rejected wrong password")
+            else:
+                self.log_result("Account Deletion - Wrong Password", False, f"Expected 400, got {response.status_code}")
+                
+            # Test wrong confirmation
+            wrong_confirm_data = {
+                "password": "demo123",
+                "confirmation": "WRONG"
+            }
+            
+            response = requests.delete(
+                f"{self.base_url}/account",
+                json=wrong_confirm_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 400:
+                self.log_result("Account Deletion - Wrong Confirmation", True, "Correctly rejected wrong confirmation")
+            else:
+                self.log_result("Account Deletion - Wrong Confirmation", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Account Deletion Validation", False, f"Exception: {str(e)}")
+
     def test_admin_user_management(self):
         """Test admin user management functionality"""
         admin_token, admin_user_id = self.admin_login()
