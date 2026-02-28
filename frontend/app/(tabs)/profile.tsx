@@ -128,15 +128,27 @@ export default function ProfileScreen() {
 
   const isAdmin = user?.role === 'admin';
 
+  const handlePhotoUpdated = async () => {
+    // Refresh user data to get updated photo
+    try {
+      const response = await api.get('/auth/me');
+      // The auth store should handle this
+      fetchProgress();
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   const renderContent = () => (
     <>
       {/* Header */}
       <View style={[styles.header, isDesktop && styles.headerDesktop]}>
-        <View style={[styles.avatar, isDesktop && styles.avatarDesktop]}>
-          <Text style={[styles.avatarText, isDesktop && styles.avatarTextDesktop]}>
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
-          </Text>
-        </View>
+        <ProfilePhotoManager
+          currentPhoto={user?.profile_photo}
+          photoType={user?.photo_type}
+          userName={user?.name || 'U'}
+          onPhotoUpdated={handlePhotoUpdated}
+        />
         <Text style={[styles.name, isDesktop && styles.nameDesktop]}>{user?.name || 'Utilisateur'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
         {isAdmin && (
