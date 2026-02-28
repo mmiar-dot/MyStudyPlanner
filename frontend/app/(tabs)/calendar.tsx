@@ -15,11 +15,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar, DateData } from 'react-native-calendars';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSessionStore } from '../../src/store/sessionStore';
 import { useAnalyticsStore } from '../../src/store/analyticsStore';
-import { useEventStore } from '../../src/store/eventStore';
+import { useEventStore, CalendarEvent } from '../../src/store/eventStore';
 import { SessionCard } from '../../src/components/SessionCard';
 import { SRSRatingModal } from '../../src/components/SRSRatingModal';
 import { ColorPicker } from '../../src/components/ColorPicker';
