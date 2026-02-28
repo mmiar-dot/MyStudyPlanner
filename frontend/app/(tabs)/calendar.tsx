@@ -54,6 +54,21 @@ export default function CalendarScreen() {
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
   const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
 
+  // Helper function to format event time (handles both datetime and date-only formats)
+  const formatEventTime = (timeStr: string): string => {
+    try {
+      if (!timeStr) return '--:--';
+      // If it contains T, it's datetime format
+      if (timeStr.includes('T')) {
+        return format(parseISO(timeStr), 'HH:mm');
+      }
+      // If it's just a date, return "Journée"
+      return 'Journée';
+    } catch {
+      return '--:--';
+    }
+  };
+
   const loadMonthData = useCallback(async () => {
     const month = currentMonth.getMonth() + 1;
     const year = currentMonth.getFullYear();
