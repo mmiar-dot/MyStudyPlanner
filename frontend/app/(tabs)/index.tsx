@@ -652,11 +652,34 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+  weekNavHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  weekNavButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EBF5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  weekNavCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
   weekCalendarTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 20,
+  },
+  backToTodayText: {
+    fontSize: 13,
+    color: '#3B82F6',
+    marginTop: 4,
+    fontWeight: '500',
   },
   weekDays: {
     flexDirection: 'row',
