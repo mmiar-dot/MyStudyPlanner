@@ -317,7 +317,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "ICS Events in Calendar Endpoint"
+    - "Course Rename API"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -327,3 +329,5 @@ agent_communication:
     message: "MVP implementation complete. Core features working: Auth, Catalog, J-Method, Calendar, Admin. Need to test SRS and Tours methods."
   - agent: "testing"
     message: "Comprehensive backend testing completed successfully. All 9 test suites passed (Authentication, Catalog Management, J-Method, SRS Method, Tours Method, Personal Events, ICS Subscriptions, Admin Functions, Analytics). SRS SM-2 algorithm working correctly with rating system (0-2 fail/reset, 3-5 pass/advance). Tours method generating sessions across tours properly. Personal events CRUD and ICS parsing fully functional. Backend API is production-ready."
+  - agent: "main"
+    message: "Added new features: 1) /api/calendar/all-events endpoint to aggregate personal events + ICS events for calendar display 2) PUT /api/user/courses/{item_id} endpoint to rename personal courses and sections. Frontend updated to display ICS events and allow course/section renaming."
