@@ -86,6 +86,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       await uncompleteSession(session.id);
       // Force close modal immediately for better UX
       setShowOptionsModal(false);
+      // Notify parent to refresh data
+      onStatusChange?.();
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'annuler la complétion');
     } finally {
@@ -100,6 +102,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       await rescheduleSession(session.id, selectedDate);
       setShowRescheduleModal(false);
       setShowOptionsModal(false);
+      // Notify parent to refresh data
+      onStatusChange?.();
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de déplacer la session');
     } finally {
