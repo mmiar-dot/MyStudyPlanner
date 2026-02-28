@@ -118,6 +118,19 @@ export const useEventStore = create<EventState>((set, get) => ({
     }
   },
 
+  updateICSSubscription: async (subscriptionId, name, color) => {
+    try {
+      const data: { name?: string; color?: string } = {};
+      if (name !== undefined) data.name = name;
+      if (color !== undefined) data.color = color;
+      await api.put(`/ics/${subscriptionId}`, data);
+      await get().fetchICSSubscriptions();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
   syncICS: async (subscriptionId) => {
     try {
       await api.post(`/ics/${subscriptionId}/sync`);
