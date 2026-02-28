@@ -975,10 +975,18 @@ const styles = StyleSheet.create({
   },
   upcomingStatus: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
   upcomingLateText: {
     fontSize: 12,
     color: '#EF4444',
     fontWeight: '500',
+  },
+  rescheduleArrow: {
+    padding: 10,
+    borderRadius: 22,
+    backgroundColor: '#EBF5FF',
   },
 });
