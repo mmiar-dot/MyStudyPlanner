@@ -1055,4 +1055,58 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  eventActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  eventActionBtn: {
+    padding: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  deleteConfirmModal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    margin: 20,
+  },
+  deleteConfirmTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  deleteConfirmText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  deleteConfirmButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  deleteConfirmBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelBtn: {
+    backgroundColor: '#F3F4F6',
+  },
+  cancelBtnText: {
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+  deleteBtn: {
+    backgroundColor: '#EF4444',
+  },
+  deleteBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
 });
