@@ -161,7 +161,6 @@ async def test_admin_endpoints():
             # Re-login to get new token
             response = await make_request("POST", "/auth/login", REGULAR_USER)
             if response.status_code == 200:
-                global regular_token
                 regular_token = response.json()["access_token"]
                 print("   ✅ User can login again after unblocking")
         else:
