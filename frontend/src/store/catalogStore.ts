@@ -2,15 +2,30 @@ import { create } from 'zustand';
 import api from '../services/api';
 import { CatalogItem, UserItemSettings, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '../types';
 
+export interface CustomSection {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  order: number;
+  created_at: string;
+}
+
 interface CatalogState {
   items: CatalogItem[];
   allItems: CatalogItem[];
   userSettings: UserItemSettings[];
+  customSections: CustomSection[];
+  itemColors: Record<string, string>;
+  itemSections: Record<string, string>;
   isLoading: boolean;
   error: string | null;
   fetchItems: (parentId?: string | null) => Promise<void>;
   fetchAllItems: () => Promise<void>;
   fetchUserSettings: () => Promise<void>;
+  fetchCustomSections: () => Promise<void>;
+  fetchItemColors: () => Promise<void>;
+  fetchItemSections: () => Promise<void>;
   setItemMethod: (
     itemId: string,
     method: RevisionMethod,
@@ -19,16 +34,24 @@ interface CatalogState {
     toursSettings?: ToursSettings
   ) => Promise<void>;
   getItemSettings: (itemId: string) => UserItemSettings | undefined;
-  createPersonalCourse: (title: string, parentId?: string | null, description?: string) => Promise<void>;
+  createPersonalCourse: (title: string, parentId?: string | null, description?: string, color?: string) => Promise<void>;
   deletePersonalCourse: (itemId: string) => Promise<void>;
   hideItem: (itemId: string) => Promise<void>;
   unhideItem: (itemId: string) => Promise<void>;
+  createSection: (name: string, color: string) => Promise<void>;
+  updateSection: (sectionId: string, name: string, color: string) => Promise<void>;
+  deleteSection: (sectionId: string) => Promise<void>;
+  setItemColor: (itemId: string, color: string) => Promise<void>;
+  assignItemToSection: (itemId: string, sectionId: string) => Promise<void>;
 }
 
 export const useCatalogStore = create<CatalogState>((set, get) => ({
   items: [],
   allItems: [],
   userSettings: [],
+  customSections: [],
+  itemColors: {},
+  itemSections: {},
   isLoading: false,
   error: null,
 
@@ -62,6 +85,33 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }
   },
 
+  fetchCustomSections: async () => {
+    try {
+      const response = await api.get<CustomSection[]>('/user/sections');
+      set({ customSections: response.data });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
+
+  fetchItemColors: async () => {
+    try {
+      const response = await api.get<Record<string, string>>('/user/colors');
+      set({ itemColors: response.data });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
+
+  fetchItemSections: async () => {
+    try {
+      const response = await api.get<Record<string, string>>('/user/items/sections');
+      set({ itemSections: response.data });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
+
   setItemMethod: async (itemId, method, jSettings, srsSettings, toursSettings) => {
     try {
       await api.post('/user/items/settings', {
@@ -82,12 +132,13 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     return get().userSettings.find((s) => s.item_id === itemId);
   },
 
-  createPersonalCourse: async (title: string, parentId?: string | null, description?: string) => {
+  createPersonalCourse: async (title: string, parentId?: string | null, description?: string, color?: string) => {
     try {
       await api.post('/user/courses', {
         title,
         parent_id: parentId || null,
         description,
+        color: color || '#3B82F6',
       });
       await get().fetchAllItems();
     } catch (error: any) {
@@ -122,6 +173,61 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     try {
       await api.delete(`/user/hidden/${itemId}`);
       await get().fetchAllItems();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  createSection: async (name: string, color: string) => {
+    try {
+      await api.post('/user/sections', { name, color });
+      await get().fetchCustomSections();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  updateSection: async (sectionId: string, name: string, color: string) => {
+    try {
+      await api.put(`/user/sections/${sectionId}`, { name, color });
+      await get().fetchCustomSections();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  deleteSection: async (sectionId: string) => {
+    try {
+      await api.delete(`/user/sections/${sectionId}`);
+      await get().fetchCustomSections();
+      await get().fetchItemSections();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  setItemColor: async (itemId: string, color: string) => {
+    try {
+      await api.post('/user/colors', { item_id: itemId, color });
+      set((state) => ({
+        itemColors: { ...state.itemColors, [itemId]: color }
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  assignItemToSection: async (itemId: string, sectionId: string) => {
+    try {
+      await api.post(`/user/items/${itemId}/section?section_id=${sectionId}`);
+      set((state) => ({
+        itemSections: { ...state.itemSections, [itemId]: sectionId }
+      }));
     } catch (error: any) {
       set({ error: error.message });
       throw error;
