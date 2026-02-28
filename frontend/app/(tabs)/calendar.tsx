@@ -1085,6 +1085,21 @@ const styles = StyleSheet.create({
     minHeight: 80,
     textAlignVertical: 'top',
   },
+  descriptionContainer: {
+    marginBottom: 12,
+  },
+  dismissKeyboardButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingVertical: 6,
+    gap: 4,
+  },
+  dismissKeyboardText: {
+    fontSize: 13,
+    color: '#10B981',
+    fontWeight: '500',
+  },
   timeRow: {
     flexDirection: 'row',
     gap: 12,
