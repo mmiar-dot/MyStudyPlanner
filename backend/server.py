@@ -1638,6 +1638,123 @@ async def delete_ics_subscription(subscription_id: str, user: dict = Depends(get
     await db.ics_events_cache.delete_many({"subscription_id": subscription_id})
     return {"message": "Abonnement supprimé"}
 
+@api_router.get("/calendar/all-events")
+async def get_all_calendar_events(
+    start_date: str,
+    end_date: str,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Get all calendar events for a date range:
+    - Personal events
+    - ICS events from all subscriptions
+    """
+    user_id = user["id"]
+    events = []
+    
+    # 1. Get personal events
+    personal_events = await db.personal_events.find({"user_id": user_id}).to_list(1000)
+    for e in personal_events:
+        # Check if event falls within date range
+        event_date = e["start_time"].split('T')[0]
+        if start_date <= event_date <= end_date:
+            events.append({
+                "id": e["id"],
+                "type": "personal",
+                "title": e["title"],
+                "start_time": e["start_time"],
+                "end_time": e["end_time"],
+                "description": e.get("description"),
+                "color": e["color"],
+                "source": "personal"
+            })
+        
+        # Handle recurring events
+        if e.get("recurrence"):
+            recurrence = e["recurrence"]
+            freq = recurrence.get("frequency", "daily")
+            interval = recurrence.get("interval", 1)
+            
+            try:
+                event_start = datetime.fromisoformat(e["start_time"].replace('Z', '+00:00'))
+                event_end = datetime.fromisoformat(e["end_time"].replace('Z', '+00:00'))
+                duration = event_end - event_start
+                
+                range_start = datetime.fromisoformat(start_date)
+                range_end = datetime.fromisoformat(end_date)
+                
+                current = event_start
+                count = 0
+                max_count = recurrence.get("count", 365)
+                rec_end = datetime.fromisoformat(recurrence["end_date"]) if recurrence.get("end_date") else range_end
+                
+                while current <= min(range_end, rec_end) and count < max_count:
+                    current_date = current.date().isoformat()
+                    if start_date <= current_date <= end_date and current != event_start:
+                        events.append({
+                            "id": f"{e['id']}_{count}",
+                            "type": "personal",
+                            "title": e["title"],
+                            "start_time": current.isoformat(),
+                            "end_time": (current + duration).isoformat(),
+                            "description": e.get("description"),
+                            "color": e["color"],
+                            "source": "personal",
+                            "is_recurring": True
+                        })
+                    
+                    if freq == "daily":
+                        current += timedelta(days=interval)
+                    elif freq == "weekly":
+                        current += timedelta(weeks=interval)
+                    elif freq == "monthly":
+                        try:
+                            current = current.replace(month=current.month + interval) if current.month + interval <= 12 else current.replace(year=current.year + 1, month=(current.month + interval) % 12 or 12)
+                        except:
+                            break
+                    elif freq == "yearly":
+                        current = current.replace(year=current.year + interval)
+                    
+                    count += 1
+            except:
+                pass
+    
+    # 2. Get ICS events from all user subscriptions
+    subscriptions = await db.ics_subscriptions.find({"user_id": user_id}).to_list(100)
+    
+    for sub in subscriptions:
+        ics_events = await db.ics_events_cache.find({"subscription_id": sub["id"]}).to_list(5000)
+        
+        for ics in ics_events:
+            if not ics.get("start_time"):
+                continue
+                
+            # Parse the date from start_time (handle both datetime and date formats)
+            start_str = ics["start_time"]
+            if 'T' in start_str:
+                ics_date = start_str.split('T')[0]
+            else:
+                ics_date = start_str[:10]  # YYYY-MM-DD format
+            
+            if start_date <= ics_date <= end_date:
+                events.append({
+                    "id": ics["id"],
+                    "type": "ics",
+                    "title": ics["title"],
+                    "start_time": ics["start_time"],
+                    "end_time": ics.get("end_time", ics["start_time"]),
+                    "description": ics.get("description"),
+                    "location": ics.get("location"),
+                    "color": sub["color"],
+                    "source": sub["name"],
+                    "subscription_id": sub["id"]
+                })
+    
+    # Sort by start_time
+    events.sort(key=lambda x: x["start_time"])
+    
+    return events
+
 # =====================================
 # ITEM NOTES
 # =====================================
