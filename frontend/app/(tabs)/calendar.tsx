@@ -365,7 +365,22 @@ export default function CalendarScreen() {
               <View style={styles.eventsSection}>
                 <Text style={styles.eventsSectionTitle}>Événements personnels</Text>
                 {personalEvents.map((event) => (
-                  <View key={event.id} style={styles.eventCard}>
+                  <TouchableOpacity 
+                    key={event.id} 
+                    style={styles.eventCard}
+                    onPress={() => {
+                      // Open edit modal
+                      setEditingEvent(event);
+                      setEventTitle(event.title);
+                      setEventDescription(event.description || '');
+                      setEventColor(event.color);
+                      const startParts = event.start_time.split('T');
+                      const endParts = event.end_time.split('T');
+                      if (startParts[1]) setEventStartTime(startParts[1].substring(0, 5));
+                      if (endParts[1]) setEventEndTime(endParts[1].substring(0, 5));
+                      setShowEventModal(true);
+                    }}
+                  >
                     <View style={[styles.eventColor, { backgroundColor: event.color }]} />
                     <View style={styles.eventInfo}>
                       <Text style={styles.eventTitle}>{event.title}</Text>
@@ -376,15 +391,36 @@ export default function CalendarScreen() {
                         <Text style={styles.eventDescription}>{event.description}</Text>
                       )}
                     </View>
-                    <TouchableOpacity onPress={() => {
-                      Alert.alert('Supprimer', `Supprimer "${event.title}" ?`, [
-                        { text: 'Annuler', style: 'cancel' },
-                        { text: 'Supprimer', style: 'destructive', onPress: () => deleteEvent(event.id) }
-                      ]);
-                    }}>
-                      <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                    </TouchableOpacity>
-                  </View>
+                    <View style={styles.eventActions}>
+                      <TouchableOpacity 
+                        style={styles.eventActionBtn}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          // Open edit modal
+                          setEditingEvent(event);
+                          setEventTitle(event.title);
+                          setEventDescription(event.description || '');
+                          setEventColor(event.color);
+                          const startParts = event.start_time.split('T');
+                          const endParts = event.end_time.split('T');
+                          if (startParts[1]) setEventStartTime(startParts[1].substring(0, 5));
+                          if (endParts[1]) setEventEndTime(endParts[1].substring(0, 5));
+                          setShowEventModal(true);
+                        }}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.eventActionBtn}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleDeleteEvent(event.id, event.title);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             )}
