@@ -1041,6 +1041,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textTransform: 'capitalize',
   },
+  dateSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EBF5FF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    gap: 10,
+  },
+  dateSelectorText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+    textTransform: 'capitalize',
+  },
+  eventDateCalendar: {
+    borderRadius: 12,
+    marginBottom: 12,
+  },
   input: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
