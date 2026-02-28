@@ -658,6 +658,41 @@ export default function CoursesScreen() {
             </View>
           )}
         </View>
+
+        {/* Hidden Items Section */}
+        {showHiddenItems && hiddenItems.length > 0 && (
+          <View style={styles.hiddenSection}>
+            <Text style={styles.hiddenSectionTitle}>
+              <Ionicons name="eye-off" size={18} color="#6B7280" /> Cours masqués ({hiddenItems.length})
+            </Text>
+            {hiddenItems.map((item) => (
+              <View key={item.id} style={styles.hiddenItem}>
+                <View style={styles.hiddenItemInfo}>
+                  <Ionicons 
+                    name={item.level === 0 ? "folder" : "book"} 
+                    size={18} 
+                    color="#9CA3AF" 
+                  />
+                  <Text style={styles.hiddenItemTitle}>{item.title}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.unhideButton}
+                  onPress={() => handleUnhideItem(item.id)}
+                >
+                  <Ionicons name="eye" size={18} color="#3B82F6" />
+                  <Text style={styles.unhideButtonText}>Restaurer</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {showHiddenItems && hiddenItems.length === 0 && (
+          <View style={styles.emptyHiddenSection}>
+            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+            <Text style={styles.emptyHiddenText}>Aucun cours masqué</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Add Course Modal */}
