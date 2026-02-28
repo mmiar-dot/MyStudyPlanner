@@ -24,6 +24,7 @@ import { ColorPicker } from '../../src/components/ColorPicker';
 import { ProfilePhotoManager } from '../../src/components/ProfilePhotoManager';
 import { StatsDetailModal } from '../../src/components/StatsDetailModal';
 import notificationService, { NotificationSettings } from '../../src/services/notificationService';
+import api from '../../src/api/client';
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();
