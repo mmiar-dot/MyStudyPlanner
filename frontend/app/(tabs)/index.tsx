@@ -17,6 +17,7 @@ import { useAnalyticsStore } from '../../src/store/analyticsStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { SessionCard } from '../../src/components/SessionCard';
 import { SRSRatingModal } from '../../src/components/SRSRatingModal';
+import { StatsDetailModal } from '../../src/components/StatsDetailModal';
 import { StudySession } from '../../src/types';
 
 export default function TodayScreen() {
@@ -32,6 +33,8 @@ export default function TodayScreen() {
   const [selectedWeekDay, setSelectedWeekDay] = useState(new Date());
   const [weekSessions, setWeekSessions] = useState<Record<string, StudySession[]>>({});
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [statsType, setStatsType] = useState<'today' | 'late' | 'completion' | 'courses' | 'streak'>('today');
 
   const today = new Date();
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
