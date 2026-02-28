@@ -243,6 +243,42 @@ backend:
         agent: "main"
         comment: "Progress stats and calendar data working"
 
+  - task: "Admin User Management"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Admin endpoints fully tested and working. Successfully tested: POST /api/admin/create (admin user creation), GET /api/admin/users (list all users), POST /api/admin/users/{id}/block (block user), POST /api/admin/users/{id}/unblock (unblock user), DELETE /api/admin/users/{id} (GDPR compliant deletion). Admin authentication correctly enforced, blocking/unblocking functionality working, proper access control verified."
+
+  - task: "Hidden Items Management"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Hidden items functionality fully tested and working. Successfully tested: POST /api/user/hidden (hide catalog items), DELETE /api/user/hidden/{item_id} (unhide items), GET /api/user/hidden (get hidden items list with details). Items correctly excluded from catalog when hidden, unhiding restores visibility, authentication properly required for all endpoints."
+
+  - task: "Profile Photo Management"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Profile photo features fully tested and working. Successfully tested: GET /api/profile/avatars (get 8 predefined avatar options), PUT /api/profile/avatar/{avatar_id} (set predefined avatar), PUT /api/profile/photo (upload custom base64 photo), DELETE /api/profile/photo (delete photo). Avatar options public endpoint, other endpoints require authentication, profile updates correctly saved to user data."
+
 frontend:
   - task: "Login/Register Screens"
     implemented: true
