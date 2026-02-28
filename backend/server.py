@@ -473,7 +473,10 @@ async def get_me(user: dict = Depends(get_current_user)):
         name=user["name"],
         role=user["role"],
         created_at=user["created_at"],
-        settings=user.get("settings", {})
+        settings=user.get("settings", {}),
+        profile_photo=user.get("profile_photo"),
+        photo_type=user.get("photo_type"),
+        avatar_id=user.get("avatar_id")
     )
 
 # =====================================
