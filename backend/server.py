@@ -534,12 +534,24 @@ async def make_admin(user_id: str, admin: dict = Depends(get_admin_user)):
 # CATALOG (PUBLIC)
 # =====================================
 @api_router.get("/catalog", response_model=List[CatalogItemResponse])
-async def get_catalog(parent_id: Optional[str] = None):
-    query = {"parent_id": parent_id}
+async def get_catalog(parent_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Get catalog items - includes admin items (not hidden) and user's personal items"""
+    user_id = user["id"]
+    
+    # Get user's hidden items
+    hidden_items = await db.hidden_items.find({"user_id": user_id}).to_list(1000)
+    hidden_ids = {h["item_id"] for h in hidden_items}
+    
+    # Query admin items (no owner_id) that are not hidden
+    query = {"parent_id": parent_id, "$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"owner_id": user_id}]}
     items = await db.catalog_items.find(query).sort("order", 1).to_list(1000)
     
     result = []
     for item in items:
+        # Skip if hidden by user (only for admin items)
+        if item["id"] in hidden_ids and not item.get("owner_id"):
+            continue
+            
         children_count = await db.catalog_items.count_documents({"parent_id": item["id"]})
         result.append(CatalogItemResponse(
             id=item["id"],
@@ -549,50 +561,189 @@ async def get_catalog(parent_id: Optional[str] = None):
             description=item.get("description"),
             level=item.get("level", 0),
             children_count=children_count,
-            created_at=item["created_at"]
+            created_at=item["created_at"],
+            is_personal=item.get("owner_id") == user_id,
+            owner_id=item.get("owner_id"),
+            is_hidden=item["id"] in hidden_ids
         ))
     
     return result
 
-@api_router.get("/catalog/all", response_model=List[CatalogItemResponse])
-async def get_all_catalog():
-    """Get all catalog items in a flat list"""
-    items = await db.catalog_items.find().sort([("level", 1), ("order", 1)]).to_list(1000)
+@api_router.get("/catalog/all")
+async def get_all_catalog(user: dict = Depends(get_current_user)):
+    """Get all catalog items in a flat list - includes user's personal items"""
+    user_id = user["id"]
+    
+    # Get user's hidden items
+    hidden_items = await db.hidden_items.find({"user_id": user_id}).to_list(1000)
+    hidden_ids = {h["item_id"] for h in hidden_items}
+    
+    # Get admin items + user's personal items
+    items = await db.catalog_items.find({
+        "$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"owner_id": user_id}]
+    }).sort([("level", 1), ("order", 1)]).to_list(1000)
     
     result = []
     for item in items:
+        # Skip if hidden by user (only for admin items)
+        if item["id"] in hidden_ids and not item.get("owner_id"):
+            continue
+            
         children_count = await db.catalog_items.count_documents({"parent_id": item["id"]})
-        result.append(CatalogItemResponse(
-            id=item["id"],
-            title=item["title"],
-            parent_id=item.get("parent_id"),
-            order=item.get("order", 0),
-            description=item.get("description"),
-            level=item.get("level", 0),
-            children_count=children_count,
-            created_at=item["created_at"]
-        ))
+        result.append({
+            "id": item["id"],
+            "title": item["title"],
+            "parent_id": item.get("parent_id"),
+            "order": item.get("order", 0),
+            "description": item.get("description"),
+            "level": item.get("level", 0),
+            "children_count": children_count,
+            "created_at": item["created_at"].isoformat() if isinstance(item["created_at"], datetime) else item["created_at"],
+            "is_personal": item.get("owner_id") == user_id,
+            "owner_id": item.get("owner_id"),
+            "is_hidden": item["id"] in hidden_ids
+        })
     
     return result
 
-@api_router.get("/catalog/{item_id}", response_model=CatalogItemResponse)
-async def get_catalog_item(item_id: str):
+@api_router.get("/catalog/{item_id}")
+async def get_catalog_item(item_id: str, user: dict = Depends(get_current_user)):
     item = await db.catalog_items.find_one({"id": item_id})
     if not item:
         raise HTTPException(status_code=404, detail="Item non trouvé")
     
+    # Check access
+    if item.get("owner_id") and item.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
     children_count = await db.catalog_items.count_documents({"parent_id": item_id})
     
-    return CatalogItemResponse(
-        id=item["id"],
-        title=item["title"],
-        parent_id=item.get("parent_id"),
-        order=item.get("order", 0),
-        description=item.get("description"),
-        level=item.get("level", 0),
-        children_count=children_count,
-        created_at=item["created_at"]
-    )
+    return {
+        "id": item["id"],
+        "title": item["title"],
+        "parent_id": item.get("parent_id"),
+        "order": item.get("order", 0),
+        "description": item.get("description"),
+        "level": item.get("level", 0),
+        "children_count": children_count,
+        "created_at": item["created_at"].isoformat() if isinstance(item["created_at"], datetime) else item["created_at"],
+        "is_personal": item.get("owner_id") == user["id"],
+        "owner_id": item.get("owner_id")
+    }
+
+# =====================================
+# USER PERSONAL COURSES
+# =====================================
+@api_router.post("/user/courses")
+async def create_personal_course(course: PersonalCourseCreate, user: dict = Depends(get_current_user)):
+    """Create a personal course for the user"""
+    user_id = user["id"]
+    
+    # Calculate level
+    level = 0
+    if course.parent_id:
+        parent = await db.catalog_items.find_one({"id": course.parent_id})
+        if parent:
+            level = parent.get("level", 0) + 1
+    
+    # Count existing items at this level for ordering
+    order = await db.catalog_items.count_documents({
+        "parent_id": course.parent_id,
+        "$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"owner_id": user_id}]
+    })
+    
+    item_id = str(uuid.uuid4())
+    catalog_item = {
+        "id": item_id,
+        "title": course.title,
+        "parent_id": course.parent_id,
+        "order": order,
+        "description": course.description,
+        "level": level,
+        "owner_id": user_id,  # Mark as personal
+        "created_at": datetime.utcnow()
+    }
+    await db.catalog_items.insert_one(catalog_item)
+    
+    return {
+        "id": item_id,
+        "title": course.title,
+        "parent_id": course.parent_id,
+        "order": order,
+        "description": course.description,
+        "level": level,
+        "children_count": 0,
+        "created_at": catalog_item["created_at"].isoformat(),
+        "is_personal": True,
+        "owner_id": user_id
+    }
+
+@api_router.delete("/user/courses/{item_id}")
+async def delete_personal_course(item_id: str, user: dict = Depends(get_current_user)):
+    """Delete a personal course"""
+    item = await db.catalog_items.find_one({"id": item_id, "owner_id": user["id"]})
+    if not item:
+        raise HTTPException(status_code=404, detail="Cours personnel non trouvé")
+    
+    # Delete item and children
+    async def delete_recursive(parent_id: str):
+        children = await db.catalog_items.find({"parent_id": parent_id, "owner_id": user["id"]}).to_list(1000)
+        for child in children:
+            await delete_recursive(child["id"])
+        await db.catalog_items.delete_one({"id": parent_id, "owner_id": user["id"]})
+        # Also delete related sessions and settings
+        await db.study_sessions.delete_many({"user_id": user["id"], "item_id": parent_id})
+        await db.user_item_settings.delete_many({"user_id": user["id"], "item_id": parent_id})
+    
+    await delete_recursive(item_id)
+    return {"message": "Cours personnel supprimé"}
+
+# =====================================
+# HIDDEN ITEMS (User can hide admin courses)
+# =====================================
+@api_router.post("/user/hidden")
+async def hide_item(hidden: HiddenItemCreate, user: dict = Depends(get_current_user)):
+    """Hide an admin course for this user"""
+    user_id = user["id"]
+    
+    # Check item exists and is not personal
+    item = await db.catalog_items.find_one({"id": hidden.item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item non trouvé")
+    if item.get("owner_id") == user_id:
+        raise HTTPException(status_code=400, detail="Impossible de masquer un cours personnel")
+    
+    # Check if already hidden
+    existing = await db.hidden_items.find_one({"user_id": user_id, "item_id": hidden.item_id})
+    if existing:
+        return {"message": "Déjà masqué"}
+    
+    await db.hidden_items.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "item_id": hidden.item_id,
+        "created_at": datetime.utcnow()
+    })
+    
+    # Also delete related sessions and settings for this user
+    await db.study_sessions.delete_many({"user_id": user_id, "item_id": hidden.item_id})
+    await db.user_item_settings.delete_many({"user_id": user_id, "item_id": hidden.item_id})
+    
+    return {"message": "Cours masqué"}
+
+@api_router.delete("/user/hidden/{item_id}")
+async def unhide_item(item_id: str, user: dict = Depends(get_current_user)):
+    """Unhide (restore) an admin course for this user"""
+    result = await db.hidden_items.delete_one({"user_id": user["id"], "item_id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item non masqué")
+    return {"message": "Cours restauré"}
+
+@api_router.get("/user/hidden")
+async def get_hidden_items(user: dict = Depends(get_current_user)):
+    """Get list of hidden item IDs"""
+    hidden = await db.hidden_items.find({"user_id": user["id"]}).to_list(1000)
+    return [h["item_id"] for h in hidden]
 
 # =====================================
 # USER ITEM SETTINGS (Revision Methods)
