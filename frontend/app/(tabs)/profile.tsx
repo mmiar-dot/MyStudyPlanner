@@ -53,13 +53,19 @@ export default function ProfileScreen() {
   const [notifSettings, setNotifSettings] = useState<NotificationSettings>(notificationService.getSettings());
 
   useEffect(() => {
-    fetchProgress();
-    fetchICSSubscriptions();
-    // Initialize notifications on mobile
+    // Initial load only for notifications
     if (Platform.OS !== 'web') {
       notificationService.init();
     }
   }, []);
+
+  // Auto-refresh stats when page gains focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchProgress();
+      fetchICSSubscriptions();
+    }, [])
+  );
 
   const handleLogout = async () => {
     await logout();
