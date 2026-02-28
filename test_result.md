@@ -419,8 +419,12 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "J-days editing in MethodSelector"
+    - "Session rescheduling modal on mobile"
+    - "Auth state persistence"
+  stuck_tasks:
+    - "Auth state persistence on web navigation"
   test_all: false
   test_priority: "high_first"
 
@@ -439,3 +443,5 @@ agent_communication:
     message: "Course Notes functionality testing completed successfully. All 14 tests passed including: 1) Course Notes CRUD - POST/GET/PUT/DELETE operations for /api/courses/{item_id}/notes working correctly with proper authentication and data persistence. 2) Personal Course Deletion - DELETE /api/user/courses/{item_id} working with proper verification. 3) Hidden Items Details - GET /api/user/hidden returns correct structure with id, title, level fields. All endpoints require authentication as expected. Backend notes functionality is fully operational and production-ready."
   - agent: "testing"
     message: "Account Settings backend testing completed successfully. All 28 tests passed including NEW features: 1) Account Password Change (PUT /api/account/password) - comprehensive testing of password change functionality with current_password/new_password validation, password length requirements (min 6 chars), secure bcrypt hashing, full login flow verification. 2) Account Self-Deletion (DELETE /api/account) - GDPR compliant account deletion with password verification and confirmation string ('SUPPRIMER') requirements, proper validation and security. 3) Verified all previously tested features remain working: Admin User Management (block/unblock users, GDPR deletion), Hidden Items Management (hide/unhide functionality), Course Notes CRUD, Authentication requirements. Backend Account Settings APIs are fully functional and production-ready."
+  - agent: "main"
+    message: "Bug fixes applied: 1) J-days editing (MethodSelector.tsx) - Fixed updateInterval to not auto-sort during editing, added onBlur sort and 'Trier' button, improved input size for mobile. 2) Session rescheduling (SessionCard.tsx) - Added ScrollView to reschedule modal, improved layout for small screens, moved confirm button to always visible position. 3) Backend fix - Fixed KeyError 'name' in get_me endpoint. 4) Auth improvements - Added token caching in api.ts for faster auth, improved _layout.tsx with proper auth state management. NOTE: Auth state persistence on web still has issues with page navigation - this is a known Expo web limitation that requires further investigation."
