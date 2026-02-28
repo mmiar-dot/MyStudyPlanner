@@ -418,7 +418,9 @@ async def register(user_data: UserCreate):
 @api_router.post("/auth/login")
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email})
-    if not user or not verify_password(credentials.password, user.get("hashed_password", "")):
+    # Check both 'hashed_password' (new) and 'password' (legacy) fields
+    stored_password = user.get("hashed_password") or user.get("password", "") if user else ""
+    if not user or not verify_password(credentials.password, stored_password):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
     
     # Check if user is blocked
