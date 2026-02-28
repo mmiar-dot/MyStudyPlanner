@@ -678,6 +678,25 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Stats Detail Modal */}
+      <StatsDetailModal
+        visible={showStatsDetailModal}
+        onClose={() => setShowStatsDetailModal(false)}
+        statType={statsDetailType}
+        progress={{
+          todayCompleted: progress?.completed_sessions || 0,
+          todayTotal: (progress?.completed_sessions || 0) + (progress?.active_items || 0),
+          lateCount: 0,
+          totalCompleted: progress?.completed_sessions || 0,
+          currentStreak: progress?.streak || 0,
+          maxStreak: progress?.max_streak || progress?.streak || 0,
+          activeCourses: progress?.active_items || 0,
+          completionRate: progress?.completed_sessions 
+            ? Math.round((progress.completed_sessions / (progress.completed_sessions + (progress.active_items || 1))) * 100)
+            : 0,
+        }}
+      />
     </SafeAreaView>
   );
 }
