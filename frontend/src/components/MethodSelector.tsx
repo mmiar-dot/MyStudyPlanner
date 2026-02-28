@@ -345,6 +345,10 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
                     )}
                     {selectedMethod === 'srs' && (
                       <>
+                        <Text style={styles.existingProgressNote}>
+                          Indiquez l'intervalle actuel entre vos révisions.
+                          Le système s'adaptera après votre première notation.
+                        </Text>
                         <View style={styles.inputGroup}>
                           <Text style={styles.inputLabel}>Intervalle actuel (jours)</Text>
                           <TextInput
@@ -355,17 +359,9 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
                             placeholder="1"
                             placeholderTextColor="#9CA3AF"
                           />
-                        </View>
-                        <View style={styles.inputGroup}>
-                          <Text style={styles.inputLabel}>Facteur de facilité (1.3 - 3.0)</Text>
-                          <TextInput
-                            style={styles.input}
-                            value={existingSRSEasiness}
-                            onChangeText={setExistingSRSEasiness}
-                            keyboardType="decimal-pad"
-                            placeholder="2.5"
-                            placeholderTextColor="#9CA3AF"
-                          />
+                          <Text style={styles.inputHint}>
+                            Ex: si vous révisez tous les 7 jours, mettez 7
+                          </Text>
                         </View>
                       </>
                     )}
