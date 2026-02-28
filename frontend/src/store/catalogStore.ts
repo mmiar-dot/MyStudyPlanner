@@ -159,6 +159,16 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }
   },
 
+  renameCourse: async (itemId: string, newTitle: string) => {
+    try {
+      await api.put(`/user/courses/${itemId}`, { title: newTitle });
+      await get().fetchAllItems();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
   hideItem: async (itemId: string) => {
     try {
       await api.post('/user/hidden', { item_id: itemId });
