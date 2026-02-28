@@ -449,14 +449,20 @@ export default function TodayScreen() {
 
               {/* Streak Card */}
               {progress && progress.streak > 0 && (
-                <View style={styles.streakCard}>
+                <TouchableOpacity 
+                  style={styles.streakCard}
+                  onPress={() => {
+                    setStatsType('streak');
+                    setShowStatsModal(true);
+                  }}
+                >
                   <View style={styles.streakCardHeader}>
                     <Ionicons name="flame" size={28} color="#F97316" />
                     <Text style={styles.streakCardValue}>{progress.streak}</Text>
                   </View>
                   <Text style={styles.streakCardLabel}>jours consécutifs</Text>
-                  <Text style={styles.streakCardSubtext}>Continuez comme ça !</Text>
-                </View>
+                  <Text style={styles.streakCardSubtext}>Tap pour voir le calendrier</Text>
+                </TouchableOpacity>
               )}
             </View>
           )}
