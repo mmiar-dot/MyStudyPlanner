@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import api from '../api/client';
+import api from '../services/api';
 
 interface Avatar {
   id: string;
