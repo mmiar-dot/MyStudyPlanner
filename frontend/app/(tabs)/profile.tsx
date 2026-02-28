@@ -135,6 +135,64 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      return;
+    }
+    if (newPassword.length < 6) {
+      Alert.alert('Erreur', 'Le mot de passe doit faire au moins 6 caractères');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await api.put('/account/password', {
+        current_password: currentPassword,
+        new_password: newPassword
+      });
+      Alert.alert('Succès', 'Mot de passe modifié avec succès');
+      setShowSettingsModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.response?.data?.detail || 'Impossible de modifier le mot de passe');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'SUPPRIMER') {
+      Alert.alert('Erreur', 'Veuillez taper SUPPRIMER pour confirmer');
+      return;
+    }
+    if (!currentPassword) {
+      Alert.alert('Erreur', 'Veuillez entrer votre mot de passe');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await api.delete('/account', {
+        data: {
+          password: currentPassword,
+          confirmation: 'SUPPRIMER'
+        }
+      });
+      Alert.alert('Compte supprimé', 'Votre compte et toutes vos données ont été supprimés.');
+      logout();
+      router.replace('/login');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.response?.data?.detail || 'Impossible de supprimer le compte');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const isAdmin = user?.role === 'admin';
 
   const handlePhotoUpdated = async () => {
