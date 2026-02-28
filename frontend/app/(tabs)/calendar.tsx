@@ -521,6 +521,7 @@ export default function CalendarScreen() {
                         session={session}
                         onComplete={() => handleCompleteSession(session)}
                         onPress={() => {}}
+                        onStatusChange={loadDaySessions}
                       />
                     ))}
                   </View>
@@ -537,6 +538,7 @@ export default function CalendarScreen() {
                         session={session}
                         onComplete={() => {}}
                         onPress={() => {}}
+                        onStatusChange={loadDaySessions}
                       />
                     ))}
                   </View>
