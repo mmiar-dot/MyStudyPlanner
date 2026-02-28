@@ -38,6 +38,7 @@ interface EventState {
 
 export const useEventStore = create<EventState>((set, get) => ({
   events: [],
+  allCalendarEvents: [],
   icsSubscriptions: [],
   icsEvents: {},
   isLoading: false,
@@ -52,6 +53,16 @@ export const useEventStore = create<EventState>((set, get) => ({
       }
       const response = await api.get<PersonalEvent[]>(url);
       set({ events: response.data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
+    }
+  },
+
+  fetchAllCalendarEvents: async (startDate: string, endDate: string) => {
+    try {
+      set({ isLoading: true });
+      const response = await api.get<CalendarEvent[]>(`/calendar/all-events?start_date=${startDate}&end_date=${endDate}`);
+      set({ allCalendarEvents: response.data, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
