@@ -1133,6 +1133,13 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
   },
+  statBoxHint: {
+    fontSize: 10,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
   // Notifications
   notifSection: {
     marginBottom: 16,
