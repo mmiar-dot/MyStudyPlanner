@@ -16,18 +16,34 @@ const api = axios.create({
 // Token storage helpers
 const TOKEN_KEY = 'auth_token';
 
+// Cache the token in memory for faster access
+let cachedToken: string | null = null;
+
 export const getToken = async (): Promise<string | null> => {
+  // Return cached token if available
+  if (cachedToken) {
+    return cachedToken;
+  }
+  
   try {
+    let token: string | null = null;
     if (Platform.OS === 'web') {
-      return await AsyncStorage.getItem(TOKEN_KEY);
+      token = await AsyncStorage.getItem(TOKEN_KEY);
+    } else {
+      token = await SecureStore.getItemAsync(TOKEN_KEY);
     }
-    return await SecureStore.getItemAsync(TOKEN_KEY);
+    // Update cache
+    cachedToken = token;
+    return token;
   } catch {
     return null;
   }
 };
 
 export const setToken = async (token: string): Promise<void> => {
+  // Update cache immediately
+  cachedToken = token;
+  
   try {
     if (Platform.OS === 'web') {
       await AsyncStorage.setItem(TOKEN_KEY, token);
@@ -40,6 +56,9 @@ export const setToken = async (token: string): Promise<void> => {
 };
 
 export const removeToken = async (): Promise<void> => {
+  // Clear cache immediately
+  cachedToken = null;
+  
   try {
     if (Platform.OS === 'web') {
       await AsyncStorage.removeItem(TOKEN_KEY);
