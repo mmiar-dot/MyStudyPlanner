@@ -416,56 +416,74 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.rescheduleLabel}>Dates rapides :</Text>
-
-            <View style={styles.quickDates}>
-              {quickDates.map((qd) => (
-                <TouchableOpacity
-                  key={qd.date}
-                  style={[styles.quickDateButton, selectedDate === qd.date && styles.quickDateSelected]}
-                  onPress={() => setSelectedDate(qd.date)}
-                >
-                  <Text style={[styles.quickDateText, selectedDate === qd.date && styles.quickDateTextSelected]}>
-                    {qd.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.rescheduleLabel}>Ou choisir une date :</Text>
-            
-            <TouchableOpacity 
-              style={styles.calendarToggle}
-              onPress={() => setShowCalendarPicker(!showCalendarPicker)}
+            <ScrollView 
+              style={styles.rescheduleContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
-              <Ionicons name="calendar" size={20} color="#3B82F6" />
-              <Text style={styles.calendarToggleText}>
-                {format(new Date(selectedDate), 'dd MMMM yyyy', { locale: fr })}
-              </Text>
-              <Ionicons name={showCalendarPicker ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
-            </TouchableOpacity>
+              <Text style={styles.rescheduleLabel}>Dates rapides :</Text>
 
-            {showCalendarPicker && (
-              <View style={styles.calendarContainer}>
-                <Calendar
-                  current={selectedDate}
-                  onDayPress={(day: any) => {
-                    setSelectedDate(day.dateString);
-                    setShowCalendarPicker(false);
-                  }}
-                  markedDates={{
-                    [selectedDate]: { selected: true, selectedColor: '#3B82F6' },
-                    [session.scheduled_date]: { marked: true, dotColor: '#EF4444' }
-                  }}
-                  minDate={format(new Date(), 'yyyy-MM-dd')}
-                  theme={{
-                    todayTextColor: '#3B82F6',
-                    selectedDayBackgroundColor: '#3B82F6',
-                    arrowColor: '#3B82F6',
-                  }}
-                />
+              <View style={styles.quickDates}>
+                {quickDates.map((qd) => (
+                  <TouchableOpacity
+                    key={qd.date}
+                    style={[styles.quickDateButton, selectedDate === qd.date && styles.quickDateSelected]}
+                    onPress={() => setSelectedDate(qd.date)}
+                  >
+                    <Text style={[styles.quickDateText, selectedDate === qd.date && styles.quickDateTextSelected]}>
+                      {qd.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-            )}
+
+              <Text style={styles.rescheduleLabel}>Ou choisir une date :</Text>
+              
+              <TouchableOpacity 
+                style={styles.calendarToggle}
+                onPress={() => setShowCalendarPicker(!showCalendarPicker)}
+              >
+                <Ionicons name="calendar" size={20} color="#3B82F6" />
+                <Text style={styles.calendarToggleText}>
+                  {format(new Date(selectedDate), 'dd MMMM yyyy', { locale: fr })}
+                </Text>
+                <Ionicons name={showCalendarPicker ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+              </TouchableOpacity>
+
+              {showCalendarPicker && (
+                <View style={styles.calendarContainer}>
+                  <Calendar
+                    current={selectedDate}
+                    onDayPress={(day: any) => {
+                      setSelectedDate(day.dateString);
+                      setShowCalendarPicker(false);
+                    }}
+                    markedDates={{
+                      [selectedDate]: { selected: true, selectedColor: '#3B82F6' },
+                      [session.scheduled_date]: { marked: true, dotColor: '#EF4444' }
+                    }}
+                    minDate={format(new Date(), 'yyyy-MM-dd')}
+                    theme={{
+                      todayTextColor: '#3B82F6',
+                      selectedDayBackgroundColor: '#3B82F6',
+                      arrowColor: '#3B82F6',
+                    }}
+                  />
+                </View>
+              )}
+
+              {/* View upcoming sessions */}
+              <TouchableOpacity
+                style={styles.viewUpcomingButton}
+                onPress={() => {
+                  fetchUpcomingSessions();
+                  setShowUpcomingModal(true);
+                }}
+              >
+                <Ionicons name="list" size={18} color="#3B82F6" />
+                <Text style={styles.viewUpcomingText}>Voir toutes les sessions de ce cours</Text>
+              </TouchableOpacity>
+            </ScrollView>
 
             <TouchableOpacity
               style={[styles.rescheduleButton, isLoading && styles.buttonDisabled]}
@@ -475,20 +493,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.rescheduleButtonText}>Confirmer</Text>
+                <Text style={styles.rescheduleButtonText}>Confirmer le déplacement</Text>
               )}
-            </TouchableOpacity>
-
-            {/* View upcoming sessions */}
-            <TouchableOpacity
-              style={styles.viewUpcomingButton}
-              onPress={() => {
-                fetchUpcomingSessions();
-                setShowUpcomingModal(true);
-              }}
-            >
-              <Ionicons name="list" size={18} color="#3B82F6" />
-              <Text style={styles.viewUpcomingText}>Voir toutes les sessions de ce cours</Text>
             </TouchableOpacity>
           </View>
         </View>
