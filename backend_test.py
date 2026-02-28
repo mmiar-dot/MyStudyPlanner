@@ -787,6 +787,10 @@ class RevisionMedAPITester:
         results["admin_functions"] = self.test_admin_functions()
         results["analytics_progress"] = self.test_analytics_and_progress()
         
+        # New feature tests
+        results["calendar_all_events"] = self.test_calendar_all_events()
+        results["course_rename_api"] = self.test_course_rename_api()
+        
         return results
 
     def print_test_summary(self, results: Dict[str, bool]):
