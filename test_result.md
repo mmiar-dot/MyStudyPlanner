@@ -203,15 +203,18 @@ backend:
 
   - task: "ICS Events in Calendar Endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "New endpoint /api/calendar/all-events that aggregates personal events and ICS events within a date range"
+      - working: true
+        agent: "testing"
+        comment: "ICS Events in Calendar Endpoint fully tested and working. Successfully tested: GET /api/calendar/all-events with start_date/end_date query params, authentication requirement, event aggregation from personal events and ICS subscriptions, proper event structure with type field (personal/ics), date filtering, and correct rejection of unauthenticated requests. Retrieved 1 personal event in test run."
 
   - task: "Course Rename API"
     implemented: true
