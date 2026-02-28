@@ -19,8 +19,8 @@ class RevisionMedAPITester:
         self.current_user = None
         
         # Test accounts
-        self.admin_credentials = {"email": "admin@test.com", "password": "admin123"}
-        self.user_credentials = {"email": "test@test.com", "password": "test123"}
+        self.admin_credentials = {"email": "admin@test.com", "password": "testpassword"}
+        self.user_credentials = {"email": "test@test.com", "password": "testpassword"}
         
         # Test data storage
         self.catalog_items = []
