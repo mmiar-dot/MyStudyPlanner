@@ -46,6 +46,8 @@ export default function CalendarScreen() {
   const [eventStartTime, setEventStartTime] = useState('09:00');
   const [eventEndTime, setEventEndTime] = useState('10:00');
   const [eventColor, setEventColor] = useState('#3B82F6');
+  const [eventDate, setEventDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [showEventDatePicker, setShowEventDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
