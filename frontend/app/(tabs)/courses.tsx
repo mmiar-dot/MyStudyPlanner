@@ -39,6 +39,7 @@ export default function CoursesScreen() {
     fetchItemSections,
     setItemMethod, 
     createPersonalCourse,
+    deletePersonalCourse,
     renameCourse,
     hideItem,
     unhideItem,
