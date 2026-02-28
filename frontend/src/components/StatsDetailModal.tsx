@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Calendar, DateData } from 'react-native-calendars';
 import { format, subDays, isToday, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import api from '../api/client';
+import api from '../services/api';
 
 interface Progress {
   todayCompleted: number;
