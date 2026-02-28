@@ -431,6 +431,16 @@ export default function CoursesScreen() {
                         </Text>
                       </View>
                       <View style={styles.chapterActions}>
+                        {/* Button to configure the whole chapter with Tours method */}
+                        <TouchableOpacity 
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleSelectMethod(chapter);
+                          }}
+                          style={[styles.actionButton, styles.planChapterButton]}
+                        >
+                          <Ionicons name="calendar" size={18} color="#10B981" />
+                        </TouchableOpacity>
                         {chapter.is_personal && (
                           <TouchableOpacity 
                             onPress={(e) => {
