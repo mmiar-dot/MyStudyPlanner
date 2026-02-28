@@ -438,6 +438,28 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1F2937',
   },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
+    gap: 10,
+  },
+  datePickerText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+  },
+  calendarContainer: {
+    marginTop: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
   preview: {
     marginTop: 16,
     paddingTop: 16,
