@@ -177,9 +177,48 @@ export const StatsDetailModal: React.FC<StatsDetailModalProps> = ({
                 <Text style={styles.miniStatNumber}>{progress.totalCompleted}</Text>
                 <Text style={styles.miniStatLabel}>sessions terminées</Text>
               </View>
+              <View style={styles.miniStat}>
+                <Text style={styles.miniStatNumber}>{progress.activeCourses}</Text>
+                <Text style={styles.miniStatLabel}>cours actifs</Text>
+              </View>
             </View>
             <View style={styles.progressBarContainer}>
               <View style={[styles.progressBar, { width: `${progress.completionRate}%`, backgroundColor: '#10B981' }]} />
+            </View>
+            
+            {/* Detailed breakdown */}
+            <View style={styles.breakdownSection}>
+              <Text style={styles.breakdownTitle}>Répartition par méthode</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#3B82F6" size="small" />
+              ) : (
+                <View style={styles.breakdownList}>
+                  {(() => {
+                    const jMethod = activeCourses.filter(c => c.method === 'j_method').length;
+                    const srs = activeCourses.filter(c => c.method === 'srs').length;
+                    const tours = activeCourses.filter(c => c.method === 'tours').length;
+                    return (
+                      <>
+                        <View style={styles.breakdownItem}>
+                          <View style={[styles.breakdownDot, { backgroundColor: '#3B82F6' }]} />
+                          <Text style={styles.breakdownLabel}>Méthode des J</Text>
+                          <Text style={styles.breakdownValue}>{jMethod} cours</Text>
+                        </View>
+                        <View style={styles.breakdownItem}>
+                          <View style={[styles.breakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                          <Text style={styles.breakdownLabel}>SRS (Anki)</Text>
+                          <Text style={styles.breakdownValue}>{srs} cours</Text>
+                        </View>
+                        <View style={styles.breakdownItem}>
+                          <View style={[styles.breakdownDot, { backgroundColor: '#10B981' }]} />
+                          <Text style={styles.breakdownLabel}>Méthode des Tours</Text>
+                          <Text style={styles.breakdownValue}>{tours} cours</Text>
+                        </View>
+                      </>
+                    );
+                  })()}
+                </View>
+              )}
             </View>
           </View>
         );
@@ -195,26 +234,31 @@ export const StatsDetailModal: React.FC<StatsDetailModalProps> = ({
               <ActivityIndicator color="#3B82F6" />
             ) : (
               <ScrollView style={styles.coursesList}>
-                {activeCourses.slice(0, 10).map((course, index) => (
-                  <View key={course.id || index} style={styles.courseItem}>
-                    <View style={[styles.courseMethod, { 
-                      backgroundColor: course.method === 'j_method' ? '#3B82F6' : 
-                        course.method === 'srs' ? '#8B5CF6' : '#10B981' 
-                    }]}>
-                      <Text style={styles.courseMethodText}>
-                        {course.method === 'j_method' ? 'J' : 
-                          course.method === 'srs' ? 'SRS' : 'T'}
-                      </Text>
+                {activeCourses.length === 0 ? (
+                  <Text style={styles.emptyText}>Aucun cours configuré</Text>
+                ) : (
+                  activeCourses.map((course, index) => (
+                    <View key={course.item_id || index} style={styles.courseItem}>
+                      <View style={[styles.courseMethod, { 
+                        backgroundColor: course.method === 'j_method' ? '#3B82F6' : 
+                          course.method === 'srs' ? '#8B5CF6' : '#10B981' 
+                      }]}>
+                        <Text style={styles.courseMethodText}>
+                          {course.method === 'j_method' ? 'J' : 
+                            course.method === 'srs' ? 'SRS' : 'T'}
+                        </Text>
+                      </View>
+                      <View style={styles.courseDetails}>
+                        <Text style={styles.courseName} numberOfLines={1}>
+                          {course.title}
+                        </Text>
+                        <Text style={styles.courseMethodLabel}>
+                          {course.method === 'j_method' ? 'Méthode des J' : 
+                            course.method === 'srs' ? 'SRS (Anki-like)' : 'Méthode des Tours'}
+                        </Text>
+                      </View>
                     </View>
-                    <Text style={styles.courseName} numberOfLines={1}>
-                      Cours #{index + 1}
-                    </Text>
-                  </View>
-                ))}
-                {activeCourses.length > 10 && (
-                  <Text style={styles.moreText}>
-                    +{activeCourses.length - 10} autres cours
-                  </Text>
+                  ))
                 )}
               </ScrollView>
             )}
