@@ -246,6 +246,12 @@ export default function ProfileScreen() {
                     <View style={styles.icsActions}>
                       <TouchableOpacity 
                         style={styles.icsActionButton}
+                        onPress={() => handleOpenEditICS(sub)}
+                      >
+                        <Ionicons name="color-palette-outline" size={18} color="#8B5CF6" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.icsActionButton}
                         onPress={() => handleSyncICS(sub.id)}
                         disabled={syncingId === sub.id}
                       >
