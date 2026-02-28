@@ -761,6 +761,7 @@ export default function CoursesScreen() {
         onSelect={handleMethodConfirm}
         itemTitle={selectedItem?.title || ''}
         currentMethod={selectedItem ? getItemSettings(selectedItem.id)?.method : undefined}
+        isChapter={selectedItem?.item_type === 'chapter'}
       />
     </SafeAreaView>
   );
