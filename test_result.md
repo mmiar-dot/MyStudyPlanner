@@ -315,6 +315,30 @@ backend:
         agent: "testing"
         comment: "Profile photo features fully tested and working. Successfully tested: GET /api/profile/avatars (get 8 predefined avatar options), PUT /api/profile/avatar/{avatar_id} (set predefined avatar), PUT /api/profile/photo (upload custom base64 photo), DELETE /api/profile/photo (delete photo). Avatar options public endpoint, other endpoints require authentication, profile updates correctly saved to user data."
 
+  - task: "Account Password Change"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Account password change functionality fully tested and working. Successfully tested: PUT /api/account/password endpoint with current_password and new_password validation, proper authentication requirement, password length validation (minimum 6 characters), current password verification, secure password hashing with bcrypt. Tested full flow: change password, login with new password, reset back to original password. All validation working correctly."
+
+  - task: "Account Self-Deletion"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Account self-deletion functionality fully tested and working. Successfully tested: DELETE /api/account endpoint validation with password verification, confirmation string requirement ('SUPPRIMER'), proper error handling for wrong passwords, correct rejection of invalid confirmation strings. GDPR compliant deletion implementation verified (deletes all user data). Validation layer working correctly - endpoint properly secured."
+
 frontend:
   - task: "Login/Register Screens"
     implemented: true
