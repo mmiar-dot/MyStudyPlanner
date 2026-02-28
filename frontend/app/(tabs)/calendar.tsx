@@ -6,32 +6,62 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Modal,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar, DateData } from 'react-native-calendars';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSessionStore } from '../../src/store/sessionStore';
 import { useAnalyticsStore } from '../../src/store/analyticsStore';
+import { useEventStore } from '../../src/store/eventStore';
 import { SessionCard } from '../../src/components/SessionCard';
 import { SRSRatingModal } from '../../src/components/SRSRatingModal';
-import { StudySession, CalendarDayData } from '../../src/types';
+import { ColorPicker } from '../../src/components/ColorPicker';
+import { StudySession, CalendarDayData, PersonalEvent, ICSSubscription } from '../../src/types';
 
 export default function CalendarScreen() {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [daySessions, setDaySessions] = useState<StudySession[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [srsSession, setSrsSession] = useState<StudySession | null>(null);
+  
+  // Event modal states
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventStartTime, setEventStartTime] = useState('09:00');
+  const [eventEndTime, setEventEndTime] = useState('10:00');
+  const [eventColor, setEventColor] = useState('#3B82F6');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // ICS modal states
+  const [showICSModal, setShowICSModal] = useState(false);
+  const [icsName, setIcsName] = useState('');
+  const [icsUrl, setIcsUrl] = useState('');
+  const [icsColor, setIcsColor] = useState('#10B981');
 
   const { fetchSessionsByDate, completeSession } = useSessionStore();
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
+  const { events, icsSubscriptions, fetchEvents, fetchICSSubscriptions, createEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
 
   const loadMonthData = useCallback(async () => {
     const month = currentMonth.getMonth() + 1;
     const year = currentMonth.getFullYear();
-    await fetchCalendarData(month, year);
+    await Promise.all([
+      fetchCalendarData(month, year),
+      fetchEvents(),
+      fetchICSSubscriptions(),
+    ]);
   }, [currentMonth]);
 
   const loadDaySessions = useCallback(async () => {
@@ -70,6 +100,74 @@ export default function CalendarScreen() {
     }
   };
 
+  const handleCreateEvent = async () => {
+    if (!eventTitle.trim()) {
+      Alert.alert('Erreur', 'Le titre est requis');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      const startDateTime = `${selectedDate}T${eventStartTime}:00`;
+      const endDateTime = `${selectedDate}T${eventEndTime}:00`;
+      
+      await createEvent({
+        title: eventTitle.trim(),
+        start_time: startDateTime,
+        end_time: endDateTime,
+        description: eventDescription.trim() || undefined,
+        color: eventColor,
+      });
+      
+      setShowEventModal(false);
+      resetEventForm();
+      Alert.alert('Succès', 'Événement créé');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de créer l\'événement');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubscribeICS = async () => {
+    if (!icsName.trim() || !icsUrl.trim()) {
+      Alert.alert('Erreur', 'Le nom et l\'URL sont requis');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await subscribeICS(icsName.trim(), icsUrl.trim(), icsColor);
+      setShowICSModal(false);
+      resetICSForm();
+      Alert.alert('Succès', 'Calendrier ajouté. Synchronisation en cours...');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'ajouter le calendrier');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetEventForm = () => {
+    setEventTitle('');
+    setEventDescription('');
+    setEventStartTime('09:00');
+    setEventEndTime('10:00');
+    setEventColor('#3B82F6');
+  };
+
+  const resetICSForm = () => {
+    setIcsName('');
+    setIcsUrl('');
+    setIcsColor('#10B981');
+  };
+
+  // Get events for selected date
+  const dayEvents = events.filter(e => {
+    const eventDate = e.start_time.split('T')[0];
+    return eventDate === selectedDate;
+  });
+
   // Generate marked dates for calendar
   const markedDates: any = {};
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -90,6 +188,23 @@ export default function CalendarScreen() {
     };
   });
 
+  // Mark event dates
+  events.forEach(event => {
+    const eventDate = event.start_time.split('T')[0];
+    if (markedDates[eventDate]) {
+      markedDates[eventDate].dots = [
+        ...(markedDates[eventDate].dots || [{ color: markedDates[eventDate].dotColor }]),
+        { color: event.color }
+      ];
+    } else {
+      markedDates[eventDate] = {
+        dots: [{ color: event.color }],
+        selected: eventDate === selectedDate,
+        selectedColor: eventDate === selectedDate ? '#3B82F6' : undefined,
+      };
+    }
+  });
+
   // Ensure selected date is always shown
   if (!markedDates[selectedDate]) {
     markedDates[selectedDate] = {
@@ -105,9 +220,7 @@ export default function CalendarScreen() {
       today: true,
     };
   } else {
-    markedDates[today] = {
-      today: true,
-    };
+    markedDates[today] = { today: true };
   }
 
   const pendingSessions = daySessions.filter(s => s.status !== 'completed');
@@ -116,93 +229,305 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3B82F6']} />
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Calendrier</Text>
+        <View style={[styles.header, isDesktop && styles.headerDesktop]}>
+          <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Calendrier</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => setShowEventModal(true)}
+            >
+              <Ionicons name="add" size={20} color="#FFFFFF" />
+              {isDesktop && <Text style={styles.addButtonText}>Événement</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.icsButton}
+              onPress={() => setShowICSModal(true)}
+            >
+              <Ionicons name="link" size={20} color="#3B82F6" />
+              {isDesktop && <Text style={styles.icsButtonText}>Calendrier ICS</Text>}
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Calendar */}
-        <View style={styles.calendarContainer}>
-          <Calendar
-            current={format(currentMonth, 'yyyy-MM-dd')}
-            onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
-            onMonthChange={(month: DateData) => {
-              setCurrentMonth(new Date(month.year, month.month - 1));
-            }}
-            markedDates={markedDates}
-            theme={{
-              backgroundColor: '#FFFFFF',
-              calendarBackground: '#FFFFFF',
-              textSectionTitleColor: '#6B7280',
-              selectedDayBackgroundColor: '#3B82F6',
-              selectedDayTextColor: '#FFFFFF',
-              todayTextColor: '#3B82F6',
-              dayTextColor: '#1F2937',
-              textDisabledColor: '#D1D5DB',
-              dotColor: '#3B82F6',
-              monthTextColor: '#1F2937',
-              arrowColor: '#3B82F6',
-              textDayFontWeight: '500',
-              textMonthFontWeight: '600',
-              textDayHeaderFontWeight: '500',
-            }}
-            firstDay={1}
-          />
-        </View>
-
-        {/* Selected Date Sessions */}
-        <View style={styles.sessionsSection}>
-          <Text style={styles.dateTitle}>
-            {format(new Date(selectedDate), "EEEE d MMMM", { locale: fr })}
-          </Text>
-
-          {daySessions.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={40} color="#9CA3AF" />
-              <Text style={styles.emptyText}>Aucune session ce jour</Text>
+        {/* Main Content */}
+        <View style={[styles.mainContent, isDesktop && styles.mainContentDesktop]}>
+          {/* Calendar Column */}
+          <View style={[styles.calendarColumn, isDesktop && styles.calendarColumnDesktop]}>
+            {/* Calendar */}
+            <View style={styles.calendarContainer}>
+              <Calendar
+                current={format(currentMonth, 'yyyy-MM-dd')}
+                onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
+                onMonthChange={(month: DateData) => {
+                  setCurrentMonth(new Date(month.year, month.month - 1));
+                }}
+                markedDates={markedDates}
+                markingType="multi-dot"
+                theme={{
+                  backgroundColor: '#FFFFFF',
+                  calendarBackground: '#FFFFFF',
+                  textSectionTitleColor: '#6B7280',
+                  selectedDayBackgroundColor: '#3B82F6',
+                  selectedDayTextColor: '#FFFFFF',
+                  todayTextColor: '#3B82F6',
+                  dayTextColor: '#1F2937',
+                  textDisabledColor: '#D1D5DB',
+                  dotColor: '#3B82F6',
+                  monthTextColor: '#1F2937',
+                  arrowColor: '#3B82F6',
+                  textDayFontWeight: '500',
+                  textMonthFontWeight: '600',
+                  textDayHeaderFontWeight: '500',
+                }}
+                firstDay={1}
+              />
             </View>
-          ) : (
-            <>
-              {pendingSessions.length > 0 && (
-                <View style={styles.sessionGroup}>
-                  <Text style={styles.groupTitle}>
-                    À faire ({pendingSessions.length})
-                  </Text>
-                  {pendingSessions.map((session) => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onComplete={() => handleCompleteSession(session)}
-                      onPress={() => {}}
-                    />
-                  ))}
-                </View>
-              )}
 
-              {completedSessions.length > 0 && (
-                <View style={styles.sessionGroup}>
-                  <Text style={styles.groupTitleCompleted}>
-                    Terminées ({completedSessions.length})
-                  </Text>
-                  {completedSessions.map((session) => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onComplete={() => {}}
-                      onPress={() => {}}
-                    />
-                  ))}
-                </View>
-              )}
-            </>
-          )}
+            {/* ICS Subscriptions */}
+            {icsSubscriptions.length > 0 && (
+              <View style={styles.icsSection}>
+                <Text style={styles.icsSectionTitle}>Calendriers abonnés</Text>
+                {icsSubscriptions.map((sub) => (
+                  <View key={sub.id} style={styles.icsItem}>
+                    <View style={[styles.icsColor, { backgroundColor: sub.color }]} />
+                    <View style={styles.icsInfo}>
+                      <Text style={styles.icsName}>{sub.name}</Text>
+                      {sub.last_synced && (
+                        <Text style={styles.icsLastSync}>
+                          Sync: {format(parseISO(sub.last_synced), 'dd/MM HH:mm')}
+                        </Text>
+                      )}
+                    </View>
+                    <TouchableOpacity onPress={() => syncICS(sub.id)}>
+                      <Ionicons name="sync" size={20} color="#6B7280" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                      Alert.alert('Supprimer', `Supprimer "${sub.name}" ?`, [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Supprimer', style: 'destructive', onPress: () => deleteICSSubscription(sub.id) }
+                      ]);
+                    }}>
+                      <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Sessions/Events Column */}
+          <View style={[styles.sessionsColumn, isDesktop && styles.sessionsColumnDesktop]}>
+            <Text style={styles.dateTitle}>
+              {format(new Date(selectedDate), "EEEE d MMMM", { locale: fr })}
+            </Text>
+
+            {/* Personal Events */}
+            {dayEvents.length > 0 && (
+              <View style={styles.eventsSection}>
+                <Text style={styles.eventsSectionTitle}>Événements</Text>
+                {dayEvents.map((event) => (
+                  <View key={event.id} style={styles.eventCard}>
+                    <View style={[styles.eventColor, { backgroundColor: event.color }]} />
+                    <View style={styles.eventInfo}>
+                      <Text style={styles.eventTitle}>{event.title}</Text>
+                      <Text style={styles.eventTime}>
+                        {format(parseISO(event.start_time), 'HH:mm')} - {format(parseISO(event.end_time), 'HH:mm')}
+                      </Text>
+                      {event.description && (
+                        <Text style={styles.eventDescription}>{event.description}</Text>
+                      )}
+                    </View>
+                    <TouchableOpacity onPress={() => {
+                      Alert.alert('Supprimer', `Supprimer "${event.title}" ?`, [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Supprimer', style: 'destructive', onPress: () => deleteEvent(event.id) }
+                      ]);
+                    }}>
+                      <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Study Sessions */}
+            {daySessions.length === 0 && dayEvents.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="calendar-outline" size={40} color="#9CA3AF" />
+                <Text style={styles.emptyText}>Aucune session ni événement</Text>
+                <TouchableOpacity 
+                  style={styles.addEventButton}
+                  onPress={() => setShowEventModal(true)}
+                >
+                  <Ionicons name="add" size={18} color="#3B82F6" />
+                  <Text style={styles.addEventButtonText}>Ajouter un événement</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                {pendingSessions.length > 0 && (
+                  <View style={styles.sessionGroup}>
+                    <Text style={styles.groupTitle}>
+                      Sessions à faire ({pendingSessions.length})
+                    </Text>
+                    {pendingSessions.map((session) => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onComplete={() => handleCompleteSession(session)}
+                        onPress={() => {}}
+                      />
+                    ))}
+                  </View>
+                )}
+
+                {completedSessions.length > 0 && (
+                  <View style={styles.sessionGroup}>
+                    <Text style={styles.groupTitleCompleted}>
+                      Terminées ({completedSessions.length})
+                    </Text>
+                    {completedSessions.map((session) => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onComplete={() => {}}
+                        onPress={() => {}}
+                      />
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </View>
         </View>
       </ScrollView>
+
+      {/* Create Event Modal */}
+      <Modal visible={showEventModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Nouvel événement</Text>
+              <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDate}>
+              {format(new Date(selectedDate), "EEEE d MMMM yyyy", { locale: fr })}
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Titre de l'événement"
+              placeholderTextColor="#9CA3AF"
+              value={eventTitle}
+              onChangeText={setEventTitle}
+            />
+
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Description (optionnel)"
+              placeholderTextColor="#9CA3AF"
+              value={eventDescription}
+              onChangeText={setEventDescription}
+              multiline
+              numberOfLines={3}
+            />
+
+            <View style={styles.timeRow}>
+              <View style={styles.timeInput}>
+                <Text style={styles.timeLabel}>Début</Text>
+                <TextInput
+                  style={styles.timeField}
+                  placeholder="09:00"
+                  placeholderTextColor="#9CA3AF"
+                  value={eventStartTime}
+                  onChangeText={setEventStartTime}
+                />
+              </View>
+              <View style={styles.timeInput}>
+                <Text style={styles.timeLabel}>Fin</Text>
+                <TextInput
+                  style={styles.timeField}
+                  placeholder="10:00"
+                  placeholderTextColor="#9CA3AF"
+                  value={eventEndTime}
+                  onChangeText={setEventEndTime}
+                />
+              </View>
+            </View>
+
+            <Text style={styles.colorLabel}>Couleur</Text>
+            <ColorPicker selectedColor={eventColor} onColorSelect={setEventColor} compact />
+
+            <TouchableOpacity
+              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              onPress={handleCreateEvent}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.createButtonText}>Créer l'événement</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ICS Subscription Modal */}
+      <Modal visible={showICSModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajouter un calendrier ICS</Text>
+              <TouchableOpacity onPress={() => { setShowICSModal(false); resetICSForm(); }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Nom du calendrier (ex: Faculté)"
+              placeholderTextColor="#9CA3AF"
+              value={icsName}
+              onChangeText={setIcsName}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="URL du calendrier ICS"
+              placeholderTextColor="#9CA3AF"
+              value={icsUrl}
+              onChangeText={setIcsUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+
+            <Text style={styles.colorLabel}>Couleur</Text>
+            <ColorPicker selectedColor={icsColor} onColorSelect={setIcsColor} compact />
+
+            <TouchableOpacity
+              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              onPress={handleSubscribeICS}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.createButtonText}>Ajouter le calendrier</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* SRS Rating Modal */}
       <SRSRatingModal
@@ -223,14 +548,73 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
+  scrollContentDesktop: {
+    padding: 32,
+  },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     paddingBottom: 0,
+  },
+  headerDesktop: {
+    padding: 0,
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1F2937',
+  },
+  titleDesktop: {
+    fontSize: 32,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  icsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EBF5FF',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+  },
+  icsButtonText: {
+    color: '#3B82F6',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  mainContentDesktop: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  calendarColumn: {
+    flex: 1,
+  },
+  calendarColumnDesktop: {
+    flex: 1,
+    maxWidth: 400,
   },
   calendarContainer: {
     backgroundColor: '#FFFFFF',
@@ -243,8 +627,50 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  sessionsSection: {
+  icsSection: {
+    marginHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+  },
+  icsSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  icsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  icsColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  icsInfo: {
+    flex: 1,
+  },
+  icsName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  icsLastSync: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  sessionsColumn: {
+    flex: 1,
     paddingHorizontal: 20,
+  },
+  sessionsColumnDesktop: {
+    flex: 2,
+    paddingHorizontal: 0,
   },
   dateTitle: {
     fontSize: 18,
@@ -252,6 +678,47 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginBottom: 16,
     textTransform: 'capitalize',
+  },
+  eventsSection: {
+    marginBottom: 20,
+  },
+  eventsSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  eventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    gap: 12,
+  },
+  eventColor: {
+    width: 4,
+    height: 40,
+    borderRadius: 2,
+  },
+  eventInfo: {
+    flex: 1,
+  },
+  eventTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  eventTime: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  eventDescription: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 4,
   },
   emptyState: {
     alignItems: 'center',
@@ -263,6 +730,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     marginTop: 12,
+    marginBottom: 16,
+  },
+  addEventButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+    borderRadius: 8,
+  },
+  addEventButtonText: {
+    color: '#3B82F6',
+    fontWeight: '500',
   },
   sessionGroup: {
     marginBottom: 20,
@@ -278,5 +760,98 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#10B981',
     marginBottom: 12,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  modalContentDesktop: {
+    maxWidth: 500,
+    alignSelf: 'center',
+    width: '100%',
+    borderRadius: 24,
+    marginBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  modalDate: {
+    fontSize: 14,
+    color: '#3B82F6',
+    marginBottom: 16,
+    textTransform: 'capitalize',
+  },
+  input: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 12,
+    color: '#1F2937',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  timeInput: {
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  timeField: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  colorLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 10,
+  },
+  createButton: {
+    backgroundColor: '#3B82F6',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  createButtonDisabled: {
+    opacity: 0.7,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
