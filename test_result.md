@@ -173,15 +173,18 @@ backend:
 
   - task: "Personal Events CRUD"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Personal events with recurrence implemented"
+      - working: true
+        agent: "testing"
+        comment: "Personal Events CRUD fully tested and working. Successfully tested: Create personal events with title/time/description/color, retrieve all user events, update existing events, delete events, and create recurring events with frequency/interval/count settings. Recurrence expansion working properly."
 
   - task: "ICS Subscriptions"
     implemented: true
