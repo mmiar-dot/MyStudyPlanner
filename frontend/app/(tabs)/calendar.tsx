@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   modalContentDesktop: {
     maxWidth: 500,
@@ -1045,6 +1045,9 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 24,
     marginBottom: 40,
+  },
+  eventFormScroll: {
+    flexGrow: 0,
   },
   modalHeader: {
     flexDirection: 'row',
