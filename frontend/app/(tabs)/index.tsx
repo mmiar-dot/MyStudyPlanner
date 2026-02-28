@@ -64,21 +64,32 @@ export default function TodayScreen() {
       fetchCalendarData(today.getMonth() + 1, today.getFullYear()),
     ]);
     
-    // Load week sessions for desktop
-    if (isDesktop) {
-      const sessionsMap: Record<string, StudySession[]> = {};
-      for (const day of weekDays) {
-        const dateStr = format(day, 'yyyy-MM-dd');
-        const sessions = await fetchSessionsByDate(dateStr);
-        sessionsMap[dateStr] = sessions;
-      }
-      setWeekSessions(sessionsMap);
+    // Load week sessions
+    await loadWeekSessions();
+  }, [isDesktop, currentWeekStart]);
+
+  const loadWeekSessions = async () => {
+    const sessionsMap: Record<string, StudySession[]> = {};
+    for (const day of weekDays) {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const sessions = await fetchSessionsByDate(dateStr);
+      sessionsMap[dateStr] = sessions;
     }
-  }, [isDesktop]);
+    setWeekSessions(sessionsMap);
+  };
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Reload week sessions when week changes
+  useEffect(() => {
+    loadWeekSessions();
+    // Also fetch calendar data for the relevant month if needed
+    const weekMonth = currentWeekStart.getMonth() + 1;
+    const weekYear = currentWeekStart.getFullYear();
+    fetchCalendarData(weekMonth, weekYear);
+  }, [currentWeekStart]);
 
   const onRefresh = async () => {
     setRefreshing(true);
