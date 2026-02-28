@@ -613,16 +613,27 @@ export default function CalendarScreen() {
               onChangeText={setEventTitle}
             />
 
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Description (optionnel)"
-              placeholderTextColor="#9CA3AF"
-              value={eventDescription}
-              onChangeText={setEventDescription}
-              multiline
-              numberOfLines={3}
-              returnKeyType="default"
-            />
+            <View style={styles.descriptionContainer}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Description (optionnel)"
+                placeholderTextColor="#9CA3AF"
+                value={eventDescription}
+                onChangeText={setEventDescription}
+                multiline
+                numberOfLines={3}
+                returnKeyType="default"
+              />
+              {Platform.OS !== 'web' && eventDescription.length > 0 && (
+                <TouchableOpacity 
+                  style={styles.dismissKeyboardButton}
+                  onPress={() => Keyboard.dismiss()}
+                >
+                  <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                  <Text style={styles.dismissKeyboardText}>Terminé</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             <View style={styles.timeRow}>
               <View style={styles.timeInput}>
