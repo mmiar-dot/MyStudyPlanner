@@ -840,9 +840,25 @@ async def unhide_item(item_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.get("/user/hidden")
 async def get_hidden_items(user: dict = Depends(get_current_user)):
-    """Get list of hidden item IDs"""
-    hidden = await db.hidden_items.find({"user_id": user["id"]}).to_list(1000)
-    return [h["item_id"] for h in hidden]
+    """Get list of hidden items with details"""
+    user_id = user["id"]
+    hidden = await db.hidden_items.find({"user_id": user_id}).to_list(1000)
+    hidden_ids = [h["item_id"] for h in hidden]
+    
+    # Get item details for hidden items
+    result = []
+    for item_id in hidden_ids:
+        item = await db.catalog_items.find_one({"id": item_id})
+        if item:
+            result.append({
+                "id": item["id"],
+                "title": item["title"],
+                "level": item.get("level", 0),
+                "parent_id": item.get("parent_id"),
+                "is_personal": bool(item.get("owner_id"))
+            })
+    
+    return result
 
 # =====================================
 # CUSTOM SECTIONS
