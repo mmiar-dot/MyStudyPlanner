@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Calendar } from 'react-native-calendars';
 import { StudySession } from '../types';
 import { useSessionStore } from '../store/sessionStore';
 import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import api from '../services/api';
 
 interface SessionCardProps {
   session: StudySession;
