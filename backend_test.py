@@ -584,6 +584,188 @@ class RevisionMedAPITester:
         self.log("Analytics & Progress tests passed", "SUCCESS")
         return True
 
+    def test_calendar_all_events(self) -> bool:
+        """Test the /api/calendar/all-events endpoint"""
+        self.log("🧪 Testing Calendar All Events Endpoint", "TEST")
+        
+        # First ensure we have some test data
+        # Create a personal event
+        event_data = {
+            "title": "Test Personal Event for All-Events",
+            "start_time": datetime.now().isoformat(),
+            "end_time": (datetime.now() + timedelta(hours=1)).isoformat(),
+            "description": "Test event for all-events endpoint",
+            "color": "#3b82f6"
+        }
+        
+        event_result = self.make_request("POST", "/calendar/events", event_data)
+        if not event_result["success"]:
+            self.log("Failed to create personal event for testing", "WARNING")
+        else:
+            self.log("Created test personal event", "INFO")
+        
+        # Create an ICS subscription if none exists
+        ics_data = {
+            "name": "Test Calendar for All Events", 
+            "url": "https://calendar.google.com/calendar/ical/en.french%23holiday%40group.v.calendar.google.com/public/basic.ics",
+            "color": "#ef4444"
+        }
+        
+        ics_result = self.make_request("POST", "/calendar/ics", ics_data)
+        if not ics_result["success"]:
+            self.log("ICS subscription creation failed (might already exist)", "INFO")
+        else:
+            self.log("Created test ICS subscription", "INFO")
+            # Wait a moment for sync
+            time.sleep(2)
+        
+        # Calculate test date range
+        today = datetime.now().date()
+        start_date = (today - timedelta(days=30)).isoformat()
+        end_date = (today + timedelta(days=30)).isoformat()
+        
+        # Test 1: Valid request with authentication  
+        self.log(f"Testing date range: {start_date} to {end_date}", "INFO")
+        
+        result = self.make_request("GET", f"/calendar/all-events?start_date={start_date}&end_date={end_date}")
+        if not result["success"]:
+            self.log("Failed to get all calendar events", "ERROR")
+            return False
+        
+        events = result["data"]
+        self.log(f"Retrieved {len(events)} events from all-events endpoint", "SUCCESS")
+        
+        # Validate event structure
+        personal_events = [e for e in events if e.get('type') == 'personal']
+        ics_events = [e for e in events if e.get('type') == 'ics']
+        
+        self.log(f"Found {len(personal_events)} personal events and {len(ics_events)} ICS events", "INFO")
+        
+        # Check event structure
+        for event in events[:3]:  # Check first 3 events
+            required_fields = ['id', 'type', 'title', 'start_time']
+            missing_fields = [field for field in required_fields if field not in event]
+            
+            if missing_fields:
+                self.log(f"Event missing required fields: {missing_fields}", "ERROR")
+                return False
+            
+            if event['type'] not in ['personal', 'ics']:
+                self.log(f"Invalid event type: {event['type']}", "ERROR")
+                return False
+        
+        # Test 2: Request without auth should fail
+        temp_token = self.auth_token
+        self.auth_token = None
+        no_auth_result = self.make_request("GET", f"/calendar/all-events?start_date={start_date}&end_date={end_date}")
+        self.auth_token = temp_token
+        
+        if no_auth_result["success"]:
+            self.log("All-events endpoint should require authentication", "ERROR")
+            return False
+        
+        self.log("Calendar all-events endpoint tests passed", "SUCCESS")
+        return True
+
+    def test_course_rename_api(self) -> bool:
+        """Test the PUT /api/user/courses/{item_id} endpoint for renaming personal courses"""
+        self.log("🧪 Testing Course Rename API", "TEST")
+        
+        # First create a personal course to test with
+        course_data = {
+            "title": "Test Course for Rename",
+            "parent_id": None,
+            "order": 1,
+            "description": "Test course for rename API testing"
+        }
+        
+        create_result = self.make_request("POST", "/user/courses", course_data)
+        if not create_result["success"]:
+            self.log("Failed to create personal course for testing", "ERROR")
+            return False
+        
+        course_id = create_result["data"]["id"]
+        self.log(f"Created test course with ID: {course_id}", "INFO")
+        
+        # Test 1: Valid rename request
+        new_title = "Renamed Test Course"
+        rename_data = {"title": new_title}
+        
+        rename_result = self.make_request("PUT", f"/user/courses/{course_id}", rename_data)
+        if not rename_result["success"]:
+            self.log("Failed to rename personal course", "ERROR")
+            return False
+        
+        renamed_course = rename_result["data"]
+        if renamed_course.get("title") != new_title:
+            self.log(f"Course title not updated correctly. Expected: {new_title}, Got: {renamed_course.get('title')}", "ERROR")
+            return False
+        
+        self.log(f"Successfully renamed course to: {new_title}", "SUCCESS")
+        
+        # Test 2: Verify the course was actually updated in the database
+        courses_result = self.make_request("GET", "/user/courses")
+        if not courses_result["success"]:
+            self.log("Failed to retrieve courses to verify rename", "ERROR")
+            return False
+        
+        courses = courses_result["data"]
+        updated_course = next((c for c in courses if c["id"] == course_id), None)
+        
+        if not updated_course or updated_course.get("title") != new_title:
+            self.log("Course title not persisted in database", "ERROR")
+            return False
+        
+        self.log("Course rename persisted correctly in database", "SUCCESS")
+        
+        # Test 3: Try to rename non-existent course (should fail)
+        fake_id = "fake-course-id-12345"
+        fake_rename_result = self.make_request("PUT", f"/user/courses/{fake_id}", {"title": "Should Fail"})
+        
+        if fake_rename_result["success"]:
+            self.log("Rename should fail for non-existent course", "ERROR")
+            return False
+        
+        self.log("Correctly prevented rename of non-existent course", "SUCCESS")
+        
+        # Test 4: Try to rename with invalid data (should fail)
+        invalid_data_result = self.make_request("PUT", f"/user/courses/{course_id}", {"wrong_field": "value"})
+        
+        if invalid_data_result["success"]:
+            self.log("Rename should fail with invalid JSON body", "ERROR")
+            return False
+        
+        self.log("Correctly rejected invalid JSON body", "SUCCESS")
+        
+        # Test 5: Try to rename admin course (should fail)
+        # Get all courses to find an admin course (one without owner_id)
+        all_courses = courses_result["data"]
+        admin_course = next((c for c in all_courses if not c.get('owner_id')), None)
+        
+        if admin_course:
+            admin_course_id = admin_course["id"]
+            admin_rename_result = self.make_request("PUT", f"/user/courses/{admin_course_id}", {"title": "Should Fail"})
+            
+            if admin_rename_result["success"]:
+                self.log("Should not be able to rename admin courses", "ERROR")
+                return False
+            
+            self.log("Correctly prevented renaming of admin course", "SUCCESS")
+        else:
+            self.log("No admin courses found to test rename prevention", "WARNING")
+        
+        # Test 6: Request without auth should fail
+        temp_token = self.auth_token
+        self.auth_token = None
+        no_auth_result = self.make_request("PUT", f"/user/courses/{course_id}", {"title": "Should Fail"})
+        self.auth_token = temp_token
+        
+        if no_auth_result["success"]:
+            self.log("Course rename should require authentication", "ERROR")
+            return False
+        
+        self.log("Course rename API tests passed", "SUCCESS")
+        return True
     def run_all_tests(self) -> Dict[str, bool]:
         """Run all test suites and return results"""
         self.log("🚀 Starting RevisionMed Backend API Test Suite", "INFO")
