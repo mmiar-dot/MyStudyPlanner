@@ -583,16 +583,17 @@ export default function CalendarScreen() {
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               >
-            <TouchableOpacity 
-              style={styles.dateSelector}
-              onPress={() => setShowEventDatePicker(!showEventDatePicker)}
-            >
-              <Ionicons name="calendar" size={20} color="#3B82F6" />
-              <Text style={styles.dateSelectorText}>
-                {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : eventDate), "EEEE d MMMM yyyy", { locale: fr })}
-              </Text>
-              <Ionicons name={showEventDatePicker ? "chevron-up" : "chevron-down"} size={20} color="#6B7280" />
-            </TouchableOpacity>
+                {/* Date selector */}
+                <TouchableOpacity 
+                  style={styles.dateSelector}
+                  onPress={() => setShowEventDatePicker(!showEventDatePicker)}
+                >
+                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+                  <Text style={styles.dateSelectorText}>
+                    {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : eventDate), "EEEE d MMMM yyyy", { locale: fr })}
+                  </Text>
+                  <Ionicons name={showEventDatePicker ? "chevron-up" : "chevron-down"} size={20} color="#6B7280" />
+                </TouchableOpacity>
 
             {showEventDatePicker && (
               <Calendar
