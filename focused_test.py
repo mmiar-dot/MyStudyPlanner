@@ -211,11 +211,15 @@ def test_course_rename_api(token):
     
     # Test 4: Try to rename admin course (if exists)
     print("\n4️⃣ Testing rename of admin course...")
-    admin_course = None
-    for course in courses:
-        if not course.get('owner_id'):  # Admin course has no owner_id
-            admin_course = course
-            break
+    # Use catalog data from verification step
+    catalog_response = requests.get(f"{BACKEND_URL}/catalog/all", headers=headers)
+    if catalog_response.status_code == 200:
+        catalog = catalog_response.json()
+        admin_course = None
+        for item in catalog:
+            if not item.get('owner_id'):  # Admin course has no owner_id
+                admin_course = item
+                break
     
     if admin_course:
         admin_id = admin_course["id"]
