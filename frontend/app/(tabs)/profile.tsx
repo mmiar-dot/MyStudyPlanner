@@ -25,7 +25,7 @@ export default function ProfileScreen() {
   
   const { user, logout } = useAuthStore();
   const { progress, fetchProgress } = useAnalyticsStore();
-  const { icsSubscriptions, fetchICSSubscriptions, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
+  const { icsSubscriptions, fetchICSSubscriptions, subscribeICS, updateICSSubscription, syncICS, deleteICSSubscription } = useEventStore();
 
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -40,6 +40,11 @@ export default function ProfileScreen() {
   const [icsColor, setIcsColor] = useState('#10B981');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  
+  // Edit ICS form
+  const [editingICS, setEditingICS] = useState<typeof icsSubscriptions[0] | null>(null);
+  const [editICSName, setEditICSName] = useState('');
+  const [editICSColor, setEditICSColor] = useState('#10B981');
 
   useEffect(() => {
     fetchProgress();
