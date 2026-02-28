@@ -775,14 +775,22 @@ const styles = StyleSheet.create({
   },
   customIntervalsToggle: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
     marginTop: 8,
+    gap: 8,
+  },
+  customIntervalsToggleActive: {
+    backgroundColor: '#EBF5FF',
+    borderColor: '#3B82F6',
   },
   customIntervalsLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#374151',
     flex: 1,
   },
   customIntervalsSection: {
