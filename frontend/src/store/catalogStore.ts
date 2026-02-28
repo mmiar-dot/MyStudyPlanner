@@ -36,6 +36,7 @@ interface CatalogState {
   getItemSettings: (itemId: string) => UserItemSettings | undefined;
   createPersonalCourse: (title: string, parentId?: string | null, description?: string, color?: string) => Promise<void>;
   deletePersonalCourse: (itemId: string) => Promise<void>;
+  renameCourse: (itemId: string, newTitle: string) => Promise<void>;
   hideItem: (itemId: string) => Promise<void>;
   unhideItem: (itemId: string) => Promise<void>;
   createSection: (name: string, color: string) => Promise<void>;
