@@ -52,36 +52,35 @@ export const StatsDetailModal: React.FC<StatsDetailModalProps> = ({
     setIsLoading(true);
     try {
       if (statType === 'streak') {
-        // Load streak calendar data
+        // Load streak calendar data for last 3 months
         const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const response = await api.get(`/analytics/calendar?month=${month}&year=${year}`);
-        
-        // Build marked dates for streak
         const marked: Record<string, any> = {};
-        let currentStreak = 0;
         
-        // Go back from today to find streak days
-        for (let i = 0; i < 365; i++) {
-          const date = subDays(today, i);
-          const dateStr = format(date, 'yyyy-MM-dd');
-          const dayData = response.data.days?.find((d: any) => d.date === dateStr);
+        // Load data for current and previous 2 months
+        for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+          const targetDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
+          const year = targetDate.getFullYear();
+          const month = targetDate.getMonth() + 1;
           
-          if (dayData && dayData.completed > 0) {
-            currentStreak++;
-            marked[dateStr] = {
-              selected: true,
-              selectedColor: currentStreak <= progress.currentStreak ? '#10B981' : '#3B82F6',
-              selectedTextColor: '#FFF',
-            };
-          } else if (i > 0) {
-            // Break streak if not today and no completions
-            break;
+          try {
+            const response = await api.get(`/analytics/calendar?month=${month}&year=${year}`);
+            if (response.data.days) {
+              response.data.days.forEach((day: any) => {
+                if (day.completed > 0) {
+                  marked[day.date] = {
+                    selected: true,
+                    selectedColor: '#10B981',
+                    selectedTextColor: '#FFF',
+                  };
+                }
+              });
+            }
+          } catch (e) {
+            // Ignore errors for individual months
           }
         }
         
-        // Mark today specially if it has completions
+        // Mark today specially
         const todayStr = format(today, 'yyyy-MM-dd');
         if (marked[todayStr]) {
           marked[todayStr] = {
@@ -92,10 +91,27 @@ export const StatsDetailModal: React.FC<StatsDetailModalProps> = ({
         }
         
         setStreakData(marked);
-      } else if (statType === 'courses') {
-        // Load active courses
-        const response = await api.get('/user/items/settings');
-        setActiveCourses(response.data.filter((s: any) => s.method !== 'none'));
+      } else if (statType === 'courses' || statType === 'completion') {
+        // Load active courses with their names from catalog
+        const [settingsRes, catalogRes] = await Promise.all([
+          api.get('/user/items/settings'),
+          api.get('/catalog/all')
+        ]);
+        
+        const catalog = catalogRes.data;
+        const activeCourseSettings = settingsRes.data.filter((s: any) => s.method && s.method !== 'none');
+        
+        // Map settings to course names
+        const coursesWithNames = activeCourseSettings.map((setting: any) => {
+          const catalogItem = catalog.find((item: any) => item.id === setting.item_id);
+          return {
+            ...setting,
+            title: catalogItem?.title || 'Cours inconnu',
+            level: catalogItem?.level,
+          };
+        });
+        
+        setActiveCourses(coursesWithNames);
       }
     } catch (error) {
       console.error('Error loading detail data:', error);
