@@ -1104,7 +1104,28 @@ const styles = StyleSheet.create({
   notifNote: {
     fontSize: 12,
     color: '#9CA3AF',
-    textAlign: 'center',
-    fontStyle: 'italic',
+    flex: 1,
+  },
+  notifNoteBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: 10,
+    gap: 10,
+  },
+  testNotifButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EBF5FF',
+    padding: 14,
+    borderRadius: 10,
+    gap: 8,
+  },
+  testNotifText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3B82F6',
   },
 });
