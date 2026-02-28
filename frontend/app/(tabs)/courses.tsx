@@ -360,8 +360,9 @@ export default function CoursesScreen() {
                 ]}
                 onPress={() => setActiveFilter(section.id)}
                 onLongPress={() => {
-                  Alert.alert('Supprimer la section', `Supprimer "${section.name}" ?`, [
+                  Alert.alert('Section', `Que voulez-vous faire avec "${section.name}" ?`, [
                     { text: 'Annuler', style: 'cancel' },
+                    { text: 'Renommer', onPress: () => handleOpenRenameModal(section, 'section') },
                     { text: 'Supprimer', style: 'destructive', onPress: () => deleteSection(section.id) }
                   ]);
                 }}
