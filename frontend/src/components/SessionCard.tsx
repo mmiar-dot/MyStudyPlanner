@@ -26,9 +26,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showUpcomingModal, setShowUpcomingModal] = useState(false);
+  const [showCalendarPicker, setShowCalendarPicker] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(session.scheduled_date);
+  const [upcomingSessions, setUpcomingSessions] = useState<StudySession[]>([]);
 
   const notes = courseNotes[session.item_id] || [];
 
@@ -38,6 +41,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       fetchCourseNotes(session.item_id);
     }
   }, [session.item_id]);
+
+  // Fetch upcoming sessions for this item when modal opens
+  const fetchUpcomingSessions = async () => {
+    try {
+      const response = await api.get<StudySession[]>(`/sessions/item/${session.item_id}`);
+      setUpcomingSessions(response.data.sort((a, b) => 
+        new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime()
+      ));
+    } catch (error) {
+      console.error('Error fetching upcoming sessions:', error);
+    }
+  };
 
   const isCompleted = session.status === 'completed';
   const isLate = session.status === 'late';
