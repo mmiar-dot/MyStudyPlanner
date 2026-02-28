@@ -375,17 +375,23 @@ async def register(user_data: UserCreate):
     
     return {"access_token": token, "token_type": "bearer", "user": user_response}
 
-@api_router.post("/auth/login", response_model=Token)
+@api_router.post("/auth/login")
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email})
     if not user or not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
     
     token = create_access_token({"sub": user["id"]})
-    user_response = {k: v for k, v in user.items() if k != "password"}
-    user_response["created_at"] = user_response["created_at"].isoformat()
+    user_response = {
+        "id": user["id"],
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
+        "settings": user.get("settings", {})
+    }
     
-    return Token(access_token=token, user=user_response)
+    return {"access_token": token, "token_type": "bearer", "user": user_response}
 
 @api_router.post("/auth/google", response_model=Token)
 async def google_auth(auth_data: GoogleAuthRequest):
