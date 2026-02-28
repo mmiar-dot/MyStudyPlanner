@@ -8,8 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
@@ -17,15 +17,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 
 export default function LoginScreen() {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState('');
   const { login, error, clearError } = useAuthStore();
 
   const handleLogin = async () => {
+    setLocalError('');
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setLocalError('Veuillez remplir tous les champs');
       return;
     }
 
@@ -41,6 +46,8 @@ export default function LoginScreen() {
     }
   };
 
+  const displayError = localError || error;
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -48,91 +55,210 @@ export default function LoginScreen() {
         style={styles.keyboardView}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isDesktop && styles.scrollContentDesktop
+          ]}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <View style={styles.logo}>
-              <Ionicons name="book" size={40} color="#3B82F6" />
-            </View>
-            <Text style={styles.title}>RevisionMed</Text>
-            <Text style={styles.subtitle}>Calendrier de révision intelligent</Text>
-          </View>
-
-          <View style={styles.form}>
-            {error && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={20} color="#EF4444" />
-                <Text style={styles.errorText}>{error}</Text>
+          {isDesktop ? (
+            // Desktop layout with side panel
+            <View style={styles.desktopContainer}>
+              {/* Left Panel - Branding */}
+              <View style={styles.brandingPanel}>
+                <View style={styles.brandingContent}>
+                  <View style={styles.logoLarge}>
+                    <Ionicons name="book" size={64} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.brandTitle}>RevisionMed</Text>
+                  <Text style={styles.brandSubtitle}>
+                    Votre calendrier de révision intelligent pour les études de médecine
+                  </Text>
+                  <View style={styles.features}>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="calendar" size={20} color="#93C5FD" />
+                      <Text style={styles.featureText}>Planification automatique</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="refresh" size={20} color="#93C5FD" />
+                      <Text style={styles.featureText}>Méthode des J, SRS, Tours</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="sync" size={20} color="#93C5FD" />
+                      <Text style={styles.featureText}>Synchronisation ICS</Text>
+                    </View>
+                  </View>
+                </View>
               </View>
-            )}
 
-            <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-              />
+              {/* Right Panel - Form */}
+              <View style={styles.formPanel}>
+                <View style={styles.formContainer}>
+                  <Text style={styles.welcomeTitle}>Bon retour !</Text>
+                  <Text style={styles.welcomeSubtitle}>Connectez-vous pour continuer vos révisions</Text>
+
+                  {displayError && (
+                    <View style={styles.errorContainer}>
+                      <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                      <Text style={styles.errorText}>{displayError}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Email"
+                      placeholderTextColor="#9CA3AF"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                    />
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Mot de passe"
+                      placeholderTextColor="#9CA3AF"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                      autoComplete="password"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Ionicons
+                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                        size={20}
+                        color="#9CA3AF"
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
+                    onPress={handleLogin}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.loginButtonText}>Se connecter</Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>ou</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+
+                  <TouchableOpacity style={styles.googleButton}>
+                    <Ionicons name="logo-google" size={20} color="#1F2937" />
+                    <Text style={styles.googleButtonText}>Continuer avec Google</Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>Pas encore de compte ? </Text>
+                    <Link href="/(auth)/register" asChild>
+                      <TouchableOpacity>
+                        <Text style={styles.footerLink}>S'inscrire</Text>
+                      </TouchableOpacity>
+                    </Link>
+                  </View>
+                </View>
+              </View>
             </View>
+          ) : (
+            // Mobile layout
+            <>
+              <View style={styles.header}>
+                <View style={styles.logo}>
+                  <Ionicons name="book" size={40} color="#3B82F6" />
+                </View>
+                <Text style={styles.title}>RevisionMed</Text>
+                <Text style={styles.subtitle}>Calendrier de révision intelligent</Text>
+              </View>
 
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Mot de passe"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoComplete="password"
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
+              <View style={styles.form}>
+                {displayError && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                    <Text style={styles.errorText}>{displayError}</Text>
+                  </View>
+                )}
 
-            <TouchableOpacity
-              style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.loginButtonText}>Se connecter</Text>
-              )}
-            </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    placeholderTextColor="#9CA3AF"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                </View>
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>ou</Text>
-              <View style={styles.dividerLine} />
-            </View>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Mot de passe"
+                    placeholderTextColor="#9CA3AF"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoComplete="password"
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Ionicons
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color="#9CA3AF"
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            <TouchableOpacity style={styles.googleButton}>
-              <Ionicons name="logo-google" size={20} color="#1F2937" />
-              <Text style={styles.googleButtonText}>Continuer avec Google</Text>
-            </TouchableOpacity>
-          </View>
+                <TouchableOpacity
+                  style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
+                  onPress={handleLogin}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.loginButtonText}>Se connecter</Text>
+                  )}
+                </TouchableOpacity>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Pas encore de compte ? </Text>
-            <Link href="/(auth)/register" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>S'inscrire</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>ou</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <TouchableOpacity style={styles.googleButton}>
+                  <Ionicons name="logo-google" size={20} color="#1F2937" />
+                  <Text style={styles.googleButtonText}>Continuer avec Google</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>Pas encore de compte ? </Text>
+                <Link href="/(auth)/register" asChild>
+                  <TouchableOpacity>
+                    <Text style={styles.footerLink}>S'inscrire</Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -152,6 +278,84 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
+  scrollContentDesktop: {
+    padding: 0,
+  },
+  // Desktop styles
+  desktopContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    minHeight: '100%',
+  },
+  brandingPanel: {
+    flex: 1,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 48,
+  },
+  brandingContent: {
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  logoLarge: {
+    width: 120,
+    height: 120,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  brandTitle: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  brandSubtitle: {
+    fontSize: 18,
+    color: '#BFDBFE',
+    textAlign: 'center',
+    marginBottom: 48,
+    lineHeight: 28,
+  },
+  features: {
+    width: '100%',
+    gap: 20,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  featureText: {
+    fontSize: 16,
+    color: '#DBEAFE',
+  },
+  formPanel: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 48,
+    backgroundColor: '#FFFFFF',
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 8,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 32,
+  },
+  // Common styles
   header: {
     alignItems: 'center',
     marginBottom: 40,
@@ -259,6 +463,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 24,
   },
   footerText: {
     color: '#6B7280',
