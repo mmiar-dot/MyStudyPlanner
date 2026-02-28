@@ -727,17 +727,28 @@ async def delete_personal_course(item_id: str, user: dict = Depends(get_current_
 # =====================================
 @api_router.post("/user/hidden")
 async def hide_item(hidden: HiddenItemCreate, user: dict = Depends(get_current_user)):
-    """Hide an admin course for this user"""
+    """Hide an admin course for this user - works for any course including admin courses"""
     user_id = user["id"]
     
-    # Check item exists and is not personal
+    # Check item exists
     item = await db.catalog_items.find_one({"id": hidden.item_id})
     if not item:
         raise HTTPException(status_code=404, detail="Item non trouvé")
-    if item.get("owner_id") == user_id:
-        raise HTTPException(status_code=400, detail="Impossible de masquer un cours personnel")
     
-    # Check if already hidden
+    # If it's a personal course, just delete it
+    if item.get("owner_id") == user_id:
+        # Delete personal course
+        async def delete_recursive(parent_id: str):
+            children = await db.catalog_items.find({"parent_id": parent_id, "owner_id": user_id}).to_list(1000)
+            for child in children:
+                await delete_recursive(child["id"])
+            await db.catalog_items.delete_one({"id": parent_id, "owner_id": user_id})
+            await db.study_sessions.delete_many({"user_id": user_id, "item_id": parent_id})
+            await db.user_item_settings.delete_many({"user_id": user_id, "item_id": parent_id})
+        await delete_recursive(hidden.item_id)
+        return {"message": "Cours personnel supprimé"}
+    
+    # For admin courses, hide them
     existing = await db.hidden_items.find_one({"user_id": user_id, "item_id": hidden.item_id})
     if existing:
         return {"message": "Déjà masqué"}
@@ -753,6 +764,20 @@ async def hide_item(hidden: HiddenItemCreate, user: dict = Depends(get_current_u
     await db.study_sessions.delete_many({"user_id": user_id, "item_id": hidden.item_id})
     await db.user_item_settings.delete_many({"user_id": user_id, "item_id": hidden.item_id})
     
+    # Hide all children too
+    children = await db.catalog_items.find({"parent_id": hidden.item_id}).to_list(1000)
+    for child in children:
+        existing_child = await db.hidden_items.find_one({"user_id": user_id, "item_id": child["id"]})
+        if not existing_child:
+            await db.hidden_items.insert_one({
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "item_id": child["id"],
+                "created_at": datetime.utcnow()
+            })
+            await db.study_sessions.delete_many({"user_id": user_id, "item_id": child["id"]})
+            await db.user_item_settings.delete_many({"user_id": user_id, "item_id": child["id"]})
+    
     return {"message": "Cours masqué"}
 
 @api_router.delete("/user/hidden/{item_id}")
@@ -761,6 +786,14 @@ async def unhide_item(item_id: str, user: dict = Depends(get_current_user)):
     result = await db.hidden_items.delete_one({"user_id": user["id"], "item_id": item_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Item non masqué")
+    
+    # Also unhide children
+    item = await db.catalog_items.find_one({"id": item_id})
+    if item:
+        children = await db.catalog_items.find({"parent_id": item_id}).to_list(1000)
+        for child in children:
+            await db.hidden_items.delete_many({"user_id": user["id"], "item_id": child["id"]})
+    
     return {"message": "Cours restauré"}
 
 @api_router.get("/user/hidden")
@@ -768,6 +801,142 @@ async def get_hidden_items(user: dict = Depends(get_current_user)):
     """Get list of hidden item IDs"""
     hidden = await db.hidden_items.find({"user_id": user["id"]}).to_list(1000)
     return [h["item_id"] for h in hidden]
+
+# =====================================
+# CUSTOM SECTIONS
+# =====================================
+@api_router.post("/user/sections")
+async def create_section(section: CustomSectionCreate, user: dict = Depends(get_current_user)):
+    """Create a custom section for organizing courses"""
+    user_id = user["id"]
+    
+    # Get order
+    order = await db.custom_sections.count_documents({"user_id": user_id})
+    
+    section_id = str(uuid.uuid4())
+    section_data = {
+        "id": section_id,
+        "user_id": user_id,
+        "name": section.name,
+        "color": section.color,
+        "order": order,
+        "created_at": datetime.utcnow()
+    }
+    await db.custom_sections.insert_one(section_data)
+    
+    return {
+        "id": section_id,
+        "user_id": user_id,
+        "name": section.name,
+        "color": section.color,
+        "order": order,
+        "created_at": section_data["created_at"].isoformat()
+    }
+
+@api_router.get("/user/sections")
+async def get_sections(user: dict = Depends(get_current_user)):
+    """Get user's custom sections"""
+    sections = await db.custom_sections.find({"user_id": user["id"]}).sort("order", 1).to_list(100)
+    return [{
+        "id": s["id"],
+        "user_id": s["user_id"],
+        "name": s["name"],
+        "color": s["color"],
+        "order": s["order"],
+        "created_at": s["created_at"].isoformat() if isinstance(s["created_at"], datetime) else s["created_at"]
+    } for s in sections]
+
+@api_router.put("/user/sections/{section_id}")
+async def update_section(section_id: str, section: CustomSectionCreate, user: dict = Depends(get_current_user)):
+    """Update a custom section"""
+    result = await db.custom_sections.update_one(
+        {"id": section_id, "user_id": user["id"]},
+        {"$set": {"name": section.name, "color": section.color}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Section non trouvée")
+    return {"message": "Section mise à jour"}
+
+@api_router.delete("/user/sections/{section_id}")
+async def delete_section(section_id: str, user: dict = Depends(get_current_user)):
+    """Delete a custom section"""
+    result = await db.custom_sections.delete_one({"id": section_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Section non trouvée")
+    
+    # Remove section_id from items
+    await db.catalog_items.update_many(
+        {"section_id": section_id},
+        {"$unset": {"section_id": ""}}
+    )
+    await db.user_item_colors.update_many(
+        {"section_id": section_id},
+        {"$unset": {"section_id": ""}}
+    )
+    return {"message": "Section supprimée"}
+
+# =====================================
+# USER COLOR PREFERENCES
+# =====================================
+@api_router.post("/user/colors")
+async def set_item_color(pref: UserColorPreference, user: dict = Depends(get_current_user)):
+    """Set custom color for an item"""
+    user_id = user["id"]
+    
+    existing = await db.user_item_colors.find_one({"user_id": user_id, "item_id": pref.item_id})
+    if existing:
+        await db.user_item_colors.update_one(
+            {"id": existing["id"]},
+            {"$set": {"color": pref.color}}
+        )
+    else:
+        await db.user_item_colors.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "item_id": pref.item_id,
+            "color": pref.color,
+            "created_at": datetime.utcnow()
+        })
+    
+    return {"message": "Couleur mise à jour"}
+
+@api_router.get("/user/colors")
+async def get_item_colors(user: dict = Depends(get_current_user)):
+    """Get user's color preferences"""
+    colors = await db.user_item_colors.find({"user_id": user["id"]}).to_list(1000)
+    return {c["item_id"]: c["color"] for c in colors}
+
+@api_router.post("/user/items/{item_id}/section")
+async def assign_item_to_section(item_id: str, section_id: str, user: dict = Depends(get_current_user)):
+    """Assign an item to a custom section"""
+    # Verify section exists
+    section = await db.custom_sections.find_one({"id": section_id, "user_id": user["id"]})
+    if not section:
+        raise HTTPException(status_code=404, detail="Section non trouvée")
+    
+    # Store section assignment
+    existing = await db.user_item_sections.find_one({"user_id": user["id"], "item_id": item_id})
+    if existing:
+        await db.user_item_sections.update_one(
+            {"id": existing["id"]},
+            {"$set": {"section_id": section_id}}
+        )
+    else:
+        await db.user_item_sections.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "item_id": item_id,
+            "section_id": section_id,
+            "created_at": datetime.utcnow()
+        })
+    
+    return {"message": "Item assigné à la section"}
+
+@api_router.get("/user/items/sections")
+async def get_item_sections(user: dict = Depends(get_current_user)):
+    """Get item section assignments"""
+    assignments = await db.user_item_sections.find({"user_id": user["id"]}).to_list(1000)
+    return {a["item_id"]: a["section_id"] for a in assignments}
 
 # =====================================
 # USER ITEM SETTINGS (Revision Methods)
