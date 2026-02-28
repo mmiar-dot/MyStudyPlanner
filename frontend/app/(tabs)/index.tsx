@@ -466,24 +466,42 @@ export default function TodayScreen() {
         {!isDesktop && progress && (
           <View style={styles.progressCard}>
             <View style={styles.progressRow}>
-              <View style={styles.progressItem}>
+              <TouchableOpacity 
+                style={styles.progressItem}
+                onPress={() => {
+                  setStatsType('today');
+                  setShowStatsModal(true);
+                }}
+              >
                 <Text style={styles.progressValue}>{progress.today_completed}</Text>
                 <Text style={styles.progressLabel}>Aujourd'hui</Text>
-              </View>
+              </TouchableOpacity>
               <View style={styles.progressDivider} />
-              <View style={styles.progressItem}>
+              <TouchableOpacity 
+                style={styles.progressItem}
+                onPress={() => {
+                  setStatsType('late');
+                  setShowStatsModal(true);
+                }}
+              >
                 <Text style={[styles.progressValue, progress.late_sessions > 0 && styles.progressValueLate]}>
                   {progress.late_sessions}
                 </Text>
                 <Text style={[styles.progressLabel, progress.late_sessions > 0 && styles.lateLabel]}>
                   En retard
                 </Text>
-              </View>
+              </TouchableOpacity>
               <View style={styles.progressDivider} />
-              <View style={styles.progressItem}>
+              <TouchableOpacity 
+                style={styles.progressItem}
+                onPress={() => {
+                  setStatsType('completion');
+                  setShowStatsModal(true);
+                }}
+              >
                 <Text style={styles.progressValue}>{progress.completion_rate}%</Text>
                 <Text style={styles.progressLabel}>Progression</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -495,6 +513,23 @@ export default function TodayScreen() {
         onClose={() => setSrsSession(null)}
         onRate={handleSRSRating}
         itemTitle={srsSession?.item_title || ''}
+      />
+
+      {/* Stats Detail Modal */}
+      <StatsDetailModal
+        visible={showStatsModal}
+        onClose={() => setShowStatsModal(false)}
+        statType={statsType}
+        progress={{
+          todayCompleted: progress?.today_completed || 0,
+          todayTotal: todaySessions.length,
+          lateCount: progress?.late_sessions || 0,
+          totalCompleted: progress?.completed_sessions || 0,
+          currentStreak: progress?.streak || 0,
+          maxStreak: progress?.max_streak || progress?.streak || 0,
+          activeCourses: progress?.active_items || 0,
+          completionRate: progress?.completion_rate || 0,
+        }}
       />
     </SafeAreaView>
   );
