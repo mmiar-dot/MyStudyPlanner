@@ -63,7 +63,7 @@ def test_calendar_all_events(token):
         "color": "#3b82f6"
     }
     
-    event_response = requests.post(f"{BACKEND_URL}/calendar/events", json=event_data, headers=headers)
+    event_response = requests.post(f"{BACKEND_URL}/events", json=event_data, headers=headers)
     if event_response.status_code in [200, 201]:
         print("✅ Test personal event created")
     else:
