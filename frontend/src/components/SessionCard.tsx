@@ -553,12 +553,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                         <Text style={styles.upcomingLateText}>En retard</Text>
                       ) : (
                         <TouchableOpacity
+                          style={styles.rescheduleArrow}
+                          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                           onPress={async () => {
-                            await rescheduleSession(s.id, format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd'));
-                            fetchUpcomingSessions();
+                            try {
+                              await rescheduleSession(s.id, format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd'));
+                              fetchUpcomingSessions();
+                              onStatusChange?.();
+                            } catch (error) {
+                              Alert.alert('Erreur', 'Impossible de déplacer la session');
+                            }
                           }}
                         >
-                          <Ionicons name="arrow-forward" size={20} color="#6B7280" />
+                          <Ionicons name="arrow-forward" size={24} color="#3B82F6" />
                         </TouchableOpacity>
                       )}
                     </View>
