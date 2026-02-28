@@ -70,7 +70,7 @@ export default function LoginScreen() {
                   <View style={styles.logoLarge}>
                     <Ionicons name="book" size={64} color="#FFFFFF" />
                   </View>
-                  <Text style={styles.brandTitle}>RevisionMed</Text>
+                  <Text style={styles.brandTitle}>MyStudyPlanner</Text>
                   <Text style={styles.brandSubtitle}>
                     Votre calendrier de révision intelligent pour les études de médecine
                   </Text>
