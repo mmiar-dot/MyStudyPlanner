@@ -1256,6 +1256,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF2F2',
     borderColor: '#EF4444',
   },
+  sectionEditButton: {
+    marginLeft: 4,
+    padding: 4,
+    borderRadius: 4,
+  },
   hiddenSection: {
     backgroundColor: '#FEF2F2',
     borderRadius: 12,
