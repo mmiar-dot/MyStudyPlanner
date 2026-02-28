@@ -393,7 +393,7 @@ async def login(credentials: UserLogin):
     
     return {"access_token": token, "token_type": "bearer", "user": user_response}
 
-@api_router.post("/auth/google", response_model=Token)
+@api_router.post("/auth/google")
 async def google_auth(auth_data: GoogleAuthRequest):
     """Handle Google OAuth authentication"""
     # Find or create user
@@ -414,10 +414,16 @@ async def google_auth(auth_data: GoogleAuthRequest):
         await db.users.insert_one(user)
     
     token = create_access_token({"sub": user["id"]})
-    user_response = {k: v for k, v in user.items() if k not in ["password", "google_id"]}
-    user_response["created_at"] = user_response["created_at"].isoformat() if isinstance(user_response["created_at"], datetime) else user_response["created_at"]
+    user_response = {
+        "id": user["id"],
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
+        "settings": user.get("settings", {})
+    }
     
-    return Token(access_token=token, user=user_response)
+    return {"access_token": token, "token_type": "bearer", "user": user_response}
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: dict = Depends(get_current_user)):
