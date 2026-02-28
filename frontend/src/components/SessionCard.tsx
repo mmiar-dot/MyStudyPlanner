@@ -126,6 +126,48 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     }
   };
 
+  const handleUpdateNote = async (noteId: string) => {
+    if (!editNoteContent.trim()) return;
+    try {
+      setIsLoading(true);
+      await api.put(`/courses/${session.item_id}/notes/${noteId}`, {
+        content: editNoteContent.trim()
+      });
+      await fetchCourseNotes(session.item_id);
+      setEditingNoteId(null);
+      setEditNoteContent('');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de modifier la note');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    Alert.alert(
+      'Supprimer la note',
+      'Êtes-vous sûr de vouloir supprimer cette note ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              await api.delete(`/courses/${session.item_id}/notes/${noteId}`);
+              await fetchCourseNotes(session.item_id);
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de supprimer la note');
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const quickDates = [
     { label: 'Demain', date: format(addDays(new Date(), 1), 'yyyy-MM-dd') },
     { label: 'Dans 2 jours', date: format(addDays(new Date(), 2), 'yyyy-MM-dd') },
