@@ -500,6 +500,14 @@ export default function CoursesScreen() {
                               >
                                 <Ionicons name="color-palette-outline" size={16} color="#6B7280" />
                               </TouchableOpacity>
+                              {course.is_personal && (
+                                <TouchableOpacity 
+                                  onPress={() => handleOpenRenameModal(course, 'course')}
+                                  style={styles.editButton}
+                                >
+                                  <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                                </TouchableOpacity>
+                              )}
                               <TouchableOpacity 
                                 onPress={() => handleDeleteItem(course)}
                                 style={styles.deleteButton}
