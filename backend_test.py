@@ -98,6 +98,7 @@ async def setup_test_users():
 
 async def test_admin_endpoints():
     """Test admin-specific endpoints"""
+    global regular_token, admin_token, test_user_id
     print("\n🔒 Testing Admin Endpoints...")
     
     # Test 1: Create admin user (should already exist)
