@@ -563,18 +563,26 @@ export default function CalendarScreen() {
 
       {/* Create Event Modal */}
       <Modal visible={showEventModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
-              </Text>
-              <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
+                </Text>
+                <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
+                  <Ionicons name="close" size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
 
-            {/* Date selector */}
+              <ScrollView 
+                style={styles.eventFormScroll}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
             <TouchableOpacity 
               style={styles.dateSelector}
               onPress={() => setShowEventDatePicker(!showEventDatePicker)}
