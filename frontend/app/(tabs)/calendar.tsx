@@ -228,7 +228,7 @@ export default function CalendarScreen() {
   const openEventModal = (date?: string) => {
     setEventDate(date || selectedDate);
     setShowEventDatePicker(false);
-    setShowEventModal(true);
+    openEventModal();
   };
 
   const resetEventForm = () => {
@@ -328,7 +328,7 @@ export default function CalendarScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={styles.addButton}
-              onPress={() => setShowEventModal(true)}
+              onPress={() => openEventModal()}
             >
               <Ionicons name="add" size={20} color="#FFFFFF" />
               {isDesktop && <Text style={styles.addButtonText}>Événement</Text>}
@@ -433,7 +433,7 @@ export default function CalendarScreen() {
                       const endParts = event.end_time.split('T');
                       if (startParts[1]) setEventStartTime(startParts[1].substring(0, 5));
                       if (endParts[1]) setEventEndTime(endParts[1].substring(0, 5));
-                      setShowEventModal(true);
+                      openEventModal();
                     }}
                   >
                     <View style={[styles.eventColor, { backgroundColor: event.color }]} />
@@ -460,7 +460,7 @@ export default function CalendarScreen() {
                           const endParts = event.end_time.split('T');
                           if (startParts[1]) setEventStartTime(startParts[1].substring(0, 5));
                           if (endParts[1]) setEventEndTime(endParts[1].substring(0, 5));
-                          setShowEventModal(true);
+                          openEventModal();
                         }}
                       >
                         <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
@@ -514,7 +514,7 @@ export default function CalendarScreen() {
                 <Text style={styles.emptyText}>Aucune session ni événement</Text>
                 <TouchableOpacity 
                   style={styles.addEventButton}
-                  onPress={() => setShowEventModal(true)}
+                  onPress={() => openEventModal()}
                 >
                   <Ionicons name="add" size={18} color="#3B82F6" />
                   <Text style={styles.addEventButtonText}>Ajouter un événement</Text>
