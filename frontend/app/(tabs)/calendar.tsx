@@ -667,24 +667,26 @@ export default function CalendarScreen() {
               </View>
             </View>
 
-            <Text style={styles.colorLabel}>Couleur</Text>
-            <ColorPicker selectedColor={eventColor} onColorSelect={setEventColor} compact />
+                <Text style={styles.colorLabel}>Couleur</Text>
+                <ColorPicker selectedColor={eventColor} onColorSelect={setEventColor} compact />
 
-            <TouchableOpacity
-              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
-              onPress={handleCreateEvent}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.createButtonText}>
-                  {editingEvent ? 'Enregistrer' : 'Créer l\'événement'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+                <TouchableOpacity
+                  style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+                  onPress={handleCreateEvent}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.createButtonText}>
+                      {editingEvent ? 'Enregistrer' : 'Créer l\'événement'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Delete Confirmation Modal */}
