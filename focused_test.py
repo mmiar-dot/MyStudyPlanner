@@ -220,17 +220,19 @@ def test_course_rename_api(token):
             if not item.get('owner_id'):  # Admin course has no owner_id
                 admin_course = item
                 break
-    
-    if admin_course:
-        admin_id = admin_course["id"]
-        admin_response = requests.put(f"{BACKEND_URL}/user/courses/{admin_id}", json={"title": "Should Fail"}, headers=headers)
         
-        if admin_response.status_code == 404:
-            print("✅ Correctly prevented admin course rename")
+        if admin_course:
+            admin_id = admin_course["id"]
+            admin_response = requests.put(f"{BACKEND_URL}/user/courses/{admin_id}", json={"title": "Should Fail"}, headers=headers)
+            
+            if admin_response.status_code == 404:
+                print("✅ Correctly prevented admin course rename")
+            else:
+                print(f"⚠️ Should have prevented admin course rename: {admin_response.status_code}")
         else:
-            print(f"⚠️ Should have prevented admin course rename: {admin_response.status_code}")
+            print("ℹ️ No admin courses found to test")
     else:
-        print("ℹ️ No admin courses found to test")
+        print("ℹ️ Could not fetch catalog to test admin course rename")
     
     # Test 5: Request without auth
     print("\n5️⃣ Testing rename without authentication...")
