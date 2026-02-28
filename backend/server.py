@@ -2396,6 +2396,63 @@ async def create_admin_user():
     }
 
 # =====================================
+# USER ACCOUNT SETTINGS
+# =====================================
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+    confirmation: str = "SUPPRIMER"
+
+@api_router.put("/account/password")
+async def change_password(request: ChangePasswordRequest, user: dict = Depends(get_current_user)):
+    """Change user password"""
+    stored_password = user.get("hashed_password") or user.get("password", "")
+    if not verify_password(request.current_password, stored_password):
+        raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+    
+    if len(request.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le nouveau mot de passe doit faire au moins 6 caractères")
+    
+    new_hashed = pwd_context.hash(request.new_password)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"hashed_password": new_hashed, "password": new_hashed}}
+    )
+    
+    return {"message": "Mot de passe modifié avec succès"}
+
+@api_router.delete("/account")
+async def delete_own_account(request: DeleteAccountRequest, user: dict = Depends(get_current_user)):
+    """Delete own account and all data (GDPR compliant)"""
+    stored_password = user.get("hashed_password") or user.get("password", "")
+    if not verify_password(request.password, stored_password):
+        raise HTTPException(status_code=400, detail="Mot de passe incorrect")
+    
+    if request.confirmation != "SUPPRIMER":
+        raise HTTPException(status_code=400, detail="Confirmation incorrecte")
+    
+    user_id = user["id"]
+    
+    # Delete all user data
+    await db.study_sessions.delete_many({"user_id": user_id})
+    await db.user_item_settings.delete_many({"user_id": user_id})
+    await db.personal_events.delete_many({"user_id": user_id})
+    await db.ics_subscriptions.delete_many({"user_id": user_id})
+    await db.item_notes.delete_many({"user_id": user_id})
+    await db.hidden_items.delete_many({"user_id": user_id})
+    await db.custom_sections.delete_many({"user_id": user_id})
+    await db.user_item_colors.delete_many({"user_id": user_id})
+    await db.user_item_sections.delete_many({"user_id": user_id})
+    await db.catalog_items.delete_many({"owner_id": user_id})
+    await db.users.delete_one({"id": user_id})
+    
+    return {"message": "Compte supprimé avec succès"}
+
+# =====================================
 # USER PROFILE PHOTO
 # =====================================
 
