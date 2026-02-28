@@ -1927,6 +1927,9 @@ async def startup():
     await db.analytics_logs.create_index([("user_id", 1), ("timestamp", -1)])
     await db.hidden_items.create_index([("user_id", 1), ("item_id", 1)], unique=True)
     await db.catalog_items.create_index("owner_id")
+    await db.custom_sections.create_index([("user_id", 1)])
+    await db.user_item_colors.create_index([("user_id", 1), ("item_id", 1)], unique=True)
+    await db.user_item_sections.create_index([("user_id", 1), ("item_id", 1)], unique=True)
     
     logger.info("Database indexes created")
 
