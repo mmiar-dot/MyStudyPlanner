@@ -1040,6 +1040,19 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </View>
               )}
+
+              {/* Legal links */}
+              <TouchableOpacity 
+                style={styles.settingsLegalLink}
+                onPress={() => {
+                  setShowSettingsModal(false);
+                  router.push('/legal');
+                }}
+              >
+                <Ionicons name="document-text-outline" size={18} color="#6B7280" />
+                <Text style={styles.settingsLegalLinkText}>Informations légales</Text>
+                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
