@@ -1075,9 +1075,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
+    paddingTop: 40,
+    paddingHorizontal: 16,
   },
   upcomingCalendarContainer: {
     backgroundColor: '#FFFFFF',
@@ -1085,6 +1086,7 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     maxWidth: 350,
+    maxHeight: '90%',
   },
   upcomingCalendarHeader: {
     flexDirection: 'row',
