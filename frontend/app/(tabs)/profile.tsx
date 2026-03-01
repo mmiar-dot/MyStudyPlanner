@@ -1803,4 +1803,19 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     marginBottom: 6,
   },
+  settingsLegalLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  settingsLegalLinkText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#6B7280',
+  },
 });
