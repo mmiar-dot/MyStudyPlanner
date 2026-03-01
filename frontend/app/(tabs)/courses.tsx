@@ -1078,6 +1078,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 20,
+    alignItems: 'flex-start',
   },
   chapterCard: {
     backgroundColor: '#FFFFFF',
