@@ -570,7 +570,9 @@ export default function AdminScreen() {
             })
           )}
         </ScrollView>
-      ) : null}
+          )}
+        </>
+      )}
 
       {/* User Detail Modal */}
       <Modal visible={showUserModal} transparent animationType="fade">
