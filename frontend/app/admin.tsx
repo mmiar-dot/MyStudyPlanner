@@ -425,7 +425,7 @@ export default function AdminScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      ) : (
+      ) : activeTab === 'feedback' ? (
         <ScrollView style={styles.content}>
           <Text style={styles.sectionTitle}>
             {feedbackList.length} signalement{feedbackList.length > 1 ? 's' : ''}
