@@ -1623,7 +1623,7 @@ const styles = StyleSheet.create({
   // Report styles
   reportTypeContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     marginBottom: 20,
   },
   reportTypeButton: {
@@ -1631,12 +1631,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    padding: 12,
+    gap: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     backgroundColor: '#F9FAFB',
+    minWidth: 80,
   },
   reportTypeSelected: {
     backgroundColor: '#3B82F6',
