@@ -565,27 +565,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                         <TouchableOpacity
                           style={styles.rescheduleArrow}
                           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                          onPress={async () => {
-                            setIsLoading(true);
-                            try {
-                              const newDate = format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd');
-                              await rescheduleSession(s.id, newDate);
-                              await fetchUpcomingSessions();
-                              onStatusChange?.();
-                            } catch (error) {
-                              console.error('Reschedule error:', error);
-                              Alert.alert('Erreur', 'Impossible de déplacer la session');
-                            } finally {
-                              setIsLoading(false);
-                            }
+                          onPress={() => {
+                            setSessionToReschedule(s);
+                            setRescheduleTargetDate(s.scheduled_date);
+                            setShowUpcomingCalendar(true);
                           }}
-                          disabled={isLoading}
                         >
-                          {isLoading ? (
-                            <ActivityIndicator size="small" color="#3B82F6" />
-                          ) : (
-                            <Ionicons name="arrow-forward" size={24} color="#3B82F6" />
-                          )}
+                          <Ionicons name="calendar-outline" size={24} color="#3B82F6" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -593,6 +579,78 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 );
               })}
             </ScrollView>
+
+            {/* Calendar picker for rescheduling */}
+            {showUpcomingCalendar && sessionToReschedule && (
+              <View style={styles.upcomingCalendarOverlay}>
+                <View style={styles.upcomingCalendarContainer}>
+                  <View style={styles.upcomingCalendarHeader}>
+                    <Text style={styles.upcomingCalendarTitle}>
+                      Déplacer {sessionToReschedule.j_day !== undefined ? `J${sessionToReschedule.j_day}` : 'la session'}
+                    </Text>
+                    <TouchableOpacity onPress={() => {
+                      setShowUpcomingCalendar(false);
+                      setSessionToReschedule(null);
+                    }}>
+                      <Ionicons name="close" size={24} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <Calendar
+                    current={rescheduleTargetDate}
+                    onDayPress={(day: any) => setRescheduleTargetDate(day.dateString)}
+                    markedDates={{
+                      [rescheduleTargetDate]: { selected: true, selectedColor: '#3B82F6' },
+                      [sessionToReschedule.scheduled_date]: { marked: true, dotColor: '#EF4444' }
+                    }}
+                    minDate={format(new Date(), 'yyyy-MM-dd')}
+                    theme={{
+                      todayTextColor: '#3B82F6',
+                      selectedDayBackgroundColor: '#3B82F6',
+                      arrowColor: '#3B82F6',
+                    }}
+                  />
+
+                  <View style={styles.upcomingCalendarActions}>
+                    <TouchableOpacity 
+                      style={styles.upcomingCalendarCancel}
+                      onPress={() => {
+                        setShowUpcomingCalendar(false);
+                        setSessionToReschedule(null);
+                      }}
+                    >
+                      <Text style={styles.upcomingCalendarCancelText}>Annuler</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.upcomingCalendarConfirm, isLoading && styles.buttonDisabled]}
+                      onPress={async () => {
+                        if (!sessionToReschedule) return;
+                        setIsLoading(true);
+                        try {
+                          await rescheduleSession(sessionToReschedule.id, rescheduleTargetDate);
+                          await fetchUpcomingSessions();
+                          onStatusChange?.();
+                          setShowUpcomingCalendar(false);
+                          setSessionToReschedule(null);
+                        } catch (error) {
+                          console.error('Reschedule error:', error);
+                          Alert.alert('Erreur', 'Impossible de déplacer la session');
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                      disabled={isLoading || rescheduleTargetDate === sessionToReschedule.scheduled_date}
+                    >
+                      {isLoading ? (
+                        <ActivityIndicator color="#FFFFFF" size="small" />
+                      ) : (
+                        <Text style={styles.upcomingCalendarConfirmText}>Confirmer</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
