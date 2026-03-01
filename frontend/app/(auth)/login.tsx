@@ -257,6 +257,15 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 </Link>
               </View>
+
+              <TouchableOpacity 
+                style={styles.legalLink}
+                onPress={() => router.push('/legal')}
+              >
+                <Text style={styles.legalLinkText}>
+                  Politique de confidentialité • CGU
+                </Text>
+              </TouchableOpacity>
             </>
           )}
         </ScrollView>
