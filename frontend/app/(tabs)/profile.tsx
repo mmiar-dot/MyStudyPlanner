@@ -943,6 +943,64 @@ export default function ProfileScreen() {
                     )}
                   </TouchableOpacity>
                 </View>
+              ) : settingsTab === 'export' ? (
+                <View>
+                  <View style={styles.exportInfo}>
+                    <Ionicons name="download" size={32} color="#3B82F6" />
+                    <Text style={styles.exportTitle}>Exporter mes données</Text>
+                    <Text style={styles.exportDescription}>
+                      Conformément au RGPD, vous pouvez télécharger toutes vos données personnelles au format JSON :
+                    </Text>
+                  </View>
+                  <View style={styles.exportList}>
+                    <Text style={styles.exportListItem}>• Informations de compte</Text>
+                    <Text style={styles.exportListItem}>• Cours personnels</Text>
+                    <Text style={styles.exportListItem}>• Paramètres de révision</Text>
+                    <Text style={styles.exportListItem}>• Sessions planifiées</Text>
+                    <Text style={styles.exportListItem}>• Événements personnels</Text>
+                    <Text style={styles.exportListItem}>• Notes de cours</Text>
+                    <Text style={styles.exportListItem}>• Calendriers ICS</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    onPress={async () => {
+                      setIsSubmitting(true);
+                      try {
+                        const response = await api.get('/account/export');
+                        const dataStr = JSON.stringify(response.data, null, 2);
+                        
+                        if (Platform.OS === 'web') {
+                          // Download as file on web
+                          const blob = new Blob([dataStr], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `mystudyplanner-export-${new Date().toISOString().split('T')[0]}.json`;
+                          link.click();
+                          URL.revokeObjectURL(url);
+                          Alert.alert('Succès', 'Vos données ont été téléchargées');
+                        } else {
+                          // On mobile, show a message with the data preview
+                          Alert.alert(
+                            'Export réussi',
+                            `Vos données contiennent:\n- ${response.data.personal_courses?.length || 0} cours\n- ${response.data.sessions?.length || 0} sessions\n- ${response.data.personal_events?.length || 0} événements\n- ${response.data.notes?.length || 0} notes\n\nLe fichier JSON complet est disponible sur la version web.`
+                          );
+                        }
+                      } catch (error) {
+                        Alert.alert('Erreur', 'Impossible d\'exporter vos données');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.submitButtonText}>Télécharger mes données</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <View>
                   <View style={styles.dangerZone}>
