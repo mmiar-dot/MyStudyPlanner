@@ -142,10 +142,30 @@ export default function RegisterScreen() {
               />
             </View>
 
+            {/* GDPR Checkbox */}
+            <TouchableOpacity 
+              style={styles.termsContainer}
+              onPress={() => setAcceptedTerms(!acceptedTerms)}
+            >
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                {acceptedTerms && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+              </View>
+              <Text style={styles.termsText}>
+                J'accepte la{' '}
+                <Text style={styles.termsLink} onPress={() => router.push('/legal?page=privacy')}>
+                  politique de confidentialité
+                </Text>
+                {' '}et les{' '}
+                <Text style={styles.termsLink} onPress={() => router.push('/legal?page=terms')}>
+                  conditions d'utilisation
+                </Text>
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
-              style={[styles.registerButton, isSubmitting && styles.registerButtonDisabled]}
+              style={[styles.registerButton, (isSubmitting || !acceptedTerms) && styles.registerButtonDisabled]}
               onPress={handleRegister}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !acceptedTerms}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" />
