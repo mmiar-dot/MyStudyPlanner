@@ -230,7 +230,7 @@ export default function TodayScreen() {
                       session={session}
                       onComplete={() => handleCompleteSession(session)}
                       onPress={() => {}}
-                      onStatusChange={loadTodaySessions}
+                      onStatusChange={loadData}
                     />
                   ))}
                 </View>
