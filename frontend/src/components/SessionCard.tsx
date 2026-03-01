@@ -519,7 +519,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
             <ScrollView style={styles.upcomingList}>
               {upcomingSessions.map((s, idx) => {
-                const isPast = new Date(s.scheduled_date) < new Date();
+                // Compare only dates, not times - today should not be "late"
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const sessionDate = new Date(s.scheduled_date);
+                sessionDate.setHours(0, 0, 0, 0);
+                const isPast = sessionDate < today;
+                const isToday = sessionDate.getTime() === today.getTime();
                 const isCurrent = s.id === session.id;
                 
                 return (
@@ -533,7 +539,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   >
                     <View style={[
                       styles.upcomingDot,
-                      { backgroundColor: s.status === 'completed' ? '#10B981' : isPast ? '#EF4444' : '#3B82F6' }
+                      { backgroundColor: s.status === 'completed' ? '#10B981' : isPast ? '#EF4444' : isToday ? '#F59E0B' : '#3B82F6' }
                     ]} />
                     <View style={styles.upcomingInfo}>
                       <Text style={styles.upcomingLabel}>
@@ -542,6 +548,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                       </Text>
                       <Text style={styles.upcomingDate}>
                         {format(new Date(s.scheduled_date), 'dd MMMM yyyy', { locale: fr })}
+                        {isToday && ' (aujourd\'hui)'}
                       </Text>
                     </View>
                     <View style={styles.upcomingStatus}>
@@ -556,16 +563,26 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                           style={styles.rescheduleArrow}
                           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                           onPress={async () => {
+                            setIsLoading(true);
                             try {
-                              await rescheduleSession(s.id, format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd'));
-                              fetchUpcomingSessions();
+                              const newDate = format(addDays(new Date(s.scheduled_date), 1), 'yyyy-MM-dd');
+                              await rescheduleSession(s.id, newDate);
+                              await fetchUpcomingSessions();
                               onStatusChange?.();
                             } catch (error) {
+                              console.error('Reschedule error:', error);
                               Alert.alert('Erreur', 'Impossible de déplacer la session');
+                            } finally {
+                              setIsLoading(false);
                             }
                           }}
+                          disabled={isLoading}
                         >
-                          <Ionicons name="arrow-forward" size={24} color="#3B82F6" />
+                          {isLoading ? (
+                            <ActivityIndicator size="small" color="#3B82F6" />
+                          ) : (
+                            <Ionicons name="arrow-forward" size={24} color="#3B82F6" />
+                          )}
                         </TouchableOpacity>
                       )}
                     </View>
