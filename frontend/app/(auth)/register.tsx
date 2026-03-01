@@ -22,6 +22,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, error, clearError } = useAuthStore();
 
@@ -38,6 +39,11 @@ export default function RegisterScreen() {
 
     if (password.length < 6) {
       Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      Alert.alert('Erreur', 'Vous devez accepter les conditions d\'utilisation');
       return;
     }
 
