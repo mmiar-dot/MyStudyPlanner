@@ -27,33 +27,102 @@ interface AdminUser {
   courses_count: number;
 }
 
+interface Feedback {
+  id: string;
+  user_id: string;
+  user_email: string;
+  type: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+interface FeedbackCount {
+  total: number;
+  pending: number;
+  bugs: number;
+  suggestions: number;
+}
+
 export default function AdminScreen() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
+  const [feedbackCount, setFeedbackCount] = useState<FeedbackCount>({ total: 0, pending: 0, bugs: 0, suggestions: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'block' | 'unblock' | 'delete'>('block');
   const [blockReason, setBlockReason] = useState('');
+  const [activeTab, setActiveTab] = useState<'users' | 'feedback'>('users');
 
   useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    await Promise.all([loadUsers(), loadFeedback()]);
+    setIsLoading(false);
+  };
 
   const loadUsers = async () => {
     try {
-      setIsLoading(true);
       const response = await api.get<AdminUser[]>('/admin/users');
       setUsers(response.data);
     } catch (error: any) {
       if (error.response?.status === 403) {
         Alert.alert('Accès refusé', 'Vous n\'avez pas les droits d\'administration');
         router.back();
-      } else {
-        Alert.alert('Erreur', 'Impossible de charger les utilisateurs');
       }
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const loadFeedback = async () => {
+    try {
+      const [feedbackRes, countRes] = await Promise.all([
+        api.get<Feedback[]>('/admin/feedback'),
+        api.get<FeedbackCount>('/admin/feedback/count')
+      ]);
+      setFeedbackList(feedbackRes.data);
+      setFeedbackCount(countRes.data);
+    } catch (error) {
+      console.log('Feedback load error:', error);
+    }
+  };
+
+  const updateFeedbackStatus = async (feedbackId: string, status: string) => {
+    try {
+      await api.put(`/admin/feedback/${feedbackId}/status?status=${status}`);
+      loadFeedback();
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de mettre à jour le statut');
+    }
+  };
+
+  const deleteFeedback = async (feedbackId: string) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Supprimer ce signalement ?')) {
+        try {
+          await api.delete(`/admin/feedback/${feedbackId}`);
+          loadFeedback();
+        } catch (error) {
+          Alert.alert('Erreur', 'Impossible de supprimer');
+        }
+      }
+    } else {
+      Alert.alert('Confirmer', 'Supprimer ce signalement ?', [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: async () => {
+          try {
+            await api.delete(`/admin/feedback/${feedbackId}`);
+            loadFeedback();
+          } catch (error) {
+            Alert.alert('Erreur', 'Impossible de supprimer');
+          }
+        }}
+      ]);
     }
   };
 
