@@ -1081,9 +1081,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-start',
+  },
+  upcomingCalendarScroll: {
+    flex: 1,
+  },
+  upcomingCalendarScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40,
+    paddingVertical: 20,
     paddingHorizontal: 16,
   },
   upcomingCalendarContainer: {
@@ -1092,7 +1098,6 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     maxWidth: 350,
-    maxHeight: '90%',
   },
   upcomingCalendarHeader: {
     flexDirection: 'row',
