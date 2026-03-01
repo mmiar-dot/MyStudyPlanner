@@ -2482,6 +2482,91 @@ async def delete_feedback(feedback_id: str, admin: dict = Depends(get_admin_user
     return {"message": "Signalement supprimé"}
 
 # =====================================
+# DATA EXPORT (GDPR)
+# =====================================
+
+@api_router.get("/account/export")
+async def export_user_data(user: dict = Depends(get_current_user)):
+    """Export all user data for GDPR compliance"""
+    user_id = user["id"]
+    
+    # Collect all user data
+    export_data = {
+        "account": {
+            "id": user_id,
+            "email": user["email"],
+            "name": user.get("name", ""),
+            "role": user.get("role", "user"),
+            "created_at": user.get("created_at").isoformat() if user.get("created_at") else None,
+            "settings": user.get("settings", {})
+        },
+        "personal_courses": [],
+        "course_settings": [],
+        "sessions": [],
+        "personal_events": [],
+        "notes": [],
+        "ics_subscriptions": [],
+        "hidden_items": [],
+        "feedback": [],
+        "export_date": datetime.utcnow().isoformat()
+    }
+    
+    # Personal courses
+    personal_courses = await db.catalog_items.find({"owner_id": user_id}).to_list(1000)
+    export_data["personal_courses"] = [
+        {"id": c["id"], "title": c["title"], "description": c.get("description"), "created_at": c.get("created_at").isoformat() if c.get("created_at") else None}
+        for c in personal_courses
+    ]
+    
+    # Course settings
+    settings = await db.user_item_settings.find({"user_id": user_id}).to_list(1000)
+    export_data["course_settings"] = [
+        {"item_id": s["item_id"], "revision_method": s.get("revision_method"), "j_days": s.get("j_days"), "created_at": s.get("created_at").isoformat() if s.get("created_at") else None}
+        for s in settings
+    ]
+    
+    # Sessions
+    sessions = await db.study_sessions.find({"user_id": user_id}).to_list(5000)
+    export_data["sessions"] = [
+        {"id": s["id"], "item_id": s["item_id"], "scheduled_date": s["scheduled_date"], "status": s.get("status"), "j_day": s.get("j_day")}
+        for s in sessions
+    ]
+    
+    # Personal events
+    events = await db.personal_events.find({"user_id": user_id}).to_list(1000)
+    export_data["personal_events"] = [
+        {"id": e["id"], "title": e["title"], "start_time": e["start_time"], "end_time": e.get("end_time"), "description": e.get("description")}
+        for e in events
+    ]
+    
+    # Notes
+    notes = await db.item_notes.find({"user_id": user_id}).to_list(1000)
+    export_data["notes"] = [
+        {"id": n["id"], "item_id": n["item_id"], "content": n["content"], "created_at": n.get("created_at").isoformat() if n.get("created_at") else None}
+        for n in notes
+    ]
+    
+    # ICS subscriptions
+    ics_subs = await db.ics_subscriptions.find({"user_id": user_id}).to_list(100)
+    export_data["ics_subscriptions"] = [
+        {"id": i["id"], "name": i["name"], "url": i["url"]}
+        for i in ics_subs
+    ]
+    
+    # Hidden items
+    hidden = await db.hidden_items.find({"user_id": user_id}).to_list(1000)
+    export_data["hidden_items"] = [h["item_id"] for h in hidden]
+    
+    # Feedback
+    feedback = await db.feedback.find({"user_id": user_id}).to_list(100)
+    export_data["feedback"] = [
+        {"type": f["type"], "message": f["message"], "created_at": f.get("created_at").isoformat() if f.get("created_at") else None}
+        for f in feedback
+    ]
+    
+    return export_data
+
+# =====================================
 # USER ACCOUNT SETTINGS
 # =====================================
 
