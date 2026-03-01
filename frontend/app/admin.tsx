@@ -306,6 +306,63 @@ export default function AdminScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+      ) : (
+        <ScrollView style={styles.content}>
+          <Text style={styles.sectionTitle}>
+            {feedbackList.length} signalement{feedbackList.length > 1 ? 's' : ''}
+          </Text>
+
+          {feedbackList.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+              <Text style={styles.emptyStateText}>Aucun signalement</Text>
+            </View>
+          ) : (
+            feedbackList.map((fb) => (
+              <View key={fb.id} style={[styles.feedbackCard, fb.status === 'pending' && styles.feedbackCardPending]}>
+                <View style={styles.feedbackHeader}>
+                  <View style={styles.feedbackType}>
+                    <Ionicons 
+                      name={fb.type === 'bug' ? 'bug' : fb.type === 'suggestion' ? 'bulb' : 'chatbox'} 
+                      size={18} 
+                      color={fb.type === 'bug' ? '#EF4444' : fb.type === 'suggestion' ? '#F59E0B' : '#3B82F6'} 
+                    />
+                    <Text style={styles.feedbackTypeText}>
+                      {fb.type === 'bug' ? 'Bug' : fb.type === 'suggestion' ? 'Suggestion' : 'Autre'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.feedbackStatus, fb.status === 'pending' && styles.feedbackStatusPending]}>
+                    {fb.status === 'pending' ? 'En attente' : fb.status === 'resolved' ? 'Résolu' : fb.status}
+                  </Text>
+                </View>
+                
+                <Text style={styles.feedbackMessage}>{fb.message}</Text>
+                
+                <View style={styles.feedbackFooter}>
+                  <Text style={styles.feedbackMeta}>
+                    {fb.user_email} • {new Date(fb.created_at).toLocaleDateString('fr-FR')}
+                  </Text>
+                  <View style={styles.feedbackActions}>
+                    {fb.status === 'pending' && (
+                      <TouchableOpacity 
+                        style={styles.feedbackActionBtn}
+                        onPress={() => updateFeedbackStatus(fb.id, 'resolved')}
+                      >
+                        <Ionicons name="checkmark" size={18} color="#10B981" />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity 
+                      style={styles.feedbackActionBtn}
+                      onPress={() => deleteFeedback(fb.id)}
+                    >
+                      <Ionicons name="trash" size={18} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
       )}
 
       {/* User Detail Modal */}
