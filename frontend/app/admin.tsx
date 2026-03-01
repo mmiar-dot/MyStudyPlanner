@@ -482,7 +482,89 @@ export default function AdminScreen() {
             ))
           )}
         </ScrollView>
-      )}
+      ) : activeTab === 'courses' ? (
+        <ScrollView style={styles.content}>
+          <View style={styles.coursesHeader}>
+            <Text style={styles.sectionTitle}>
+              {chapters.length} chapitre{chapters.length > 1 ? 's' : ''} • {catalogItems.length} éléments
+            </Text>
+            <TouchableOpacity 
+              style={styles.addCourseButton}
+              onPress={() => {
+                resetCourseForm();
+                setShowCourseModal(true);
+              }}
+            >
+              <Ionicons name="add" size={20} color="#FFFFFF" />
+              <Text style={styles.addCourseButtonText}>Ajouter</Text>
+            </TouchableOpacity>
+          </View>
+
+          {chapters.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="book-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyStateText}>Aucun cours</Text>
+              <Text style={styles.emptyStateSubtext}>Créez votre premier chapitre</Text>
+            </View>
+          ) : (
+            chapters.map((chapter) => {
+              const children = catalogItems.filter(item => item.parent_id === chapter.id);
+              return (
+                <View key={chapter.id} style={styles.chapterCard}>
+                  <View style={styles.chapterHeader}>
+                    <View style={styles.chapterInfo}>
+                      <Ionicons name="folder" size={20} color="#3B82F6" />
+                      <Text style={styles.chapterTitle}>{chapter.title}</Text>
+                      <Text style={styles.chapterCount}>({children.length})</Text>
+                    </View>
+                    <View style={styles.chapterActions}>
+                      <TouchableOpacity 
+                        style={styles.chapterActionBtn}
+                        onPress={() => openEditCourse(chapter)}
+                      >
+                        <Ionicons name="pencil" size={18} color="#6B7280" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.chapterActionBtn}
+                        onPress={() => handleDeleteCourse(chapter)}
+                      >
+                        <Ionicons name="trash" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  
+                  {children.map((course) => (
+                    <View key={course.id} style={styles.courseItem}>
+                      <Ionicons name="document-text" size={16} color="#6B7280" />
+                      <Text style={styles.courseItemTitle}>{course.title}</Text>
+                      <View style={styles.courseItemActions}>
+                        <TouchableOpacity onPress={() => openEditCourse(course)}>
+                          <Ionicons name="pencil" size={16} color="#6B7280" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteCourse(course)}>
+                          <Ionicons name="trash" size={16} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+
+                  <TouchableOpacity 
+                    style={styles.addSubcourseBtn}
+                    onPress={() => {
+                      resetCourseForm();
+                      setCourseParentId(chapter.id);
+                      setShowCourseModal(true);
+                    }}
+                  >
+                    <Ionicons name="add" size={16} color="#3B82F6" />
+                    <Text style={styles.addSubcourseBtnText}>Ajouter un cours</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
+      ) : null}
 
       {/* User Detail Modal */}
       <Modal visible={showUserModal} transparent animationType="fade">
