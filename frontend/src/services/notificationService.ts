@@ -57,8 +57,18 @@ class NotificationService {
       }
 
       // Get Expo push token
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      this.expoPushToken = tokenData.data;
+      try {
+        // In Expo Go, projectId might not be available
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
+        const tokenData = await Notifications.getExpoPushTokenAsync({
+          projectId: projectId,
+        });
+        this.expoPushToken = tokenData.data;
+      } catch (tokenError) {
+        // Notifications might not work in Expo Go, but app should still function
+        console.log('Push token not available (this is normal in Expo Go):', tokenError);
+        this.expoPushToken = null;
+      }
 
       // Configure notification channels for Android
       if (Platform.OS === 'android') {
