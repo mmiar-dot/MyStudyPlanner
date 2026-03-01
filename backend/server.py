@@ -2396,6 +2396,92 @@ async def create_admin_user():
     }
 
 # =====================================
+# FEEDBACK / SIGNALEMENTS
+# =====================================
+
+class FeedbackType(str, Enum):
+    BUG = "bug"
+    SUGGESTION = "suggestion"
+    OTHER = "other"
+
+class FeedbackCreate(BaseModel):
+    type: str
+    message: str
+    timestamp: Optional[str] = None
+
+class FeedbackResponse(BaseModel):
+    id: str
+    user_id: str
+    user_email: str
+    type: str
+    message: str
+    status: str
+    created_at: datetime
+
+@api_router.post("/feedback")
+async def create_feedback(feedback: FeedbackCreate, user: dict = Depends(get_current_user)):
+    """Submit user feedback/bug report"""
+    feedback_id = str(uuid.uuid4())
+    feedback_doc = {
+        "id": feedback_id,
+        "user_id": user["id"],
+        "user_email": user["email"],
+        "type": feedback.type,
+        "message": feedback.message,
+        "status": "pending",
+        "created_at": datetime.utcnow()
+    }
+    await db.feedback.insert_one(feedback_doc)
+    return {"message": "Signalement envoyé avec succès", "id": feedback_id}
+
+@api_router.get("/admin/feedback", response_model=List[FeedbackResponse])
+async def get_all_feedback(admin: dict = Depends(get_admin_user)):
+    """Get all user feedback - admin only"""
+    feedback_list = await db.feedback.find().sort("created_at", -1).to_list(500)
+    return [FeedbackResponse(
+        id=f["id"],
+        user_id=f["user_id"],
+        user_email=f["user_email"],
+        type=f["type"],
+        message=f["message"],
+        status=f.get("status", "pending"),
+        created_at=f["created_at"]
+    ) for f in feedback_list]
+
+@api_router.get("/admin/feedback/count")
+async def get_feedback_count(admin: dict = Depends(get_admin_user)):
+    """Get feedback counts by status and type - admin only"""
+    total = await db.feedback.count_documents({})
+    pending = await db.feedback.count_documents({"status": "pending"})
+    bugs = await db.feedback.count_documents({"type": "bug"})
+    suggestions = await db.feedback.count_documents({"type": "suggestion"})
+    return {
+        "total": total,
+        "pending": pending,
+        "bugs": bugs,
+        "suggestions": suggestions
+    }
+
+@api_router.put("/admin/feedback/{feedback_id}/status")
+async def update_feedback_status(feedback_id: str, status: str, admin: dict = Depends(get_admin_user)):
+    """Update feedback status - admin only"""
+    result = await db.feedback.update_one(
+        {"id": feedback_id},
+        {"$set": {"status": status, "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Signalement non trouvé")
+    return {"message": "Statut mis à jour"}
+
+@api_router.delete("/admin/feedback/{feedback_id}")
+async def delete_feedback(feedback_id: str, admin: dict = Depends(get_admin_user)):
+    """Delete a feedback - admin only"""
+    result = await db.feedback.delete_one({"id": feedback_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Signalement non trouvé")
+    return {"message": "Signalement supprimé"}
+
+# =====================================
 # USER ACCOUNT SETTINGS
 # =====================================
 
