@@ -482,6 +482,17 @@ export default function ProfileScreen() {
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/legal')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#E5E7EB' }]}>
+                <Ionicons name="document-text" size={20} color="#6B7280" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Informations légales</Text>
+                <Text style={styles.menuSubtitle}>Confidentialité, CGU, cookies</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity style={styles.logoutButton} onPress={() => setShowLogoutModal(true)}>
