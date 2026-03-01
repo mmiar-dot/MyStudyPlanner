@@ -777,4 +777,153 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
   },
+  // Stats row
+  statsRow: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+  },
+  statCardWarning: {
+    backgroundColor: '#FEF3C7',
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 4,
+  },
+  statNumberWarning: {
+    color: '#F59E0B',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  // Tabs
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: '#3B82F6',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: '#3B82F6',
+  },
+  badge: {
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  // Empty state
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyStateText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  // Feedback card
+  feedbackCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  feedbackCardPending: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
+  },
+  feedbackHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  feedbackType: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  feedbackTypeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4B5563',
+  },
+  feedbackStatus: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '500',
+  },
+  feedbackStatusPending: {
+    color: '#F59E0B',
+  },
+  feedbackMessage: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  feedbackFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 10,
+  },
+  feedbackMeta: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  feedbackActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  feedbackActionBtn: {
+    padding: 6,
+  },
 });
