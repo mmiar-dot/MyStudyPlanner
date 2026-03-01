@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../src/store/authStore';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -9,7 +9,6 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const segments = useSegments();
   const router = useRouter();
-  const navigationState = useRootNavigationState();
 
   useEffect(() => {
     const init = async () => {
@@ -21,7 +20,7 @@ export default function RootLayout() {
 
   // Handle navigation based on auth state
   useEffect(() => {
-    if (!isReady || !navigationState?.key) return;
+    if (!isReady) return;
     
     const inAuthGroup = segments[0] === '(auth)';
     
@@ -32,7 +31,7 @@ export default function RootLayout() {
       // Redirect to home if authenticated but still in auth group
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, segments, isReady, navigationState?.key]);
+  }, [isAuthenticated, segments, isReady]);
 
   if (!isReady || isLoading) {
     return (
