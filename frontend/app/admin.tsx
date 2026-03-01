@@ -378,111 +378,117 @@ export default function AdminScreen() {
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text style={styles.loadingText}>Chargement...</Text>
         </View>
-      ) : activeTab === 'users' ? (
-        <ScrollView style={styles.content}>
-          <Text style={styles.sectionTitle}>
-            {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
-          </Text>
+      ) : (
+        <>
+          {activeTab === 'users' && (
+            <ScrollView style={styles.content}>
+              <Text style={styles.sectionTitle}>
+                {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
+              </Text>
 
-          {users.map((user) => (
-            <TouchableOpacity
-              key={user.id}
-              style={[styles.userCard, user.is_blocked && styles.userCardBlocked]}
-              onPress={() => {
-                setSelectedUser(user);
-                setShowUserModal(true);
-              }}
-            >
-              <View style={styles.userInfo}>
-                <View style={styles.userHeader}>
-                  <Text style={styles.userEmail}>{user.email}</Text>
-                  {user.role === 'admin' && (
-                    <View style={styles.adminBadge}>
-                      <Ionicons name="shield-checkmark" size={12} color="#8B5CF6" />
-                      <Text style={styles.adminBadgeText}>Admin</Text>
+              {users.map((user) => (
+                <TouchableOpacity
+                  key={user.id}
+                  style={[styles.userCard, user.is_blocked && styles.userCardBlocked]}
+                  onPress={() => {
+                    setSelectedUser(user);
+                    setShowUserModal(true);
+                  }}
+                >
+                  <View style={styles.userInfo}>
+                    <View style={styles.userHeader}>
+                      <Text style={styles.userEmail}>{user.email}</Text>
+                      {user.role === 'admin' && (
+                        <View style={styles.adminBadge}>
+                          <Ionicons name="shield-checkmark" size={12} color="#8B5CF6" />
+                          <Text style={styles.adminBadgeText}>Admin</Text>
+                        </View>
+                      )}
+                      {user.is_blocked && (
+                        <View style={styles.blockedBadge}>
+                          <Ionicons name="ban" size={12} color="#EF4444" />
+                          <Text style={styles.blockedBadgeText}>Bloqué</Text>
+                        </View>
+                      )}
                     </View>
-                  )}
-                  {user.is_blocked && (
-                    <View style={styles.blockedBadge}>
-                      <Ionicons name="ban" size={12} color="#EF4444" />
-                      <Text style={styles.blockedBadgeText}>Bloqué</Text>
+                    <View style={styles.userStats}>
+                      <Text style={styles.userStat}>
+                        <Ionicons name="calendar" size={12} color="#6B7280" /> {user.sessions_count} sessions
+                      </Text>
+                      <Text style={styles.userStat}>
+                        <Ionicons name="book" size={12} color="#6B7280" /> {user.courses_count} cours
+                      </Text>
                     </View>
-                  )}
-                </View>
-                <View style={styles.userStats}>
-                  <Text style={styles.userStat}>
-                    <Ionicons name="calendar" size={12} color="#6B7280" /> {user.sessions_count} sessions
-                  </Text>
-                  <Text style={styles.userStat}>
-                    <Ionicons name="book" size={12} color="#6B7280" /> {user.courses_count} cours
-                  </Text>
-                </View>
-                <Text style={styles.userDate}>
-                  Inscrit le {formatDate(user.created_at)}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      ) : activeTab === 'feedback' ? (
-        <ScrollView style={styles.content}>
-          <Text style={styles.sectionTitle}>
-            {feedbackList.length} signalement{feedbackList.length > 1 ? 's' : ''}
-          </Text>
-
-          {feedbackList.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-              <Text style={styles.emptyStateText}>Aucun signalement</Text>
-            </View>
-          ) : (
-            feedbackList.map((fb) => (
-              <View key={fb.id} style={[styles.feedbackCard, fb.status === 'pending' && styles.feedbackCardPending]}>
-                <View style={styles.feedbackHeader}>
-                  <View style={styles.feedbackType}>
-                    <Ionicons 
-                      name={fb.type === 'bug' ? 'bug' : fb.type === 'suggestion' ? 'bulb' : 'chatbox'} 
-                      size={18} 
-                      color={fb.type === 'bug' ? '#EF4444' : fb.type === 'suggestion' ? '#F59E0B' : '#3B82F6'} 
-                    />
-                    <Text style={styles.feedbackTypeText}>
-                      {fb.type === 'bug' ? 'Bug' : fb.type === 'suggestion' ? 'Suggestion' : 'Autre'}
+                    <Text style={styles.userDate}>
+                      Inscrit le {formatDate(user.created_at)}
                     </Text>
                   </View>
-                  <Text style={[styles.feedbackStatus, fb.status === 'pending' && styles.feedbackStatusPending]}>
-                    {fb.status === 'pending' ? 'En attente' : fb.status === 'resolved' ? 'Résolu' : fb.status}
-                  </Text>
-                </View>
-                
-                <Text style={styles.feedbackMessage}>{fb.message}</Text>
-                
-                <View style={styles.feedbackFooter}>
-                  <Text style={styles.feedbackMeta}>
-                    {fb.user_email} • {new Date(fb.created_at).toLocaleDateString('fr-FR')}
-                  </Text>
-                  <View style={styles.feedbackActions}>
-                    {fb.status === 'pending' && (
-                      <TouchableOpacity 
-                        style={styles.feedbackActionBtn}
-                        onPress={() => updateFeedbackStatus(fb.id, 'resolved')}
-                      >
-                        <Ionicons name="checkmark" size={18} color="#10B981" />
-                      </TouchableOpacity>
-                    )}
-                    <TouchableOpacity 
-                      style={styles.feedbackActionBtn}
-                      onPress={() => deleteFeedback(fb.id)}
-                    >
-                      <Ionicons name="trash" size={18} color="#EF4444" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
+                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           )}
-        </ScrollView>
-      ) : activeTab === 'courses' ? (
+
+          {activeTab === 'feedback' && (
+            <ScrollView style={styles.content}>
+              <Text style={styles.sectionTitle}>
+                {feedbackList.length} signalement{feedbackList.length > 1 ? 's' : ''}
+              </Text>
+
+              {feedbackList.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+                  <Text style={styles.emptyStateText}>Aucun signalement</Text>
+                </View>
+              ) : (
+                feedbackList.map((fb) => (
+                  <View key={fb.id} style={[styles.feedbackCard, fb.status === 'pending' && styles.feedbackCardPending]}>
+                    <View style={styles.feedbackHeader}>
+                      <View style={styles.feedbackType}>
+                        <Ionicons 
+                          name={fb.type === 'bug' ? 'bug' : fb.type === 'suggestion' ? 'bulb' : 'chatbox'} 
+                          size={18} 
+                          color={fb.type === 'bug' ? '#EF4444' : fb.type === 'suggestion' ? '#F59E0B' : '#3B82F6'} 
+                        />
+                        <Text style={styles.feedbackTypeText}>
+                          {fb.type === 'bug' ? 'Bug' : fb.type === 'suggestion' ? 'Suggestion' : 'Autre'}
+                        </Text>
+                      </View>
+                      <Text style={[styles.feedbackStatus, fb.status === 'pending' && styles.feedbackStatusPending]}>
+                        {fb.status === 'pending' ? 'En attente' : fb.status === 'resolved' ? 'Résolu' : fb.status}
+                      </Text>
+                    </View>
+                    
+                    <Text style={styles.feedbackMessage}>{fb.message}</Text>
+                    
+                    <View style={styles.feedbackFooter}>
+                      <Text style={styles.feedbackMeta}>
+                        {fb.user_email} • {new Date(fb.created_at).toLocaleDateString('fr-FR')}
+                      </Text>
+                      <View style={styles.feedbackActions}>
+                        {fb.status === 'pending' && (
+                          <TouchableOpacity 
+                            style={styles.feedbackActionBtn}
+                            onPress={() => updateFeedbackStatus(fb.id, 'resolved')}
+                          >
+                            <Ionicons name="checkmark" size={18} color="#10B981" />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity 
+                          style={styles.feedbackActionBtn}
+                          onPress={() => deleteFeedback(fb.id)}
+                        >
+                          <Ionicons name="trash" size={18} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          )}
+
+          {activeTab === 'courses' && (
         <ScrollView style={styles.content}>
           <View style={styles.coursesHeader}>
             <Text style={styles.sectionTitle}>
