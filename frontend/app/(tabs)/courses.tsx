@@ -1091,7 +1091,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   chapterCardDesktop: {
-    width: 340,
+    width: 420,
+    maxWidth: '100%',
     alignSelf: 'flex-start',
   },
   chapterHeader: {
