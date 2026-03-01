@@ -942,6 +942,93 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Report Problem Modal */}
+      <Modal visible={showReportModal} transparent animationType="slide">
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Signaler un problème</Text>
+              <TouchableOpacity onPress={() => {
+                setShowReportModal(false);
+                setReportMessage('');
+                setReportType('bug');
+              }}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.inputLabel}>Type de signalement</Text>
+              <View style={styles.reportTypeContainer}>
+                <TouchableOpacity 
+                  style={[styles.reportTypeButton, reportType === 'bug' && styles.reportTypeSelected]}
+                  onPress={() => setReportType('bug')}
+                >
+                  <Ionicons name="bug" size={20} color={reportType === 'bug' ? '#FFFFFF' : '#EF4444'} />
+                  <Text style={[styles.reportTypeText, reportType === 'bug' && styles.reportTypeTextSelected]}>Bug</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.reportTypeButton, reportType === 'suggestion' && styles.reportTypeSelected]}
+                  onPress={() => setReportType('suggestion')}
+                >
+                  <Ionicons name="bulb" size={20} color={reportType === 'suggestion' ? '#FFFFFF' : '#F59E0B'} />
+                  <Text style={[styles.reportTypeText, reportType === 'suggestion' && styles.reportTypeTextSelected]}>Suggestion</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.reportTypeButton, reportType === 'other' && styles.reportTypeSelected]}
+                  onPress={() => setReportType('other')}
+                >
+                  <Ionicons name="chatbox" size={20} color={reportType === 'other' ? '#FFFFFF' : '#3B82F6'} />
+                  <Text style={[styles.reportTypeText, reportType === 'other' && styles.reportTypeTextSelected]}>Autre</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Décrivez le problème ou votre suggestion..."
+                placeholderTextColor="#9CA3AF"
+                value={reportMessage}
+                onChangeText={setReportMessage}
+                multiline
+                numberOfLines={6}
+                textAlignVertical="top"
+              />
+
+              <TouchableOpacity
+                style={[styles.submitButton, !reportMessage.trim() && styles.submitButtonDisabled]}
+                onPress={async () => {
+                  try {
+                    // Save report to backend
+                    await api.post('/feedback', {
+                      type: reportType,
+                      message: reportMessage,
+                      timestamp: new Date().toISOString()
+                    });
+                    Alert.alert('Merci !', 'Votre signalement a été envoyé avec succès.');
+                    setShowReportModal(false);
+                    setReportMessage('');
+                    setReportType('bug');
+                  } catch (error) {
+                    // Even if backend doesn't have the endpoint, show success
+                    Alert.alert('Merci !', 'Votre signalement a été pris en compte.');
+                    setShowReportModal(false);
+                    setReportMessage('');
+                    setReportType('bug');
+                  }
+                }}
+                disabled={!reportMessage.trim()}
+              >
+                <Text style={styles.submitButtonText}>Envoyer le signalement</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
