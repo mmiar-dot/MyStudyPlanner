@@ -489,11 +489,11 @@ export default function AdminScreen() {
           )}
 
           {activeTab === 'courses' && (
-        <ScrollView style={styles.content}>
-          <View style={styles.coursesHeader}>
-            <Text style={styles.sectionTitle}>
-              {chapters.length} chapitre{chapters.length > 1 ? 's' : ''} • {catalogItems.length} éléments
-            </Text>
+            <ScrollView style={styles.content}>
+              <View style={styles.coursesHeader}>
+                <Text style={styles.sectionTitle}>
+                  {chapters.length} chapitre{chapters.length > 1 ? 's' : ''} • {catalogItems.length} éléments
+                </Text>
             <TouchableOpacity 
               style={styles.addCourseButton}
               onPress={() => {
