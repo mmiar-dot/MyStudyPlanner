@@ -201,18 +201,65 @@ export default function AdminScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
-        <Text style={styles.title}>Gestion des utilisateurs</Text>
-        <TouchableOpacity onPress={loadUsers} style={styles.refreshButton}>
+        <Text style={styles.title}>Administration</Text>
+        <TouchableOpacity onPress={loadData} style={styles.refreshButton}>
           <Ionicons name="refresh" size={24} color="#3B82F6" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Stats Summary */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Ionicons name="people" size={24} color="#3B82F6" />
+          <Text style={styles.statNumber}>{users.length}</Text>
+          <Text style={styles.statLabel}>Utilisateurs</Text>
+        </View>
+        <View style={[styles.statCard, feedbackCount.pending > 0 && styles.statCardWarning]}>
+          <Ionicons name="flag" size={24} color={feedbackCount.pending > 0 ? '#F59E0B' : '#6B7280'} />
+          <Text style={[styles.statNumber, feedbackCount.pending > 0 && styles.statNumberWarning]}>{feedbackCount.pending}</Text>
+          <Text style={styles.statLabel}>En attente</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="bug" size={24} color="#EF4444" />
+          <Text style={styles.statNumber}>{feedbackCount.bugs}</Text>
+          <Text style={styles.statLabel}>Bugs</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="bulb" size={24} color="#10B981" />
+          <Text style={styles.statNumber}>{feedbackCount.suggestions}</Text>
+          <Text style={styles.statLabel}>Suggestions</Text>
+        </View>
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'users' && styles.tabActive]}
+          onPress={() => setActiveTab('users')}
+        >
+          <Ionicons name="people" size={20} color={activeTab === 'users' ? '#3B82F6' : '#6B7280'} />
+          <Text style={[styles.tabText, activeTab === 'users' && styles.tabTextActive]}>Utilisateurs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'feedback' && styles.tabActive]}
+          onPress={() => setActiveTab('feedback')}
+        >
+          <Ionicons name="chatbox" size={20} color={activeTab === 'feedback' ? '#3B82F6' : '#6B7280'} />
+          <Text style={[styles.tabText, activeTab === 'feedback' && styles.tabTextActive]}>Signalements</Text>
+          {feedbackCount.pending > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{feedbackCount.pending}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
-          <Text style={styles.loadingText}>Chargement des utilisateurs...</Text>
+          <Text style={styles.loadingText}>Chargement...</Text>
         </View>
-      ) : (
+      ) : activeTab === 'users' ? (
         <ScrollView style={styles.content}>
           <Text style={styles.sectionTitle}>
             {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
