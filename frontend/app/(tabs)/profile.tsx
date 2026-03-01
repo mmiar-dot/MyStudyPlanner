@@ -42,6 +42,9 @@ export default function ProfileScreen() {
   const [showEditICSModal, setShowEditICSModal] = useState(false);
   const [showStatsDetailModal, setShowStatsDetailModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportType, setReportType] = useState<'bug' | 'suggestion' | 'other'>('bug');
+  const [reportMessage, setReportMessage] = useState('');
   const [statsDetailType, setStatsDetailType] = useState<'today' | 'late' | 'completion' | 'courses' | 'streak'>('today');
   
   // Settings form
