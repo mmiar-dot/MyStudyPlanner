@@ -36,6 +36,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(session.scheduled_date);
   const [upcomingSessions, setUpcomingSessions] = useState<StudySession[]>([]);
+  const [showUpcomingCalendar, setShowUpcomingCalendar] = useState(false);
+  const [sessionToReschedule, setSessionToReschedule] = useState<StudySession | null>(null);
+  const [rescheduleTargetDate, setRescheduleTargetDate] = useState('');
 
   const notes = courseNotes[session.item_id] || [];
 
