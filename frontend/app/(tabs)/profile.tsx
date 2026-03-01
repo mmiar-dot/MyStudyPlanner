@@ -1643,9 +1643,10 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
   },
   reportTypeText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: '#4B5563',
+    flexShrink: 0,
   },
   reportTypeTextSelected: {
     color: '#FFFFFF',
