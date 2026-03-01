@@ -1222,4 +1222,181 @@ const styles = StyleSheet.create({
   feedbackActionBtn: {
     padding: 6,
   },
+  // Course management styles
+  coursesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addCourseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addCourseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  chapterCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  chapterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  chapterInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  chapterTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1F2937',
+    flex: 1,
+  },
+  chapterCount: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  chapterActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  chapterActionBtn: {
+    padding: 6,
+  },
+  courseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    paddingLeft: 42,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  courseItemTitle: {
+    flex: 1,
+    fontSize: 14,
+    color: '#4B5563',
+  },
+  courseItemActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  addSubcourseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 12,
+    paddingLeft: 42,
+  },
+  addSubcourseBtnText: {
+    fontSize: 13,
+    color: '#3B82F6',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 4,
+  },
+  // Course form styles
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 15,
+    backgroundColor: '#F9FAFB',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  typeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  typeButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+  typeButtonText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  typeButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  parentSelector: {
+    maxHeight: 44,
+  },
+  parentChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    marginRight: 8,
+  },
+  parentChipActive: {
+    backgroundColor: '#DBEAFE',
+  },
+  parentChipText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  parentChipTextActive: {
+    color: '#3B82F6',
+    fontWeight: '500',
+  },
+  submitButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
