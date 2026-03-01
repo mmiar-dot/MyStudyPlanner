@@ -201,42 +201,61 @@ export default function CoursesScreen() {
   const handleDeleteItem = (item: CatalogItem) => {
     if (item.is_personal) {
       // Really delete personal courses
-      Alert.alert(
-        'Supprimer',
-        `Supprimer définitivement "${item.title}" et toutes ses données ?`,
-        [
-          { text: 'Annuler', style: 'cancel' },
-          {
-            text: 'Supprimer',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await deletePersonalCourse(item.id);
-                await loadData(); // Refresh
-                Alert.alert('Succès', 'Cours supprimé');
-              } catch (error) {
-                Alert.alert('Erreur', 'Impossible de supprimer le cours');
-              }
+      if (Platform.OS === 'web') {
+        if (window.confirm(`Supprimer définitivement "${item.title}" et toutes ses données ?`)) {
+          deletePersonalCourse(item.id)
+            .then(() => {
+              loadData();
+              alert('Cours supprimé avec succès');
+            })
+            .catch(() => {
+              alert('Erreur: Impossible de supprimer le cours');
+            });
+        }
+      } else {
+        Alert.alert(
+          'Supprimer',
+          `Supprimer définitivement "${item.title}" et toutes ses données ?`,
+          [
+            { text: 'Annuler', style: 'cancel' },
+            {
+              text: 'Supprimer',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await deletePersonalCourse(item.id);
+                  await loadData(); // Refresh
+                  Alert.alert('Succès', 'Cours supprimé');
+                } catch (error) {
+                  Alert.alert('Erreur', 'Impossible de supprimer le cours');
+                }
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
     } else {
       // Hide admin courses
-      Alert.alert(
-        'Masquer',
-        `Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`,
-        [
-          { text: 'Annuler', style: 'cancel' },
-          {
-            text: 'Masquer',
-            style: 'destructive',
-            onPress: async () => {
-              await hideItem(item.id);
+      if (Platform.OS === 'web') {
+        if (window.confirm(`Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`)) {
+          hideItem(item.id);
+        }
+      } else {
+        Alert.alert(
+          'Masquer',
+          `Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`,
+          [
+            { text: 'Annuler', style: 'cancel' },
+            {
+              text: 'Masquer',
+              style: 'destructive',
+              onPress: async () => {
+                await hideItem(item.id);
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
     }
   };
 
