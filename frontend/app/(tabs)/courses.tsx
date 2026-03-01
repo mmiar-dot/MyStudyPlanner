@@ -1079,6 +1079,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 20,
     alignItems: 'flex-start',
+    justifyContent: 'center',
   },
   chapterCard: {
     backgroundColor: '#FFFFFF',
