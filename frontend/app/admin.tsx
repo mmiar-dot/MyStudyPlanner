@@ -44,18 +44,37 @@ interface FeedbackCount {
   suggestions: number;
 }
 
+interface CatalogItem {
+  id: string;
+  title: string;
+  parent_id: string | null;
+  level: number;
+  order: number;
+  description?: string;
+  children_count?: number;
+}
+
 export default function AdminScreen() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
   const [feedbackCount, setFeedbackCount] = useState<FeedbackCount>({ total: 0, pending: 0, bugs: 0, suggestions: 0 });
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showCourseModal, setShowCourseModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'block' | 'unblock' | 'delete'>('block');
   const [blockReason, setBlockReason] = useState('');
-  const [activeTab, setActiveTab] = useState<'users' | 'feedback'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'feedback' | 'courses'>('users');
+  
+  // Course form state
+  const [courseTitle, setCourseTitle] = useState('');
+  const [courseParentId, setCourseParentId] = useState<string | null>(null);
+  const [courseDescription, setCourseDescription] = useState('');
+  const [editingCourse, setEditingCourse] = useState<CatalogItem | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -63,7 +82,7 @@ export default function AdminScreen() {
 
   const loadData = async () => {
     setIsLoading(true);
-    await Promise.all([loadUsers(), loadFeedback()]);
+    await Promise.all([loadUsers(), loadFeedback(), loadCatalog()]);
     setIsLoading(false);
   };
 
@@ -74,7 +93,7 @@ export default function AdminScreen() {
     } catch (error: any) {
       if (error.response?.status === 403) {
         Alert.alert('Accès refusé', 'Vous n\'avez pas les droits d\'administration');
-        router.back();
+        router.push('/(tabs)/profile');
       }
     }
   };
@@ -91,6 +110,99 @@ export default function AdminScreen() {
       console.log('Feedback load error:', error);
     }
   };
+
+  const loadCatalog = async () => {
+    try {
+      const response = await api.get<CatalogItem[]>('/catalog/all');
+      // Filter only admin items (no owner_id)
+      const adminItems = response.data.filter((item: any) => !item.owner_id);
+      setCatalogItems(adminItems);
+    } catch (error) {
+      console.log('Catalog load error:', error);
+    }
+  };
+
+  const handleCreateCourse = async () => {
+    if (!courseTitle.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await api.post('/admin/catalog', {
+        title: courseTitle.trim(),
+        parent_id: courseParentId,
+        description: courseDescription.trim() || undefined
+      });
+      Alert.alert('Succès', 'Cours créé avec succès');
+      resetCourseForm();
+      loadCatalog();
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de créer le cours');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateCourse = async () => {
+    if (!editingCourse || !courseTitle.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await api.put(`/admin/catalog/${editingCourse.id}`, {
+        title: courseTitle.trim(),
+        description: courseDescription.trim() || undefined
+      });
+      Alert.alert('Succès', 'Cours modifié avec succès');
+      resetCourseForm();
+      loadCatalog();
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de modifier le cours');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCourse = async (item: CatalogItem) => {
+    const confirmDelete = () => {
+      api.delete(`/admin/catalog/${item.id}`)
+        .then(() => {
+          Alert.alert('Succès', 'Cours supprimé');
+          loadCatalog();
+        })
+        .catch(() => Alert.alert('Erreur', 'Impossible de supprimer'));
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Supprimer "${item.title}" et tous ses sous-éléments ?`)) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Confirmer la suppression',
+        `Supprimer "${item.title}" et tous ses sous-éléments ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Supprimer', style: 'destructive', onPress: confirmDelete }
+        ]
+      );
+    }
+  };
+
+  const openEditCourse = (item: CatalogItem) => {
+    setEditingCourse(item);
+    setCourseTitle(item.title);
+    setCourseDescription(item.description || '');
+    setCourseParentId(item.parent_id);
+    setShowCourseModal(true);
+  };
+
+  const resetCourseForm = () => {
+    setShowCourseModal(false);
+    setEditingCourse(null);
+    setCourseTitle('');
+    setCourseDescription('');
+    setCourseParentId(null);
+  };
+
+  // Get chapters (level 0) for parent selection
+  const chapters = catalogItems.filter(item => item.level === 0);
 
   const updateFeedbackStatus = async (feedbackId: string, status: string) => {
     try {
