@@ -702,6 +702,101 @@ export default function AdminScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Course Create/Edit Modal */}
+      <Modal visible={showCourseModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {editingCourse ? 'Modifier' : 'Nouveau cours'}
+              </Text>
+              <TouchableOpacity onPress={resetCourseForm}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.inputLabel}>Titre</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Nom du cours ou chapitre"
+                value={courseTitle}
+                onChangeText={setCourseTitle}
+              />
+
+              {!editingCourse && (
+                <>
+                  <Text style={styles.inputLabel}>Type</Text>
+                  <View style={styles.typeSelector}>
+                    <TouchableOpacity
+                      style={[styles.typeButton, !courseParentId && styles.typeButtonActive]}
+                      onPress={() => setCourseParentId(null)}
+                    >
+                      <Ionicons name="folder" size={18} color={!courseParentId ? '#FFFFFF' : '#6B7280'} />
+                      <Text style={[styles.typeButtonText, !courseParentId && styles.typeButtonTextActive]}>
+                        Chapitre
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.typeButton, courseParentId && styles.typeButtonActive]}
+                      onPress={() => setCourseParentId(chapters[0]?.id || null)}
+                    >
+                      <Ionicons name="document-text" size={18} color={courseParentId ? '#FFFFFF' : '#6B7280'} />
+                      <Text style={[styles.typeButtonText, courseParentId && styles.typeButtonTextActive]}>
+                        Cours
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {courseParentId && chapters.length > 0 && (
+                    <>
+                      <Text style={styles.inputLabel}>Chapitre parent</Text>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.parentSelector}>
+                        {chapters.map((ch) => (
+                          <TouchableOpacity
+                            key={ch.id}
+                            style={[styles.parentChip, courseParentId === ch.id && styles.parentChipActive]}
+                            onPress={() => setCourseParentId(ch.id)}
+                          >
+                            <Text style={[styles.parentChipText, courseParentId === ch.id && styles.parentChipTextActive]}>
+                              {ch.title}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </>
+                  )}
+                </>
+              )}
+
+              <Text style={styles.inputLabel}>Description (optionnel)</Text>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                placeholder="Description du cours"
+                value={courseDescription}
+                onChangeText={setCourseDescription}
+                multiline
+                numberOfLines={3}
+              />
+
+              <TouchableOpacity
+                style={[styles.submitButton, (!courseTitle.trim() || isSubmitting) && styles.submitButtonDisabled]}
+                onPress={editingCourse ? handleUpdateCourse : handleCreateCourse}
+                disabled={!courseTitle.trim() || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.submitButtonText}>
+                    {editingCourse ? 'Enregistrer' : 'Créer'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
