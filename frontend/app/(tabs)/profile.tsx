@@ -1758,4 +1758,36 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     paddingTop: 12,
   },
+  // Export styles
+  exportInfo: {
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#EBF5FF',
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  exportTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  exportDescription: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  exportList: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+  },
+  exportListItem: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 6,
+  },
 });
