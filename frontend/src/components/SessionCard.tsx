@@ -1067,4 +1067,63 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: '#EBF5FF',
   },
+  // Calendar overlay for rescheduling from upcoming list
+  upcomingCalendarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  upcomingCalendarContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    width: '100%',
+    maxWidth: 350,
+  },
+  upcomingCalendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  upcomingCalendarTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  upcomingCalendarActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  upcomingCalendarCancel: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  upcomingCalendarCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  upcomingCalendarConfirm: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 10,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+  },
+  upcomingCalendarConfirmText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
 });
