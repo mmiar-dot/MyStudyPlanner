@@ -882,6 +882,15 @@ export default function ProfileScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                style={[styles.settingsTab, settingsTab === 'export' && styles.settingsTabActive]}
+                onPress={() => setSettingsTab('export')}
+              >
+                <Ionicons name="download" size={18} color={settingsTab === 'export' ? '#3B82F6' : '#6B7280'} />
+                <Text style={[styles.settingsTabText, settingsTab === 'export' && styles.settingsTabTextActive]}>
+                  Exporter
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={[styles.settingsTab, settingsTab === 'delete' && styles.settingsTabDanger]}
                 onPress={() => setSettingsTab('delete')}
               >
