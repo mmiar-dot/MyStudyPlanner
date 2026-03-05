@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
-  workflow_dispatch:    
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,26 +26,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install frontend dependencies
-        run: npm install
         working-directory: frontend
+        run: npm ci
 
       - name: Build web export (Expo)
-        run: npx expo export --platform web
         working-directory: frontend
+        run: npx expo export --platform web
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectPath: frontend  
 
-          # updater signing
+          # Updater signing (Tauri updater)
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
@@ -54,11 +54,13 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-          # certificate
+          # certificate import
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
         with:
+          projectPath: frontend
           tagName: ${{ github.ref_name }}
           releaseName: "MyStudyPlanner ${{ github.ref_name }}"
           releaseBody: "Release ${{ github.ref_name }}"
