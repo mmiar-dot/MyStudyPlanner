@@ -1,42 +1,131 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useAuthStore } from '../src/store/authStore';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useState } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { View, ActivityIndicator, StyleSheet, Platform, Text } from "react-native";
+import { useAuthStore } from "../src/store/authStore";
+import { runAutoUpdate } from "../src/services/updater";
+
+/**
+ * Safely detects if we're running inside a Tauri WebView (desktop).
+ * - Works on web (Tauri) and stays false on iOS/Android/regular web.
+ */
+function isTauriRuntime(): boolean {
+  if (Platform.OS !== "web") return false;
+  // Tauri injects window.__TAURI__ (v1) / window.__TAURI_INTERNALS__ (some setups)
+  const w = globalThis as any;
+  return Boolean(w?.__TAURI__ || w?.__TAURI_INTERNALS__);
+}
+
+type UpdateState =
+  | { status: "idle" }
+  | { status: "checking" }
+  | { status: "downloading"; version?: string }
+  | { status: "installing"; version?: string }
+  | { status: "error"; message: string };
 
 export default function RootLayout() {
   const { checkAuth, isLoading, isAuthenticated } = useAuthStore();
+
   const [isReady, setIsReady] = useState(false);
+  const [updateState, setUpdateState] = useState<UpdateState>({ status: "idle" });
+
   const segments = useSegments();
   const router = useRouter();
 
+  const inAuthGroup = useMemo(() => segments?.[0] === "(auth)", [segments]);
+
+  // 1) Desktop (Tauri) updater check: safe + non-breaking on mobile/web
   useEffect(() => {
-    const init = async () => {
-      await checkAuth();
-      setIsReady(true);
+    const runUpdater = async () => {
+      if (!isTauriRuntime()) return;
+
+      try {
+        setUpdateState({ status: "checking" });
+
+        const { check } = await import("@tauri-apps/plugin-updater");
+        const update = await check();
+
+        // No update
+        if (!update) {
+          setUpdateState({ status: "idle" });
+          return;
+        }
+
+        setUpdateState({ status: "downloading", version: update.version });
+        await update.downloadAndInstall();
+
+        setUpdateState({ status: "installing", version: update.version });
+
+        // Best effort relaunch:
+        // - Tauri v2 has @tauri-apps/plugin-process (relaunch), but not mandatory.
+        try {
+          const { relaunch } = await import("@tauri-apps/plugin-process");
+          await relaunch();
+          return;
+        } catch {
+          // Fallback: reload the webview
+          if (typeof window !== "undefined") window.location.reload();
+        }
+      } catch (e: any) {
+        // Don't block app if update check fails (common in dev)
+        setUpdateState({
+          status: "error",
+          message: e?.message ? String(e.message) : "Update check failed",
+        });
+
+        // Hide the error after a short time (optional)
+        setTimeout(() => setUpdateState({ status: "idle" }), 2500);
+      }
     };
-    init();
+
+    runUpdater();
   }, []);
 
-  // Handle navigation based on auth state
+  // 2) Auth init
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await checkAuth();
+      } finally {
+        setIsReady(true);
+      }
+    };
+    init();
+  }, [checkAuth]);
+
+  // 3) Route guard
   useEffect(() => {
     if (!isReady) return;
-    
-    const inAuthGroup = segments[0] === '(auth)';
-    
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated and not already in auth group
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to home if authenticated but still in auth group
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, segments, isReady]);
 
-  if (!isReady || isLoading) {
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, inAuthGroup, isReady, router]);
+
+  // Loading / Update screens
+  const shouldBlockUI =
+    !isReady ||
+    isLoading ||
+    updateState.status === "checking" ||
+    updateState.status === "downloading" ||
+    updateState.status === "installing";
+
+  if (shouldBlockUI) {
+    const label =
+      updateState.status === "checking"
+        ? "Vérification des mises à jour…"
+        : updateState.status === "downloading"
+          ? `Téléchargement de la mise à jour${updateState.version ? ` (${updateState.version})` : ""}…`
+          : updateState.status === "installing"
+            ? "Installation…"
+            : "Chargement…";
+
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={styles.loadingText}>{label}</Text>
       </View>
     );
   }
@@ -56,8 +145,13 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#111827",
   },
 });
