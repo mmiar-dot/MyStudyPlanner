@@ -32,7 +32,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install
+        run: npm ci
 
       - name: Build web export (Expo)
         working-directory: frontend
