@@ -1,7 +1,7 @@
-// Components
-export { default as ColorPicker } from './components/ColorPicker';
-export { default as MethodSelector } from './components/MethodSelector';
-export { default as ProfilePhotoManager } from './components/ProfilePhotoManager';
-export { default as SRSRatingModal } from './components/SRSRatingModal';
-export { default as SessionCard } from './components/SessionCard';
-export { default as StatsDetailModal } from './components/StatsDetailModal';
+// Components - Named exports
+export { ColorPicker } from './components/ColorPicker';
+export { MethodSelector } from './components/MethodSelector';
+export { ProfilePhotoManager } from './components/ProfilePhotoManager';
+export { SRSRatingModal } from './components/SRSRatingModal';
+export { SessionCard } from './components/SessionCard';
+export { StatsDetailModal } from './components/StatsDetailModal';
