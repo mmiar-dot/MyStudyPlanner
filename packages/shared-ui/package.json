@@ -5,11 +5,14 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
-    "react": "19.1.0",
-    "react-native": "0.81.5"
+    "@mystudyplanner/api-client": "*",
+    "date-fns": "^4.1.0"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "@expo/vector-icons": "*",
+    "expo-image-picker": "*",
+    "expo-file-system": "*"
   }
 }

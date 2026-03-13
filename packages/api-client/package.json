@@ -12,6 +12,7 @@
     "react": "*",
     "react-native": "*",
     "@react-native-async-storage/async-storage": "*",
-    "expo-secure-store": "*"
+    "expo-secure-store": "*",
+    "expo-constants": "*"
   }
 }
