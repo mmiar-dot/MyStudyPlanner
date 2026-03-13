@@ -162,8 +162,141 @@ export default function TodayScreen() {
 
         {/* Desktop Layout */}
         <View style={[styles.mainContent, isDesktop && styles.mainContentDesktop]}>
-          {/* Left Column - Sessions */}
-          <View style={[styles.leftColumn, isDesktop && styles.leftColumnDesktop]}>
+          {/* Desktop: Week Calendar on LEFT (enlarged) */}
+          {isDesktop && (
+            <View style={styles.weekCalendarColumnDesktop}>
+              <View style={styles.weekCalendarCardDesktop}>
+                {/* Week Navigation Header */}
+                <View style={styles.weekNavHeader}>
+                  <TouchableOpacity 
+                    style={styles.weekNavButton}
+                    onPress={goToPreviousWeek}
+                  >
+                    <Ionicons name="chevron-back" size={20} color="#3B82F6" />
+                  </TouchableOpacity>
+                  
+                  <View style={styles.weekNavCenter}>
+                    <Text style={styles.weekCalendarTitle}>
+                      {isCurrentWeek 
+                        ? 'Cette semaine' 
+                        : `Semaine du ${format(currentWeekStart, 'd MMM', { locale: fr })}`}
+                    </Text>
+                    {!isCurrentWeek && (
+                      <TouchableOpacity onPress={goToCurrentWeek}>
+                        <Text style={styles.backToTodayText}>Revenir à aujourd'hui</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  <TouchableOpacity 
+                    style={styles.weekNavButton}
+                    onPress={goToNextWeek}
+                  >
+                    <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Week Days - Enlarged */}
+                <View style={styles.weekDaysDesktop}>
+                  {weekDays.map((day) => {
+                    const dayData = getWeekDayData(day);
+                    const isSelected = isSameDay(day, selectedWeekDay);
+                    const isTodayDate = isToday(day);
+                    const daySessions = dayData.sessions;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={day.toISOString()}
+                        style={[
+                          styles.weekDayColumnDesktop,
+                          isSelected && styles.weekDayColumnSelected,
+                          isTodayDate && styles.weekDayColumnToday,
+                        ]}
+                        onPress={() => setSelectedWeekDay(day)}
+                      >
+                        <Text style={[
+                          styles.weekDayNameDesktop,
+                          isSelected && styles.weekDayTextSelected,
+                        ]}>
+                          {format(day, 'EEEE', { locale: fr })}
+                        </Text>
+                        <Text style={[
+                          styles.weekDayNumberDesktop,
+                          isSelected && styles.weekDayTextSelected,
+                          isTodayDate && !isSelected && styles.weekDayNumberToday,
+                        ]}>
+                          {format(day, 'd MMM', { locale: fr })}
+                        </Text>
+                        
+                        {/* Mini sessions list */}
+                        <View style={styles.weekDaySessionsDesktop}>
+                          {daySessions.length === 0 ? (
+                            <Text style={[styles.noSessionsText, isSelected && { color: 'rgba(255,255,255,0.7)' }]}>
+                              Aucune session
+                            </Text>
+                          ) : (
+                            <>
+                              {daySessions.slice(0, 5).map((session) => (
+                                <View key={session.id} style={[
+                                  styles.weekDaySessionItem,
+                                  isSelected && styles.weekDaySessionItemSelected
+                                ]}>
+                                  <View style={[
+                                    styles.weekDaySessionDot,
+                                    { backgroundColor: session.status === 'completed' ? '#10B981' : 
+                                      session.status === 'late' ? '#EF4444' : '#3B82F6' }
+                                  ]} />
+                                  <Text style={[
+                                    styles.weekDaySessionTitle,
+                                    isSelected && styles.weekDaySessionTitleSelected
+                                  ]} numberOfLines={1}>
+                                    {session.item_title}
+                                  </Text>
+                                </View>
+                              ))}
+                              {daySessions.length > 5 && (
+                                <Text style={[styles.moreSessionsDesktop, isSelected && { color: 'rgba(255,255,255,0.8)' }]}>
+                                  +{daySessions.length - 5} autres
+                                </Text>
+                              )}
+                            </>
+                          )}
+                        </View>
+                        
+                        {/* Day summary badges */}
+                        <View style={styles.weekDaySummary}>
+                          {dayData.pending > 0 && (
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#EBF5FF' }]}>
+                              <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }]}>
+                                {dayData.pending} à faire
+                              </Text>
+                            </View>
+                          )}
+                          {dayData.completed > 0 && (
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#D1FAE5' }]}>
+                              <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }, !isSelected && { color: '#10B981' }]}>
+                                {dayData.completed} terminées
+                              </Text>
+                            </View>
+                          )}
+                          {dayData.late > 0 && (
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#FEF2F2' }]}>
+                              <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }, !isSelected && { color: '#EF4444' }]}>
+                                {dayData.late} en retard
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Sessions Column (center on desktop) */}
+          <View style={[styles.leftColumn, isDesktop && styles.sessionsColumnDesktop]}>
             {/* Late Sessions */}
             {lateSessions.length > 0 && (
               <View style={styles.section}>
@@ -264,241 +397,103 @@ export default function TodayScreen() {
               </View>
             )}
           </View>
+        </View>
 
-          {/* Center Column - Week Calendar (Desktop only) */}
-          {isDesktop && (
-            <View style={styles.centerColumn}>
-              <View style={styles.weekCalendarCard}>
-                {/* Week Navigation Header */}
-                <View style={styles.weekNavHeader}>
-                  <TouchableOpacity 
-                    style={styles.weekNavButton}
-                    onPress={goToPreviousWeek}
-                  >
-                    <Ionicons name="chevron-back" size={20} color="#3B82F6" />
-                  </TouchableOpacity>
-                  
-                  <View style={styles.weekNavCenter}>
-                    <Text style={styles.weekCalendarTitle}>
-                      {isCurrentWeek 
-                        ? 'Cette semaine' 
-                        : `Semaine du ${format(currentWeekStart, 'd MMM', { locale: fr })}`}
-                    </Text>
-                    {!isCurrentWeek && (
-                      <TouchableOpacity onPress={goToCurrentWeek}>
-                        <Text style={styles.backToTodayText}>Revenir à aujourd'hui</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  
-                  <TouchableOpacity 
-                    style={styles.weekNavButton}
-                    onPress={goToNextWeek}
-                  >
-                    <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
-                  </TouchableOpacity>
+        {/* Desktop Stats Section - BOTTOM */}
+        {isDesktop && (
+          <View style={styles.desktopStatsSection}>
+            <Text style={styles.desktopStatsSectionTitle}>Statistiques</Text>
+            {progress ? (
+              <View style={styles.desktopStatsRow}>
+              <TouchableOpacity 
+                style={styles.desktopStatCard}
+                onPress={() => {
+                  setStatsType('today');
+                  setShowStatsModal(true);
+                }}
+              >
+                <View style={[styles.desktopStatIcon, { backgroundColor: '#EBF5FF' }]}>
+                  <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
                 </View>
-                
-                <View style={styles.weekDays}>
-                  {weekDays.map((day) => {
-                    const dayData = getWeekDayData(day);
-                    const isSelected = isSameDay(day, selectedWeekDay);
-                    const isTodayDate = isToday(day);
-                    const isPast = day < today && !isTodayDate;
-                    
-                    return (
-                      <TouchableOpacity
-                        key={day.toISOString()}
-                        style={[
-                          styles.weekDay,
-                          isSelected && styles.weekDaySelected,
-                          isTodayDate && styles.weekDayToday,
-                        ]}
-                        onPress={() => setSelectedWeekDay(day)}
-                      >
-                        <Text style={[
-                          styles.weekDayName,
-                          isSelected && styles.weekDayTextSelected,
-                        ]}>
-                          {format(day, 'EEE', { locale: fr })}
-                        </Text>
-                        <Text style={[
-                          styles.weekDayNumber,
-                          isSelected && styles.weekDayTextSelected,
-                          isTodayDate && !isSelected && styles.weekDayNumberToday,
-                        ]}>
-                          {format(day, 'd')}
-                        </Text>
-                        
-                        {dayData.total > 0 && (
-                          <View style={styles.weekDayIndicators}>
-                            {dayData.late > 0 && (
-                              <View style={[styles.dayDot, { backgroundColor: '#EF4444' }]} />
-                            )}
-                            {dayData.pending > 0 && (
-                              <View style={[styles.dayDot, { backgroundColor: '#3B82F6' }]} />
-                            )}
-                            {dayData.completed > 0 && dayData.pending === 0 && dayData.late === 0 && (
-                              <View style={[styles.dayDot, { backgroundColor: '#10B981' }]} />
-                            )}
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
+                <Text style={styles.desktopStatValue}>{progress.today_completed}</Text>
+                <Text style={styles.desktopStatLabel}>Aujourd'hui</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.desktopStatCard}
+                onPress={() => {
+                  setStatsType('late');
+                  setShowStatsModal(true);
+                }}
+              >
+                <View style={[styles.desktopStatIcon, { backgroundColor: '#FEF2F2' }]}>
+                  <Ionicons name="warning" size={24} color="#EF4444" />
                 </View>
-
-                {/* Selected Day Details */}
-                <View style={styles.selectedDayDetails}>
-                  <Text style={styles.selectedDayTitle}>
-                    {format(selectedWeekDay, "EEEE d MMMM", { locale: fr })}
-                  </Text>
-                  
-                  {(() => {
-                    const dayData = getWeekDayData(selectedWeekDay);
-                    const daySessions = dayData.sessions;
-                    
-                    if (daySessions.length === 0) {
-                      return (
-                        <View style={styles.noDaySessions}>
-                          <Ionicons name="calendar-outline" size={24} color="#9CA3AF" />
-                          <Text style={styles.noDaySessionsText}>Aucune session</Text>
-                        </View>
-                      );
-                    }
-                    
-                    return (
-                      <View style={styles.daySessionsList}>
-                        {daySessions.slice(0, 4).map((session) => (
-                          <View key={session.id} style={styles.miniSessionCard}>
-                            <View style={[
-                              styles.miniSessionDot,
-                              { backgroundColor: session.status === 'completed' ? '#10B981' : 
-                                session.status === 'late' ? '#EF4444' : '#3B82F6' }
-                            ]} />
-                            <Text style={styles.miniSessionTitle} numberOfLines={1}>
-                              {session.item_title}
-                            </Text>
-                          </View>
-                        ))}
-                        {daySessions.length > 4 && (
-                          <Text style={styles.moreSessions}>
-                            +{daySessions.length - 4} autres
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  })()}
+                <Text style={[styles.desktopStatValue, progress.late_sessions > 0 && { color: '#EF4444' }]}>
+                  {progress.late_sessions}
+                </Text>
+                <Text style={styles.desktopStatLabel}>En retard</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.desktopStatCard}
+                onPress={() => {
+                  setStatsType('completion');
+                  setShowStatsModal(true);
+                }}
+              >
+                <View style={[styles.desktopStatIcon, { backgroundColor: '#D1FAE5' }]}>
+                  <Ionicons name="trending-up" size={24} color="#10B981" />
                 </View>
-              </View>
-            </View>
-          )}
-
-          {/* Right Column - Stats Sidebar */}
-          {isDesktop && (
-            <View style={styles.rightColumn}>
-              {/* Progress Card */}
-              {progress && (
-                <View style={styles.progressCardDesktop}>
-                  <Text style={styles.progressTitle}>Progression</Text>
-                  
-                  <View style={styles.progressGrid}>
-                    <TouchableOpacity 
-                      style={styles.progressGridItem}
-                      onPress={() => {
-                        setStatsType('today');
-                        setShowStatsModal(true);
-                      }}
-                    >
-                      <View style={[styles.progressGridIcon, { backgroundColor: '#EBF5FF' }]}>
-                        <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
-                      </View>
-                      <Text style={styles.progressGridValue}>{progress.today_completed}</Text>
-                      <Text style={styles.progressGridLabel}>Aujourd'hui</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                      style={styles.progressGridItem}
-                      onPress={() => {
-                        setStatsType('late');
-                        setShowStatsModal(true);
-                      }}
-                    >
-                      <View style={[styles.progressGridIcon, { backgroundColor: '#FEF2F2' }]}>
-                        <Ionicons name="warning" size={20} color="#EF4444" />
-                      </View>
-                      <Text style={[styles.progressGridValue, progress.late_sessions > 0 && { color: '#EF4444' }]}>
-                        {progress.late_sessions}
-                      </Text>
-                      <Text style={styles.progressGridLabel}>En retard</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                      style={styles.progressGridItem}
-                      onPress={() => {
-                        setStatsType('completion');
-                        setShowStatsModal(true);
-                      }}
-                    >
-                      <View style={[styles.progressGridIcon, { backgroundColor: '#D1FAE5' }]}>
-                        <Ionicons name="trending-up" size={20} color="#10B981" />
-                      </View>
-                      <Text style={styles.progressGridValue}>{progress.completion_rate}%</Text>
-                      <Text style={styles.progressGridLabel}>Complétion</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                      style={styles.progressGridItem}
-                      onPress={() => {
-                        setStatsType('courses');
-                        setShowStatsModal(true);
-                      }}
-                    >
-                      <View style={[styles.progressGridIcon, { backgroundColor: '#FEF3C7' }]}>
-                        <Ionicons name="library" size={20} color="#F59E0B" />
-                      </View>
-                      <Text style={styles.progressGridValue}>{progress.active_items}</Text>
-                      <Text style={styles.progressGridLabel}>Cours actifs</Text>
-                    </TouchableOpacity>
-                  </View>
+                <Text style={styles.desktopStatValue}>{progress.completion_rate}%</Text>
+                <Text style={styles.desktopStatLabel}>Complétion</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.desktopStatCard}
+                onPress={() => {
+                  setStatsType('courses');
+                  setShowStatsModal(true);
+                }}
+              >
+                <View style={[styles.desktopStatIcon, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="library" size={24} color="#F59E0B" />
                 </View>
-              )}
-
-              {/* Total Sessions Card */}
-              {progress && (
+                <Text style={styles.desktopStatValue}>{progress.active_items}</Text>
+                <Text style={styles.desktopStatLabel}>Cours actifs</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.desktopStatCard, { backgroundColor: '#3B82F6' }]}
+                onPress={() => {
+                  setStatsType('completion');
+                  setShowStatsModal(true);
+                }}
+              >
+                <Ionicons name="trophy" size={24} color="#FFFFFF" />
+                <Text style={[styles.desktopStatValue, { color: '#FFFFFF' }]}>{progress.completed_sessions}</Text>
+                <Text style={[styles.desktopStatLabel, { color: 'rgba(255,255,255,0.9)' }]}>Sessions terminées</Text>
+              </TouchableOpacity>
+              
+              {progress.streak > 0 && (
                 <TouchableOpacity 
-                  style={styles.totalCard}
-                  onPress={() => {
-                    setStatsType('completion');
-                    setShowStatsModal(true);
-                  }}
-                >
-                  <Ionicons name="trophy" size={32} color="#FFFFFF" />
-                  <Text style={styles.totalValue}>{progress.completed_sessions}</Text>
-                  <Text style={styles.totalLabel}>Sessions terminées</Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Streak Card */}
-              {progress && progress.streak > 0 && (
-                <TouchableOpacity 
-                  style={styles.streakCard}
+                  style={[styles.desktopStatCard, styles.desktopStreakCard]}
                   onPress={() => {
                     setStatsType('streak');
                     setShowStatsModal(true);
                   }}
                 >
-                  <View style={styles.streakCardHeader}>
-                    <Ionicons name="flame" size={28} color="#F97316" />
-                    <Text style={styles.streakCardValue}>{progress.streak}</Text>
-                  </View>
-                  <Text style={styles.streakCardLabel}>jours consécutifs</Text>
-                  <Text style={styles.streakCardSubtext}>Tap pour voir le calendrier</Text>
+                  <Ionicons name="flame" size={24} color="#F97316" />
+                  <Text style={[styles.desktopStatValue, { color: '#F97316' }]}>{progress.streak}</Text>
+                  <Text style={styles.desktopStatLabel}>jours consécutifs</Text>
                 </TouchableOpacity>
               )}
             </View>
-          )}
-        </View>
+            ) : (
+              <Text style={{ color: '#6B7280', fontStyle: 'italic' }}>Chargement des statistiques...</Text>
+            )}
+          </View>
+        )}
 
         {/* Mobile Progress Card */}
         {!isDesktop && progress && (
@@ -986,5 +981,160 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     backgroundColor: '#E5E7EB',
+  },
+  // NEW Desktop Layout Styles
+  weekCalendarColumnDesktop: {
+    flex: 3,
+    minWidth: 500,
+  },
+  weekCalendarCardDesktop: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  weekDaysDesktop: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  weekDayColumnDesktop: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    minHeight: 280,
+  },
+  weekDayColumnSelected: {
+    backgroundColor: '#3B82F6',
+  },
+  weekDayColumnToday: {
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+  },
+  weekDayNameDesktop: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    textTransform: 'capitalize',
+    marginBottom: 4,
+  },
+  weekDayNumberDesktop: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginBottom: 12,
+    textTransform: 'capitalize',
+  },
+  weekDaySessionsDesktop: {
+    flex: 1,
+    gap: 6,
+  },
+  noSessionsText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+  },
+  weekDaySessionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+  },
+  weekDaySessionItemSelected: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  weekDaySessionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  weekDaySessionTitle: {
+    flex: 1,
+    fontSize: 12,
+    color: '#374151',
+  },
+  weekDaySessionTitleSelected: {
+    color: '#FFFFFF',
+  },
+  moreSessionsDesktop: {
+    fontSize: 11,
+    color: '#3B82F6',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  weekDaySummary: {
+    marginTop: 'auto',
+    paddingTop: 12,
+    gap: 4,
+  },
+  summaryBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  summaryBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#3B82F6',
+  },
+  sessionsColumnDesktop: {
+    flex: 2,
+    maxWidth: 450,
+  },
+  // Desktop Stats Section (Bottom)
+  desktopStatsSection: {
+    marginTop: 32,
+  },
+  desktopStatsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  desktopStatsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  desktopStatCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    minWidth: 140,
+    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  desktopStatIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  desktopStatValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  desktopStatLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  desktopStreakCard: {
+    borderWidth: 2,
+    borderColor: '#FFF7ED',
   },
 });
