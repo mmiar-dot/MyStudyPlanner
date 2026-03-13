@@ -81,7 +81,7 @@ export default function RootLayout() {
     runUpdater();
   }, []);
 
-  // 2) Auth init
+  // 2) Auth init - only run after hydration completes
   useEffect(() => {
     const init = async () => {
       try {
