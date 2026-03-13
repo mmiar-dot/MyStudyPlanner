@@ -30,12 +30,16 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install frontend dependencies
-        working-directory: frontend
+      - name: Install mobile dependencies
+        working-directory: apps/mobile
+        run: npm ci
+
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
         run: npm ci
 
       - name: Build web export (Expo)
-        working-directory: frontend
+        working-directory: apps/mobile
         run: npx expo export --platform web
 
       - name: Build Tauri App
@@ -58,7 +62,7 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
         with:
-          projectPath: frontend
+          projectPath: apps/desktop
           tagName: ${{ github.ref_name }}
           releaseName: "MyStudyPlanner ${{ github.ref_name }}"
           releaseBody: "Release ${{ github.ref_name }}"

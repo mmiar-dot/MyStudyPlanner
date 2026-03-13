@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import api from '../src/services/api';
+import { api } from '@mystudyplanner/api-client';
 
 interface AdminUser {
   id: string;
