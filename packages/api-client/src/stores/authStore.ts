@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { getApiClient, setToken, removeToken, getToken } from './api';
-import type { User, AuthToken } from './types';
+import api, { setToken, removeToken, getToken } from '../services/api';
+import { User, AuthToken } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -24,7 +24,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const api = getApiClient();
       const response = await api.post<AuthToken>('/auth/login', { email, password });
       await setToken(response.data.access_token);
       set({ user: response.data.user, isAuthenticated: true, isLoading: false });
@@ -40,7 +39,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email: string, password: string, name: string) => {
     try {
       set({ isLoading: true, error: null });
-      const api = getApiClient();
       const response = await api.post<AuthToken>('/auth/register', { email, password, name });
       await setToken(response.data.access_token);
       set({ user: response.data.user, isAuthenticated: true, isLoading: false });
@@ -56,7 +54,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   googleAuth: async (idToken: string, email: string, name: string) => {
     try {
       set({ isLoading: true, error: null });
-      const api = getApiClient();
       const response = await api.post<AuthToken>('/auth/google', { 
         id_token: idToken, 
         email, 
@@ -85,7 +82,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ isLoading: false, isAuthenticated: false });
         return;
       }
-      const api = getApiClient();
       const response = await api.get('/auth/me');
       set({ user: response.data, isAuthenticated: true, isLoading: false });
     } catch {
