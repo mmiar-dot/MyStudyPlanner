@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mystudyplanner.app"
+      "bundleIdentifier": "com.mystudyplanner.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -40,6 +43,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4a80a94e-cec4-45f9-a9a7-5a0ae1bc5419"
+      }
+    },
+    "owner": "miarrrrr"
   }
 }

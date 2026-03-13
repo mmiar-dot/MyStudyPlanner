@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+**/node_modules
+
+# expo / metro caches
+.expo
+.expo-shared
+.metro-cache
+
+# build outputs
+dist
+build
+web-build
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# misc
+.DS_Store
+.git

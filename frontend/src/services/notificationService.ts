@@ -1,16 +1,20 @@
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Types sans import runtime (important)
+type ExpoNotifications = typeof import('expo-notifications');
+type ExpoNotification = import('expo-notifications').Notification;
+type ExpoNotificationResponse = import('expo-notifications').NotificationResponse;
+
+// Lazy import (n'importe jamais expo-notifications sur le web)
+let _Notifications: ExpoNotifications | null = null;
+async function getNotifications(): Promise<ExpoNotifications | null> {
+  if (Platform.OS === 'web') return null;
+  if (_Notifications) return _Notifications;
+  _Notifications = await import('expo-notifications');
+  return _Notifications;
+}
 
 export interface NotificationSettings {
   dailyReminder: boolean;
@@ -31,9 +35,11 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 class NotificationService {
   private settings: NotificationSettings = DEFAULT_SETTINGS;
   private expoPushToken: string | null = null;
+  private handlerConfigured = false;
 
   async init(): Promise<string | null> {
-    if (Platform.OS === 'web') {
+    const Notifications = await getNotifications();
+    if (!Notifications) {
       console.log('Notifications not supported on web');
       return null;
     }
@@ -44,6 +50,19 @@ class NotificationService {
     }
 
     try {
+      // Configure notification behavior (native only) - 1 seule fois
+      if (!this.handlerConfigured) {
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowBanner: true,
+            shouldShowList: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+          }),
+        });
+        this.handlerConfigured = true;
+      }
+
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
@@ -59,19 +78,21 @@ class NotificationService {
 
       // Get Expo push token
       try {
-        // In Expo Go, projectId might not be available
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
+        const projectId =
+          Constants.expoConfig?.extra?.eas?.projectId ||
+          Constants.easConfig?.projectId;
+
         const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId,
+          projectId,
         });
+
         this.expoPushToken = tokenData.data;
       } catch (tokenError) {
-        // Notifications might not work in Expo Go, but app should still function
-        console.log('Push token not available (this is normal in Expo Go):', tokenError);
+        console.log('Push token not available (normal in some cases):', tokenError);
         this.expoPushToken = null;
       }
 
-      // Configure notification channels for Android
+      // Android channels
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('study-reminders', {
           name: 'Rappels de révision',
@@ -102,7 +123,7 @@ class NotificationService {
 
   updateSettings(newSettings: Partial<NotificationSettings>) {
     this.settings = { ...this.settings, ...newSettings };
-    this.rescheduleNotifications();
+    void this.rescheduleNotifications(); // important: ne pas oublier le void/await
   }
 
   getSettings(): NotificationSettings {
@@ -110,27 +131,30 @@ class NotificationService {
   }
 
   async rescheduleNotifications() {
-    // Cancel all scheduled notifications
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
+
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    // Schedule daily reminder
     if (this.settings.dailyReminder) {
       await this.scheduleDailyReminder();
     }
 
-    // Schedule morning brief
     if (this.settings.morningBrief) {
       await this.scheduleMorningBrief();
     }
   }
 
   private async scheduleDailyReminder() {
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
+
     const [hours, minutes] = this.settings.dailyReminderTime.split(':').map(Number);
 
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Révisions du jour',
-        body: 'N\'oubliez pas vos sessions de révision !',
+        body: "N'oubliez pas vos sessions de révision !",
         data: { type: 'daily_reminder' },
         sound: true,
       },
@@ -145,12 +169,15 @@ class NotificationService {
   }
 
   private async scheduleMorningBrief() {
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
+
     const [hours, minutes] = this.settings.morningBriefTime.split(':').map(Number);
 
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Résumé matinal',
-        body: 'Consultez votre planning de révision pour aujourd\'hui',
+        body: "Consultez votre planning de révision pour aujourd'hui",
         data: { type: 'morning_brief' },
         sound: true,
       },
@@ -165,21 +192,18 @@ class NotificationService {
   }
 
   async sendImmediateNotification(title: string, body: string, data?: Record<string, any>) {
-    if (Platform.OS === 'web') return;
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
 
     await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        data: data || {},
-        sound: true,
-      },
-      trigger: null, // null means immediate
+      content: { title, body, data: data || {}, sound: true },
+      trigger: null,
     });
   }
 
   async sendLateSessionAlert(sessionCount: number) {
-    if (Platform.OS === 'web' || !this.settings.lateSessionAlerts) return;
+    const Notifications = await getNotifications();
+    if (!Notifications || !this.settings.lateSessionAlerts) return;
 
     await Notifications.scheduleNotificationAsync({
       content: {
@@ -194,18 +218,14 @@ class NotificationService {
   }
 
   async scheduleSingleReminder(date: Date, title: string, body: string, data?: Record<string, any>) {
-    if (Platform.OS === 'web') return;
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
 
     const now = new Date();
     if (date <= now) return;
 
     await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        data: data || {},
-        sound: true,
-      },
+      content: { title, body, data: data || {}, sound: true },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date,
@@ -213,11 +233,15 @@ class NotificationService {
     });
   }
 
-  addNotificationReceivedListener(callback: (notification: Notifications.Notification) => void) {
+  async addNotificationReceivedListener(callback: (notification: ExpoNotification) => void) {
+    const Notifications = await getNotifications();
+    if (!Notifications) return null;
     return Notifications.addNotificationReceivedListener(callback);
   }
 
-  addNotificationResponseReceivedListener(callback: (response: Notifications.NotificationResponse) => void) {
+  async addNotificationResponseReceivedListener(callback: (response: ExpoNotificationResponse) => void) {
+    const Notifications = await getNotifications();
+    if (!Notifications) return null;
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 }
