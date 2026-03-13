@@ -12,13 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons'
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useSessionStore } from '../../src/store/sessionStore';
-import { useAnalyticsStore } from '../../src/store/analyticsStore';
-import { useAuthStore } from '../../src/store/authStore';
-import { SessionCard } from '../../src/components/SessionCard';
-import { SRSRatingModal } from '../../src/components/SRSRatingModal';
-import { StatsDetailModal } from '../../src/components/StatsDetailModal';
-import { StudySession } from '../../src/types';
+import { useSessionStore } from '@mystudyplanner/api-client';
+import { useAnalyticsStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '@mystudyplanner/api-client';
+import { SessionCard } from '@mystudyplanner/shared-ui';
+import { SRSRatingModal } from '@mystudyplanner/shared-ui';
+import { StatsDetailModal } from '@mystudyplanner/shared-ui';
+import { StudySession } from '@mystudyplanner/api-client';
 
 export default function TodayScreen() {
   const { width } = useWindowDimensions();

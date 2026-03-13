@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import api from '../api';
 import { CatalogItem, UserItemSettings, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '../types';
 
 export interface CustomSection {

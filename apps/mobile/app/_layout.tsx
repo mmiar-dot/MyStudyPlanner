@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, ActivityIndicator, StyleSheet, Platform, Text } from "react-native";
-import { useAuthStore } from "../src/store/authStore";
+import { useAuthStore } from "@mystudyplanner/api-client";
 import { runAutoUpdate } from "../src/services/updater";
 
 /**

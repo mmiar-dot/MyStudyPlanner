@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import api from '../api';
 import { ProgressStats, CalendarDayData } from '../types';
 
 interface AnalyticsState {

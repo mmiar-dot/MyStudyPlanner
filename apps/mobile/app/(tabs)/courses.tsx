@@ -15,11 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useCatalogStore, CustomSection } from '../../src/store/catalogStore';
-import { MethodSelector } from '../../src/components/MethodSelector';
-import { ColorPicker } from '../../src/components/ColorPicker';
-import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '../../src/types';
-import api from '../../src/services/api';
+import { useCatalogStore, CustomSection } from '@mystudyplanner/api-client';
+import { MethodSelector } from '@mystudyplanner/shared-ui';
+import { ColorPicker } from '@mystudyplanner/shared-ui';
+import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
+import { api } from '@mystudyplanner/api-client';
 
 type FilterType = 'all' | 'personal' | string; // string for custom section IDs
 

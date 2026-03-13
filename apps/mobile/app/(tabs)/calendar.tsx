@@ -21,13 +21,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Calendar, DateData } from 'react-native-calendars';
 import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useSessionStore } from '../../src/store/sessionStore';
-import { useAnalyticsStore } from '../../src/store/analyticsStore';
-import { useEventStore, CalendarEvent } from '../../src/store/eventStore';
-import { SessionCard } from '../../src/components/SessionCard';
-import { SRSRatingModal } from '../../src/components/SRSRatingModal';
-import { ColorPicker } from '../../src/components/ColorPicker';
-import { StudySession, CalendarDayData, PersonalEvent, ICSSubscription } from '../../src/types';
+import { useSessionStore } from '@mystudyplanner/api-client';
+import { useAnalyticsStore } from '@mystudyplanner/api-client';
+import { useEventStore, CalendarEvent } from '@mystudyplanner/api-client';
+import { SessionCard } from '@mystudyplanner/shared-ui';
+import { SRSRatingModal } from '@mystudyplanner/shared-ui';
+import { ColorPicker } from '@mystudyplanner/shared-ui';
+import { StudySession, CalendarDayData, PersonalEvent, ICSSubscription } from '@mystudyplanner/api-client';
 
 export default function CalendarScreen() {
   const { width } = useWindowDimensions();

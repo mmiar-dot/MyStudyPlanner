@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
-import { RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '../types';
+import { RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 

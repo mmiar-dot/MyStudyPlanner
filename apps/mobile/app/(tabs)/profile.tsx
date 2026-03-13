@@ -19,14 +19,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
-import { useAuthStore } from '../../src/store/authStore';
-import { useAnalyticsStore } from '../../src/store/analyticsStore';
-import { useEventStore } from '../../src/store/eventStore';
-import { ColorPicker } from '../../src/components/ColorPicker';
-import { ProfilePhotoManager } from '../../src/components/ProfilePhotoManager';
-import { StatsDetailModal } from '../../src/components/StatsDetailModal';
+import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAnalyticsStore } from '@mystudyplanner/api-client';
+import { useEventStore } from '@mystudyplanner/api-client';
+import { ColorPicker } from '@mystudyplanner/shared-ui';
+import { ProfilePhotoManager } from '@mystudyplanner/shared-ui';
+import { StatsDetailModal } from '@mystudyplanner/shared-ui';
 import notificationService, { NotificationSettings } from '../../src/services/notificationService';
-import api from '../../src/services/api';
+import { api } from '@mystudyplanner/api-client';
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();

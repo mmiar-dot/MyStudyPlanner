@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api, { setToken, removeToken, getToken } from '../services/api';
+import api, { setToken, removeToken, getToken } from '../api';
 import { User, AuthToken } from '../types';
 
 interface AuthState {
