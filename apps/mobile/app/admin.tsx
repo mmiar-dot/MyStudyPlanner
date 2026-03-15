@@ -278,6 +278,46 @@ export default function AdminScreen() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!selectedUser) return;
+    try {
+      const response = await api.post<{
+        message: string;
+        temporary_password: string;
+        user_email: string;
+        instructions: string;
+      }>(`/admin/users/${selectedUser.id}/reset-password`);
+      
+      const { temporary_password, user_email } = response.data;
+      
+      if (Platform.OS === 'web') {
+        // On web, show in alert and allow copy
+        const copyToClipboard = () => {
+          navigator.clipboard.writeText(temporary_password);
+          alert('Mot de passe copié !');
+        };
+        
+        Alert.alert(
+          'Mot de passe réinitialisé',
+          `Email: ${user_email}\n\nNouveau mot de passe temporaire:\n${temporary_password}\n\nCommuniquez ce mot de passe à l'utilisateur.`,
+          [
+            { text: 'Copier', onPress: copyToClipboard },
+            { text: 'OK' }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Mot de passe réinitialisé',
+          `Email: ${user_email}\n\nNouveau mot de passe temporaire:\n${temporary_password}\n\nCommuniquez ce mot de passe à l'utilisateur.`
+        );
+      }
+      
+      setShowUserModal(false);
+    } catch (error: any) {
+      Alert.alert('Erreur', error.response?.data?.detail || 'Impossible de réinitialiser le mot de passe');
+    }
+  };
+
   const openConfirmModal = (action: 'block' | 'unblock' | 'delete') => {
     setConfirmAction(action);
     setShowConfirmModal(true);
@@ -621,6 +661,14 @@ export default function AdminScreen() {
                 {selectedUser.role !== 'admin' && (
                   <View style={styles.actionsSection}>
                     <Text style={styles.actionsSectionTitle}>Actions</Text>
+                    
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.resetPasswordButton]}
+                      onPress={handleResetPassword}
+                    >
+                      <Ionicons name="key" size={20} color="#3B82F6" />
+                      <Text style={styles.resetPasswordButtonText}>Réinitialiser le mot de passe</Text>
+                    </TouchableOpacity>
                     
                     {selectedUser.is_blocked ? (
                       <TouchableOpacity
@@ -1406,5 +1454,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  resetPasswordButton: {
+    backgroundColor: '#EBF5FF',
+    borderColor: '#3B82F6',
+    borderWidth: 1,
+  },
+  resetPasswordButtonText: {
+    color: '#3B82F6',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 8,
   },
 });
