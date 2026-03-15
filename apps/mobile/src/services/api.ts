@@ -2,15 +2,39 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+// Get backend URL from multiple sources for reliability
+const getBackendUrl = (): string => {
+  // 1. Try expo-constants (works in EAS builds)
+  const expoExtra = Constants.expoConfig?.extra;
+  if (expoExtra?.backendUrl) {
+    return expoExtra.backendUrl;
+  }
+  
+  // 2. Try environment variable (works in development)
+  if (process.env.EXPO_PUBLIC_BACKEND_URL) {
+    return process.env.EXPO_PUBLIC_BACKEND_URL;
+  }
+  
+  // 3. Fallback to production URL
+  return 'https://revision-med.preview.emergentagent.com';
+};
+
+const BACKEND_URL = getBackendUrl();
 const API_URL = `${BACKEND_URL}/api`;
+
+// Log the URL in development for debugging
+if (__DEV__) {
+  console.log('API URL:', API_URL);
+}
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
 // Token storage helpers
