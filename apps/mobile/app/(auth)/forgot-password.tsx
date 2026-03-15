@@ -1,120 +1,58 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 
 export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  const { requestPasswordReset, accentColor } = useAuthStore();
+  const { accentColor } = useAuthStore();
   const router = useRouter();
 
-  const handleSubmit = async () => {
-    if (!email.trim()) {
-      setError('Veuillez entrer votre adresse email');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError('');
-      await requestPasswordReset(email.trim());
-      setSuccess(true);
-    } catch (e: any) {
-      setError(e.response?.data?.detail || 'Une erreur est survenue');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (success) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.successContainer}>
-          <View style={[styles.successIcon, { backgroundColor: accentColor + '20' }]}>
-            <Ionicons name="mail" size={48} color={accentColor} />
-          </View>
-          <Text style={styles.successTitle}>Email envoyé !</Text>
-          <Text style={styles.successText}>
-            Si un compte existe avec l'adresse {email}, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.
-          </Text>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: accentColor }]}
-            onPress={() => router.replace('/(auth)/login')}
-          >
-            <Text style={styles.buttonText}>Retour à la connexion</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
 
-        <View style={styles.header}>
+        <View style={styles.content}>
           <View style={[styles.iconContainer, { backgroundColor: accentColor + '20' }]}>
-            <Ionicons name="key" size={32} color={accentColor} />
+            <Ionicons name="key" size={48} color={accentColor} />
           </View>
+          
           <Text style={styles.title}>Mot de passe oublié ?</Text>
-          <Text style={styles.subtitle}>
-            Pas de souci ! Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+          
+          <Text style={styles.description}>
+            Pour réinitialiser votre mot de passe, veuillez contacter l'administrateur de l'application.
           </Text>
-        </View>
 
-        {error ? (
-          <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={20} color="#EF4444" />
-            <Text style={styles.errorText}>{error}</Text>
+          <View style={[styles.infoCard, { borderColor: accentColor }]}>
+            <Ionicons name="information-circle" size={24} color={accentColor} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoTitle}>Comment ça marche ?</Text>
+              <Text style={styles.infoText}>
+                1. Contactez l'administrateur{'\n'}
+                2. Il générera un mot de passe temporaire{'\n'}
+                3. Vous pourrez ensuite le modifier dans votre profil
+              </Text>
+            </View>
           </View>
-        ) : null}
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Adresse email</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="votre@email.com"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+          <View style={styles.contactSection}>
+            <Text style={styles.contactLabel}>Administrateur :</Text>
+            <Text style={[styles.contactEmail, { color: accentColor }]}>admin@mystudyplanner.com</Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: accentColor }, isSubmitting && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
+            style={[styles.button, { backgroundColor: accentColor }]}
+            onPress={() => router.replace('/(auth)/login')}
           >
-            {isSubmitting ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.buttonText}>Envoyer le lien</Text>
-            )}
+            <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+            <Text style={styles.buttonText}>Retour à la connexion</Text>
           </TouchableOpacity>
-
-          <Link href="/(auth)/login" asChild>
-            <TouchableOpacity style={styles.linkButton}>
-              <Text style={[styles.linkText, { color: accentColor }]}>Retour à la connexion</Text>
-            </TouchableOpacity>
-          </Link>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -141,101 +79,10 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  header: {
+  content: {
     alignItems: 'center',
-    marginBottom: 32,
   },
   iconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF2F2',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
-  },
-  errorText: {
-    flex: 1,
-    color: '#DC2626',
-    fontSize: 14,
-  },
-  form: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 12,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    height: 48,
-    fontSize: 16,
-    color: '#111827',
-  },
-  button: {
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  linkText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  successIcon: {
     width: 96,
     height: 96,
     borderRadius: 48,
@@ -243,17 +90,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  successTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 26,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  successText: {
-    fontSize: 15,
+  description: {
+    fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
     marginBottom: 24,
+  },
+  infoCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    gap: 12,
+    marginBottom: 24,
+    width: '100%',
+  },
+  infoContent: {
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 22,
+  },
+  contactSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    width: '100%',
+  },
+  contactLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  contactEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  button: {
+    flexDirection: 'row',
+    height: 52,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

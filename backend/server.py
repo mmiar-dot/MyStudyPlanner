@@ -491,90 +491,25 @@ async def google_auth(auth_data: GoogleAuthRequest):
 # PASSWORD RESET ENDPOINTS
 # =====================================
 import secrets
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import string
 
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', '')
-APP_URL = os.environ.get('APP_URL', '')
-
-async def send_password_reset_email(email: str, reset_token: str):
-    """Send password reset email via SendGrid"""
-    if not SENDGRID_API_KEY:
-        logger.warning("SENDGRID_API_KEY not configured, skipping email")
-        return False
-    
-    if not APP_URL:
-        logger.warning("APP_URL not configured, cannot send reset email with valid link")
-        return False
-    
-    if not SENDGRID_FROM_EMAIL:
-        logger.warning("SENDGRID_FROM_EMAIL not configured, cannot send email")
-        return False
-    
-    reset_link = f"{APP_URL}/reset-password?token={reset_token}"
-    
-    message = Mail(
-        from_email=SENDGRID_FROM_EMAIL,
-        to_emails=email,
-        subject='MyStudyPlanner - Réinitialisation de votre mot de passe',
-        html_content=f'''
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #3B82F6;">MyStudyPlanner</h2>
-            <p>Bonjour,</p>
-            <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
-            <p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>
-            <a href="{reset_link}" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">
-                Réinitialiser mon mot de passe
-            </a>
-            <p style="color: #666; font-size: 14px;">Ce lien expire dans 1 heure.</p>
-            <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
-            <p style="color: #999; font-size: 12px;">MyStudyPlanner - Votre compagnon de révision</p>
-        </div>
-        '''
-    )
-    
-    try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-        logger.info(f"Password reset email sent to {email}, status: {response.status_code}")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to send password reset email: {e}")
-        return False
+def generate_temp_password(length=12):
+    """Generate a secure temporary password"""
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 @api_router.post("/auth/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest, background_tasks: BackgroundTasks):
-    """Request a password reset email"""
-    user = await db.users.find_one({"email": request.email})
-    
-    # Always return success to prevent email enumeration
-    if not user:
-        return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
-    
-    # Generate reset token
-    reset_token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(hours=1)
-    
-    # Store reset token in database
-    await db.password_resets.delete_many({"user_id": user["id"]})  # Remove old tokens
-    await db.password_resets.insert_one({
-        "id": str(uuid.uuid4()),
-        "user_id": user["id"],
-        "token": reset_token,
-        "expires_at": expires_at,
-        "created_at": datetime.utcnow()
-    })
-    
-    # Send email in background
-    background_tasks.add_task(send_password_reset_email, request.email, reset_token)
-    
-    return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+async def forgot_password(request: ForgotPasswordRequest):
+    """Request a password reset - directs user to contact admin"""
+    # Always return the same message to prevent email enumeration
+    return {
+        "message": "Pour réinitialiser votre mot de passe, veuillez contacter l'administrateur.",
+        "contact_admin": True
+    }
 
 @api_router.post("/auth/reset-password")
 async def reset_password(request: ResetPasswordRequest):
-    """Reset password using token"""
+    """Reset password using token - kept for compatibility but now admin-only"""
     # Find valid reset token
     reset_record = await db.password_resets.find_one({
         "token": request.token,
@@ -2511,6 +2446,36 @@ async def admin_delete_user(user_id: str, admin: dict = Depends(get_admin_user))
         "message": "Utilisateur et toutes ses données supprimés (conformité RGPD)",
         "user_id": user_id,
         "deleted_data": deleted_data
+    }
+
+@api_router.post("/admin/users/{user_id}/reset-password")
+async def admin_reset_password(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Reset a user's password and generate a temporary password - admin only"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    if user.get("role") == UserRole.ADMIN and admin["id"] != user_id:
+        raise HTTPException(status_code=400, detail="Impossible de réinitialiser le mot de passe d'un autre administrateur")
+    
+    # Generate temporary password
+    temp_password = generate_temp_password(12)
+    hashed_password = pwd_context.hash(temp_password)
+    
+    # Update user password
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"password": hashed_password}}
+    )
+    
+    logger.info(f"Admin {admin['email']} reset password for user {user['email']}")
+    
+    return {
+        "message": "Mot de passe réinitialisé avec succès",
+        "user_id": user_id,
+        "user_email": user["email"],
+        "temporary_password": temp_password,
+        "instructions": "Communiquez ce mot de passe temporaire à l'utilisateur. Il pourra le changer dans son profil."
     }
 
 @api_router.post("/admin/create")
