@@ -28,7 +28,10 @@ export const getToken = async (): Promise<string | null> => {
   try {
     let token: string | null = null;
     if (Platform.OS === 'web') {
-      token = await AsyncStorage.getItem(TOKEN_KEY);
+      // Use localStorage directly on web to avoid AsyncStorage issues
+      if (typeof window !== 'undefined' && window.localStorage) {
+        token = window.localStorage.getItem(TOKEN_KEY);
+      }
     } else {
       token = await SecureStore.getItemAsync(TOKEN_KEY);
     }
@@ -46,7 +49,10 @@ export const setToken = async (token: string): Promise<void> => {
   
   try {
     if (Platform.OS === 'web') {
-      await AsyncStorage.setItem(TOKEN_KEY, token);
+      // Use localStorage directly on web
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(TOKEN_KEY, token);
+      }
     } else {
       await SecureStore.setItemAsync(TOKEN_KEY, token);
     }
@@ -61,7 +67,10 @@ export const removeToken = async (): Promise<void> => {
   
   try {
     if (Platform.OS === 'web') {
-      await AsyncStorage.removeItem(TOKEN_KEY);
+      // Use localStorage directly on web
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(TOKEN_KEY);
+      }
     } else {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
     }
