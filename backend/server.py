@@ -1350,7 +1350,8 @@ async def get_sessions(
     
     for s in sessions:
         session_status = s["status"]
-        # Mark as late if pending and date has passed
+        # Mark as late if pending and date has STRICTLY passed (not today)
+        # Sessions scheduled for today should remain "pending" not "late"
         if session_status == SessionStatus.PENDING and s["scheduled_date"] < today:
             session_status = SessionStatus.LATE
         

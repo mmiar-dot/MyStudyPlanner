@@ -19,10 +19,12 @@ import { SessionCard } from '@mystudyplanner/shared-ui';
 import { SRSRatingModal } from '@mystudyplanner/shared-ui';
 import { StatsDetailModal } from '@mystudyplanner/shared-ui';
 import { StudySession } from '@mystudyplanner/api-client';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TodayScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { colors, isDark, accentColor } = useTheme();
   
   const { user } = useAuthStore();
   const { todaySessions, lateSessions, fetchTodaySessions, fetchLateSessions, completeSession, fetchSessionsByDate } = useSessionStore();
@@ -133,26 +135,26 @@ export default function TodayScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3B82F6']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[accentColor]} />
         }
       >
         {/* Header */}
         <View style={[styles.header, isDesktop && styles.headerDesktop]}>
           <View style={styles.headerLeft}>
-            <Text style={[styles.greeting, isDesktop && styles.greetingDesktop]}>
+            <Text style={[styles.greeting, isDesktop && styles.greetingDesktop, { color: colors.text }]}>
               Bonjour, {user?.name?.split(' ')[0] || 'Utilisateur'}
             </Text>
-            <Text style={styles.date}>
+            <Text style={[styles.date, { color: colors.textSecondary }]}>
               {format(today, "EEEE d MMMM yyyy", { locale: fr })}
             </Text>
           </View>
           <View style={styles.headerRight}>
             {progress && progress.streak > 0 && (
-              <View style={styles.streakBadge}>
+              <View style={[styles.streakBadge, { backgroundColor: isDark ? '#422006' : '#FFF7ED' }]}>
                 <Ionicons name="flame" size={20} color="#F97316" />
                 <Text style={styles.streakText}>{progress.streak} jours</Text>
               </View>
@@ -165,34 +167,34 @@ export default function TodayScreen() {
           {/* Desktop: Week Calendar on LEFT (enlarged) */}
           {isDesktop && (
             <View style={styles.weekCalendarColumnDesktop}>
-              <View style={styles.weekCalendarCardDesktop}>
+              <View style={[styles.weekCalendarCardDesktop, { backgroundColor: colors.surface }]}>
                 {/* Week Navigation Header */}
                 <View style={styles.weekNavHeader}>
                   <TouchableOpacity 
-                    style={styles.weekNavButton}
+                    style={[styles.weekNavButton, { backgroundColor: isDark ? colors.primaryLight : '#EBF5FF' }]}
                     onPress={goToPreviousWeek}
                   >
-                    <Ionicons name="chevron-back" size={20} color="#3B82F6" />
+                    <Ionicons name="chevron-back" size={20} color={accentColor} />
                   </TouchableOpacity>
                   
                   <View style={styles.weekNavCenter}>
-                    <Text style={styles.weekCalendarTitle}>
+                    <Text style={[styles.weekCalendarTitle, { color: colors.text }]}>
                       {isCurrentWeek 
                         ? 'Cette semaine' 
                         : `Semaine du ${format(currentWeekStart, 'd MMM', { locale: fr })}`}
                     </Text>
                     {!isCurrentWeek && (
                       <TouchableOpacity onPress={goToCurrentWeek}>
-                        <Text style={styles.backToTodayText}>Revenir à aujourd'hui</Text>
+                        <Text style={[styles.backToTodayText, { color: accentColor }]}>Revenir à aujourd'hui</Text>
                       </TouchableOpacity>
                     )}
                   </View>
                   
                   <TouchableOpacity 
-                    style={styles.weekNavButton}
+                    style={[styles.weekNavButton, { backgroundColor: isDark ? colors.primaryLight : '#EBF5FF' }]}
                     onPress={goToNextWeek}
                   >
-                    <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+                    <Ionicons name="chevron-forward" size={20} color={accentColor} />
                   </TouchableOpacity>
                 </View>
                 
@@ -209,21 +211,24 @@ export default function TodayScreen() {
                         key={day.toISOString()}
                         style={[
                           styles.weekDayColumnDesktop,
-                          isSelected && styles.weekDayColumnSelected,
-                          isTodayDate && styles.weekDayColumnToday,
+                          { backgroundColor: colors.surfaceVariant },
+                          isSelected && [styles.weekDayColumnSelected, { backgroundColor: accentColor }],
+                          isTodayDate && !isSelected && { borderColor: accentColor },
                         ]}
                         onPress={() => setSelectedWeekDay(day)}
                       >
                         <Text style={[
                           styles.weekDayNameDesktop,
+                          { color: colors.textSecondary },
                           isSelected && styles.weekDayTextSelected,
                         ]}>
                           {format(day, 'EEEE', { locale: fr })}
                         </Text>
                         <Text style={[
                           styles.weekDayNumberDesktop,
+                          { color: colors.textTertiary },
                           isSelected && styles.weekDayTextSelected,
-                          isTodayDate && !isSelected && styles.weekDayNumberToday,
+                          isTodayDate && !isSelected && { color: accentColor },
                         ]}>
                           {format(day, 'd MMM', { locale: fr })}
                         </Text>
@@ -231,7 +236,7 @@ export default function TodayScreen() {
                         {/* Mini sessions list */}
                         <View style={styles.weekDaySessionsDesktop}>
                           {daySessions.length === 0 ? (
-                            <Text style={[styles.noSessionsText, isSelected && { color: 'rgba(255,255,255,0.7)' }]}>
+                            <Text style={[styles.noSessionsText, { color: colors.textTertiary }, isSelected && { color: 'rgba(255,255,255,0.7)' }]}>
                               Aucune session
                             </Text>
                           ) : (
@@ -239,15 +244,17 @@ export default function TodayScreen() {
                               {daySessions.slice(0, 5).map((session) => (
                                 <View key={session.id} style={[
                                   styles.weekDaySessionItem,
+                                  { backgroundColor: colors.surface },
                                   isSelected && styles.weekDaySessionItemSelected
                                 ]}>
                                   <View style={[
                                     styles.weekDaySessionDot,
                                     { backgroundColor: session.status === 'completed' ? '#10B981' : 
-                                      session.status === 'late' ? '#EF4444' : '#3B82F6' }
+                                      session.status === 'late' ? '#EF4444' : accentColor }
                                   ]} />
                                   <Text style={[
                                     styles.weekDaySessionTitle,
+                                    { color: colors.text },
                                     isSelected && styles.weekDaySessionTitleSelected
                                   ]} numberOfLines={1}>
                                     {session.item_title}
@@ -255,7 +262,7 @@ export default function TodayScreen() {
                                 </View>
                               ))}
                               {daySessions.length > 5 && (
-                                <Text style={[styles.moreSessionsDesktop, isSelected && { color: 'rgba(255,255,255,0.8)' }]}>
+                                <Text style={[styles.moreSessionsDesktop, { color: accentColor }, isSelected && { color: 'rgba(255,255,255,0.8)' }]}>
                                   +{daySessions.length - 5} autres
                                 </Text>
                               )}
@@ -266,21 +273,21 @@ export default function TodayScreen() {
                         {/* Day summary badges */}
                         <View style={styles.weekDaySummary}>
                           {dayData.pending > 0 && (
-                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#EBF5FF' }]}>
-                              <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }]}>
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : colors.primaryLight }]}>
+                              <Text style={[styles.summaryBadgeText, { color: accentColor }, isSelected && { color: '#FFFFFF' }]}>
                                 {dayData.pending} à faire
                               </Text>
                             </View>
                           )}
                           {dayData.completed > 0 && (
-                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#D1FAE5' }]}>
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : (isDark ? '#064E3B' : '#D1FAE5') }]}>
                               <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }, !isSelected && { color: '#10B981' }]}>
                                 {dayData.completed} terminées
                               </Text>
                             </View>
                           )}
                           {dayData.late > 0 && (
-                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#FEF2F2' }]}>
+                            <View style={[styles.summaryBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : (isDark ? '#7F1D1D' : '#FEF2F2') }]}>
                               <Text style={[styles.summaryBadgeText, isSelected && { color: '#FFFFFF' }, !isSelected && { color: '#EF4444' }]}>
                                 {dayData.late} en retard
                               </Text>
@@ -295,77 +302,77 @@ export default function TodayScreen() {
 
               {/* Desktop Stats Section - Under Week Calendar */}
               {progress && (
-                <View style={styles.desktopStatsSectionUnderCalendar}>
-                  <Text style={styles.desktopStatsSectionTitle}>Statistiques</Text>
+                <View style={[styles.desktopStatsSectionUnderCalendar, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.desktopStatsSectionTitle, { color: colors.text }]}>Statistiques</Text>
                   <View style={styles.desktopStatsRowCompact}>
                     <TouchableOpacity 
-                      style={styles.desktopStatCardCompact}
+                      style={[styles.desktopStatCardCompact, { backgroundColor: colors.surfaceVariant }]}
                       onPress={() => {
                         setStatsType('today');
                         setShowStatsModal(true);
                       }}
                     >
-                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#EBF5FF' }]}>
-                        <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: colors.primaryLight }]}>
+                        <Ionicons name="checkmark-circle" size={20} color={accentColor} />
                       </View>
                       <View style={styles.desktopStatInfo}>
-                        <Text style={styles.desktopStatValueCompact}>{progress.today_completed}</Text>
-                        <Text style={styles.desktopStatLabelCompact}>Aujourd'hui</Text>
+                        <Text style={[styles.desktopStatValueCompact, { color: colors.text }]}>{progress.today_completed}</Text>
+                        <Text style={[styles.desktopStatLabelCompact, { color: colors.textSecondary }]}>Aujourd'hui</Text>
                       </View>
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
-                      style={styles.desktopStatCardCompact}
+                      style={[styles.desktopStatCardCompact, { backgroundColor: colors.surfaceVariant }]}
                       onPress={() => {
                         setStatsType('late');
                         setShowStatsModal(true);
                       }}
                     >
-                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#FEF2F2' }]}>
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: isDark ? '#7F1D1D' : '#FEF2F2' }]}>
                         <Ionicons name="warning" size={20} color="#EF4444" />
                       </View>
                       <View style={styles.desktopStatInfo}>
-                        <Text style={[styles.desktopStatValueCompact, progress.late_sessions > 0 && { color: '#EF4444' }]}>
+                        <Text style={[styles.desktopStatValueCompact, { color: colors.text }, progress.late_sessions > 0 && { color: '#EF4444' }]}>
                           {progress.late_sessions}
                         </Text>
-                        <Text style={styles.desktopStatLabelCompact}>En retard</Text>
+                        <Text style={[styles.desktopStatLabelCompact, { color: colors.textSecondary }]}>En retard</Text>
                       </View>
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
-                      style={styles.desktopStatCardCompact}
+                      style={[styles.desktopStatCardCompact, { backgroundColor: colors.surfaceVariant }]}
                       onPress={() => {
                         setStatsType('completion');
                         setShowStatsModal(true);
                       }}
                     >
-                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#D1FAE5' }]}>
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
                         <Ionicons name="trending-up" size={20} color="#10B981" />
                       </View>
                       <View style={styles.desktopStatInfo}>
-                        <Text style={styles.desktopStatValueCompact}>{progress.completion_rate}%</Text>
-                        <Text style={styles.desktopStatLabelCompact}>Complétion</Text>
+                        <Text style={[styles.desktopStatValueCompact, { color: colors.text }]}>{progress.completion_rate}%</Text>
+                        <Text style={[styles.desktopStatLabelCompact, { color: colors.textSecondary }]}>Complétion</Text>
                       </View>
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
-                      style={styles.desktopStatCardCompact}
+                      style={[styles.desktopStatCardCompact, { backgroundColor: colors.surfaceVariant }]}
                       onPress={() => {
                         setStatsType('courses');
                         setShowStatsModal(true);
                       }}
                     >
-                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#FEF3C7' }]}>
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: isDark ? '#78350F' : '#FEF3C7' }]}>
                         <Ionicons name="library" size={20} color="#F59E0B" />
                       </View>
                       <View style={styles.desktopStatInfo}>
-                        <Text style={styles.desktopStatValueCompact}>{progress.active_items}</Text>
-                        <Text style={styles.desktopStatLabelCompact}>Cours actifs</Text>
+                        <Text style={[styles.desktopStatValueCompact, { color: colors.text }]}>{progress.active_items}</Text>
+                        <Text style={[styles.desktopStatLabelCompact, { color: colors.textSecondary }]}>Cours actifs</Text>
                       </View>
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
-                      style={[styles.desktopStatCardCompact, { backgroundColor: '#3B82F6' }]}
+                      style={[styles.desktopStatCardCompact, { backgroundColor: accentColor }]}
                       onPress={() => {
                         setStatsType('completion');
                         setShowStatsModal(true);
@@ -380,7 +387,7 @@ export default function TodayScreen() {
                     
                     {progress.streak > 0 && (
                       <TouchableOpacity 
-                        style={[styles.desktopStatCardCompact, styles.desktopStreakCardCompact]}
+                        style={[styles.desktopStatCardCompact, styles.desktopStreakCardCompact, { backgroundColor: isDark ? '#422006' : '#FFF7ED' }]}
                         onPress={() => {
                           setStatsType('streak');
                           setShowStatsModal(true);
@@ -389,7 +396,7 @@ export default function TodayScreen() {
                         <Ionicons name="flame" size={20} color="#F97316" />
                         <View style={styles.desktopStatInfo}>
                           <Text style={[styles.desktopStatValueCompact, { color: '#F97316' }]}>{progress.streak}</Text>
-                          <Text style={styles.desktopStatLabelCompact}>jours</Text>
+                          <Text style={[styles.desktopStatLabelCompact, { color: colors.textSecondary }]}>jours</Text>
                         </View>
                       </TouchableOpacity>
                     )}
@@ -403,7 +410,7 @@ export default function TodayScreen() {
           <View style={[styles.leftColumn, isDesktop && styles.sessionsColumnDesktop]}>
             {/* Late Sessions */}
             {lateSessions.length > 0 && (
-              <View style={styles.section}>
+              <View style={[styles.section, { backgroundColor: colors.surface }]}>
                 <TouchableOpacity
                   style={styles.sectionHeader}
                   onPress={() => setShowLateSessions(!showLateSessions)}
@@ -419,7 +426,7 @@ export default function TodayScreen() {
                   <Ionicons
                     name={showLateSessions ? 'chevron-up' : 'chevron-down'}
                     size={20}
-                    color="#6B7280"
+                    color={colors.textSecondary}
                   />
                 </TouchableOpacity>
 
@@ -439,23 +446,23 @@ export default function TodayScreen() {
             )}
 
             {/* Today's Sessions */}
-            <View style={styles.section}>
+            <View style={[styles.section, { backgroundColor: colors.surface }]}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
-                  <View style={[styles.sectionIcon, { backgroundColor: '#EBF5FF' }]}>
-                    <Ionicons name="today" size={18} color="#3B82F6" />
+                  <View style={[styles.sectionIcon, { backgroundColor: colors.primaryLight }]}>
+                    <Ionicons name="today" size={18} color={accentColor} />
                   </View>
-                  <Text style={styles.sectionTitle}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
                     Sessions du jour ({pendingSessions.length})
                   </Text>
                 </View>
               </View>
 
               {pendingSessions.length === 0 && completedSessions.length === 0 ? (
-                <View style={styles.emptyState}>
+                <View style={[styles.emptyState, { backgroundColor: colors.surfaceVariant }]}>
                   <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-                  <Text style={styles.emptyTitle}>Aucune session prévue</Text>
-                  <Text style={styles.emptyText}>
+                  <Text style={[styles.emptyTitle, { color: colors.text }]}>Aucune session prévue</Text>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                     Ajoutez des cours à réviser depuis l'onglet Cours
                   </Text>
                 </View>
@@ -476,10 +483,10 @@ export default function TodayScreen() {
 
             {/* Completed Today */}
             {completedSessions.length > 0 && (
-              <View style={styles.section}>
+              <View style={[styles.section, { backgroundColor: colors.surface }]}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionTitleRow}>
-                    <View style={[styles.sectionIcon, { backgroundColor: '#D1FAE5' }]}>
+                    <View style={[styles.sectionIcon, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
                       <Ionicons name="checkmark" size={18} color="#10B981" />
                     </View>
                     <Text style={styles.sectionTitleCompleted}>

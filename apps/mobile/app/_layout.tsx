@@ -42,12 +42,25 @@ export default function RootLayout() {
   // 1) Desktop (Tauri) updater check: safe + non-breaking on mobile/web
   useEffect(() => {
     const runUpdater = async () => {
-      if (!isTauriRuntime()) return;
+      // Only run in Tauri environment, skip on web browser
+      if (!isTauriRuntime()) {
+        return;
+      }
 
       try {
         setUpdateState({ status: "checking" });
 
-        const { check } = await import("@tauri-apps/plugin-updater");
+        // Dynamic import only in Tauri context - wrap in try-catch for web safety
+        let check: any;
+        try {
+          const updaterModule = await import("@tauri-apps/plugin-updater");
+          check = updaterModule.check;
+        } catch {
+          // Module not available - not in Tauri context
+          setUpdateState({ status: "idle" });
+          return;
+        }
+        
         const update = await check();
 
         // No update
@@ -62,7 +75,6 @@ export default function RootLayout() {
         setUpdateState({ status: "installing", version: update.version });
 
         // Best effort relaunch:
-        // - Tauri v2 has @tauri-apps/plugin-process (relaunch), but not mandatory.
         try {
           const { relaunch } = await import("@tauri-apps/plugin-process");
           await relaunch();
