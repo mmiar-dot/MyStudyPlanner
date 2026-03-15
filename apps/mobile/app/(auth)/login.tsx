@@ -14,11 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '../../src/store/authStore';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { colors, isDark, accentColor } = useTheme();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,7 +51,7 @@ export default function LoginScreen() {
   const displayError = localError || error;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -65,7 +67,7 @@ export default function LoginScreen() {
             // Desktop layout with side panel
             <View style={styles.desktopContainer}>
               {/* Left Panel - Branding */}
-              <View style={styles.brandingPanel}>
+              <View style={[styles.brandingPanel, { backgroundColor: accentColor }]}>
                 <View style={styles.brandingContent}>
                   <View style={styles.logoLarge}>
                     <Ionicons name="book" size={64} color="#FFFFFF" />
@@ -76,15 +78,15 @@ export default function LoginScreen() {
                   </Text>
                   <View style={styles.features}>
                     <View style={styles.featureItem}>
-                      <Ionicons name="calendar" size={20} color="#93C5FD" />
+                      <Ionicons name="calendar" size={20} color="rgba(255,255,255,0.8)" />
                       <Text style={styles.featureText}>Planification automatique</Text>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="refresh" size={20} color="#93C5FD" />
+                      <Ionicons name="refresh" size={20} color="rgba(255,255,255,0.8)" />
                       <Text style={styles.featureText}>Méthode des J, SRS, Tours</Text>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="sync" size={20} color="#93C5FD" />
+                      <Ionicons name="sync" size={20} color="rgba(255,255,255,0.8)" />
                       <Text style={styles.featureText}>Synchronisation ICS</Text>
                     </View>
                   </View>
@@ -92,10 +94,10 @@ export default function LoginScreen() {
               </View>
 
               {/* Right Panel - Form */}
-              <View style={styles.formPanel}>
+              <View style={[styles.formPanel, { backgroundColor: colors.surface }]}>
                 <View style={styles.formContainer}>
-                  <Text style={styles.welcomeTitle}>Bon retour !</Text>
-                  <Text style={styles.welcomeSubtitle}>Connectez-vous pour continuer vos révisions</Text>
+                  <Text style={[styles.welcomeTitle, { color: colors.text }]}>Bon retour !</Text>
+                  <Text style={[styles.welcomeSubtitle, { color: colors.textSecondary }]}>Connectez-vous pour continuer vos révisions</Text>
 
                   {displayError && (
                     <View style={styles.errorContainer}>
