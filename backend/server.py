@@ -79,6 +79,13 @@ class GoogleAuthRequest(BaseModel):
     email: EmailStr
     name: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -476,6 +483,120 @@ async def google_auth(auth_data: GoogleAuthRequest):
     }
     
     return {"access_token": token, "token_type": "bearer", "user": user_response}
+
+# =====================================
+# PASSWORD RESET ENDPOINTS
+# =====================================
+import secrets
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@mystudyplanner.com')
+APP_URL = os.environ.get('APP_URL', 'https://mystudyplanner.com')
+
+async def send_password_reset_email(email: str, reset_token: str):
+    """Send password reset email via SendGrid"""
+    if not SENDGRID_API_KEY:
+        logger.warning("SENDGRID_API_KEY not configured, skipping email")
+        return False
+    
+    reset_link = f"{APP_URL}/reset-password?token={reset_token}"
+    
+    message = Mail(
+        from_email=SENDGRID_FROM_EMAIL,
+        to_emails=email,
+        subject='MyStudyPlanner - Réinitialisation de votre mot de passe',
+        html_content=f'''
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #3B82F6;">MyStudyPlanner</h2>
+            <p>Bonjour,</p>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+            <p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>
+            <a href="{reset_link}" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">
+                Réinitialiser mon mot de passe
+            </a>
+            <p style="color: #666; font-size: 14px;">Ce lien expire dans 1 heure.</p>
+            <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+            <p style="color: #999; font-size: 12px;">MyStudyPlanner - Votre compagnon de révision</p>
+        </div>
+        '''
+    )
+    
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        logger.info(f"Password reset email sent to {email}, status: {response.status_code}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send password reset email: {e}")
+        return False
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, background_tasks: BackgroundTasks):
+    """Request a password reset email"""
+    user = await db.users.find_one({"email": request.email})
+    
+    # Always return success to prevent email enumeration
+    if not user:
+        return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    
+    # Store reset token in database
+    await db.password_resets.delete_many({"user_id": user["id"]})  # Remove old tokens
+    await db.password_resets.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "token": reset_token,
+        "expires_at": expires_at,
+        "created_at": datetime.utcnow()
+    })
+    
+    # Send email in background
+    background_tasks.add_task(send_password_reset_email, request.email, reset_token)
+    
+    return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset password using token"""
+    # Find valid reset token
+    reset_record = await db.password_resets.find_one({
+        "token": request.token,
+        "expires_at": {"$gt": datetime.utcnow()}
+    })
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Token invalide ou expiré")
+    
+    # Update password
+    hashed_password = pwd_context.hash(request.new_password)
+    await db.users.update_one(
+        {"id": reset_record["user_id"]},
+        {"$set": {"password": hashed_password}}
+    )
+    
+    # Delete used token
+    await db.password_resets.delete_one({"token": request.token})
+    
+    return {"message": "Mot de passe réinitialisé avec succès"}
+
+@api_router.get("/auth/verify-reset-token/{token}")
+async def verify_reset_token(token: str):
+    """Verify if a reset token is valid"""
+    reset_record = await db.password_resets.find_one({
+        "token": token,
+        "expires_at": {"$gt": datetime.utcnow()}
+    })
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Token invalide ou expiré")
+    
+    return {"valid": True}
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: dict = Depends(get_current_user)):
