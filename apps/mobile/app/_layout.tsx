@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, ActivityIndicator, StyleSheet, Platform, Text, useColorScheme } from "react-native";
 import { useAuthStore } from "../src/store/authStore";
+import { ThemeProvider, useTheme } from "../src/contexts/ThemeContext";
 import { runAutoUpdate } from "../src/services/updater";
 
 /**
@@ -127,23 +128,27 @@ export default function RootLayout() {
             ? "Installation…"
             : "Chargement…";
 
+    const bgColor = actualTheme === 'dark' ? '#111827' : '#FFFFFF';
+    const textColor = actualTheme === 'dark' ? '#F9FAFB' : '#111827';
+
     return (
-      <View style={styles.loading}>
+      <View style={[styles.loading, { backgroundColor: bgColor }]}>
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={styles.loadingText}>{label}</Text>
+        <Text style={[styles.loadingText, { color: textColor }]}>{label}</Text>
       </View>
     );
   }
 
   return (
-    <>
-      <StatusBar style="dark" />
+    <ThemeProvider>
+      <StatusBar style={actualTheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="admin" />
+        <Stack.Screen name="appearance" />
       </Stack>
-    </>
+    </ThemeProvider>
   );
 }
 

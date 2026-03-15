@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../src/store/authStore';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 const ACCENT_COLORS = [
   { name: 'Bleu', value: '#3B82F6' },
@@ -31,14 +32,15 @@ export default function AppearanceScreen() {
   const isDesktop = width >= 768;
   
   const { theme, setTheme, accentColor, setAccentColor } = useAuthStore();
+  const { isDark, colors } = useTheme();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.header, isDesktop && styles.headerDesktop]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#374151" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, isDesktop && styles.headerDesktop, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.surfaceVariant }]} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Apparence</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Apparence</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -51,54 +53,54 @@ export default function AppearanceScreen() {
       >
         {/* Theme Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thème</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Thème</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
             <TouchableOpacity
-              style={[styles.themeOption, theme === 'light' && styles.themeOptionSelected]}
+              style={[styles.themeOption, theme === 'light' && { backgroundColor: colors.primaryLight }]}
               onPress={() => setTheme('light')}
             >
               <View style={[styles.themeIcon, { backgroundColor: '#F9FAFB' }]}>
                 <Ionicons name="sunny" size={24} color="#F59E0B" />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={styles.themeLabel}>Clair</Text>
-                <Text style={styles.themeDescription}>Thème lumineux par défaut</Text>
+                <Text style={[styles.themeLabel, { color: colors.text }]}>Clair</Text>
+                <Text style={[styles.themeDescription, { color: colors.textSecondary }]}>Thème lumineux par défaut</Text>
               </View>
               {theme === 'light' && (
                 <Ionicons name="checkmark-circle" size={24} color={accentColor} />
               )}
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity
-              style={[styles.themeOption, theme === 'dark' && styles.themeOptionSelected]}
+              style={[styles.themeOption, theme === 'dark' && { backgroundColor: colors.primaryLight }]}
               onPress={() => setTheme('dark')}
             >
               <View style={[styles.themeIcon, { backgroundColor: '#1F2937' }]}>
                 <Ionicons name="moon" size={24} color="#818CF8" />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={styles.themeLabel}>Sombre</Text>
-                <Text style={styles.themeDescription}>Réduit la fatigue oculaire</Text>
+                <Text style={[styles.themeLabel, { color: colors.text }]}>Sombre</Text>
+                <Text style={[styles.themeDescription, { color: colors.textSecondary }]}>Réduit la fatigue oculaire</Text>
               </View>
               {theme === 'dark' && (
                 <Ionicons name="checkmark-circle" size={24} color={accentColor} />
               )}
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity
-              style={[styles.themeOption, theme === 'system' && styles.themeOptionSelected]}
+              style={[styles.themeOption, theme === 'system' && { backgroundColor: colors.primaryLight }]}
               onPress={() => setTheme('system')}
             >
               <View style={[styles.themeIcon, { backgroundColor: '#E5E7EB' }]}>
                 <Ionicons name="phone-portrait" size={24} color="#6B7280" />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={styles.themeLabel}>Système</Text>
-                <Text style={styles.themeDescription}>Suit le thème de l'appareil</Text>
+                <Text style={[styles.themeLabel, { color: colors.text }]}>Système</Text>
+                <Text style={[styles.themeDescription, { color: colors.textSecondary }]}>Suit le thème de l'appareil</Text>
               </View>
               {theme === 'system' && (
                 <Ionicons name="checkmark-circle" size={24} color={accentColor} />
@@ -109,8 +111,8 @@ export default function AppearanceScreen() {
 
         {/* Accent Color Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Couleur d'accent</Text>
-          <Text style={styles.sectionDescription}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Couleur d'accent</Text>
+          <Text style={[styles.sectionDescription, { color: colors.textSecondary }]}>
             Personnalisez la couleur principale de l'application
           </Text>
           <View style={styles.colorsGrid}>
