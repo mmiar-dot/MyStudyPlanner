@@ -54,6 +54,10 @@ class CalendarSyncService {
    */
   private async loadConfig() {
     try {
+      // Skip on server-side rendering
+      if (Platform.OS === 'web' && typeof window === 'undefined') {
+        return;
+      }
       const stored = await AsyncStorage.getItem(CALENDAR_SYNC_KEY);
       if (stored) {
         this.config = { ...this.config, ...JSON.parse(stored) };
