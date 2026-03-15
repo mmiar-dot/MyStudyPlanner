@@ -709,13 +709,21 @@ async def get_catalog(parent_id: Optional[str] = None, user: dict = Depends(get_
     query = {"parent_id": parent_id, "$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"owner_id": user_id}]}
     items = await db.catalog_items.find(query).sort("order", 1).to_list(1000)
     
+    # Pre-aggregate children counts to avoid N+1 query problem
+    item_ids = [item["id"] for item in items]
+    children_counts = await db.catalog_items.aggregate([
+        {"$match": {"parent_id": {"$in": item_ids}}},
+        {"$group": {"_id": "$parent_id", "count": {"$sum": 1}}}
+    ]).to_list(1000)
+    children_map = {c["_id"]: c["count"] for c in children_counts}
+    
     result = []
     for item in items:
         # Skip if hidden by user (only for admin items)
         if item["id"] in hidden_ids and not item.get("owner_id"):
             continue
             
-        children_count = await db.catalog_items.count_documents({"parent_id": item["id"]})
+        children_count = children_map.get(item["id"], 0)
         result.append(CatalogItemResponse(
             id=item["id"],
             title=item["title"],
@@ -746,13 +754,21 @@ async def get_all_catalog(user: dict = Depends(get_current_user)):
         "$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"owner_id": user_id}]
     }).sort([("level", 1), ("order", 1)]).to_list(1000)
     
+    # Pre-aggregate children counts to avoid N+1 query problem
+    item_ids = [item["id"] for item in items]
+    children_counts = await db.catalog_items.aggregate([
+        {"$match": {"parent_id": {"$in": item_ids}}},
+        {"$group": {"_id": "$parent_id", "count": {"$sum": 1}}}
+    ]).to_list(1000)
+    children_map = {c["_id"]: c["count"] for c in children_counts}
+    
     result = []
     for item in items:
         # Skip if hidden by user (only for admin items)
         if item["id"] in hidden_ids and not item.get("owner_id"):
             continue
             
-        children_count = await db.catalog_items.count_documents({"parent_id": item["id"]})
+        children_count = children_map.get(item["id"], 0)
         result.append({
             "id": item["id"],
             "title": item["title"],
