@@ -1,37 +1,18 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background with rounded corners -->
-  <rect width="1024" height="1024" rx="220" fill="#3B82F6"/>
+  <!-- Background with iOS-style rounded corners -->
+  <rect width="1024" height="1024" rx="224" fill="#3B82F6"/>
   
-  <!-- Subtle gradient overlay -->
-  <rect width="1024" height="1024" rx="220" fill="url(#gradient)"/>
-  
-  <!-- Open Book Icon -->
-  <g transform="translate(200, 250)">
+  <!-- Open Book Icon - White -->
+  <g transform="translate(512, 512)">
     <!-- Left page -->
-    <path d="M312 0C312 0 200 20 100 60C50 80 20 100 20 140V460C20 480 35 495 55 490C155 460 280 440 312 440V0Z" fill="white" fill-opacity="0.95"/>
+    <path d="M-40 -200 C-40 -200 -180 -180 -280 -140 C-300 -132 -320 -110 -320 -80 L-320 200 C-320 220 -300 232 -280 226 C-180 190 -40 170 -40 170 Z" 
+          fill="white" fill-opacity="0.95"/>
     
     <!-- Right page -->
-    <path d="M312 0C312 0 424 20 524 60C574 80 604 100 604 140V460C604 480 589 495 569 490C469 460 344 440 312 440V0Z" fill="white" fill-opacity="0.85"/>
+    <path d="M40 -200 C40 -200 180 -180 280 -140 C300 -132 320 -110 320 -80 L320 200 C320 220 300 232 280 226 C180 190 40 170 40 170 Z" 
+          fill="white" fill-opacity="0.85"/>
     
-    <!-- Center spine line -->
-    <path d="M312 0V440" stroke="rgba(59, 130, 246, 0.3)" stroke-width="4"/>
-    
-    <!-- Page lines left -->
-    <path d="M80 160H260" stroke="rgba(59, 130, 246, 0.2)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M80 220H240" stroke="rgba(59, 130, 246, 0.2)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M80 280H220" stroke="rgba(59, 130, 246, 0.2)" stroke-width="12" stroke-linecap="round"/>
-    
-    <!-- Page lines right -->
-    <path d="M364 160H544" stroke="rgba(59, 130, 246, 0.15)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M384 220H544" stroke="rgba(59, 130, 246, 0.15)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M404 280H544" stroke="rgba(59, 130, 246, 0.15)" stroke-width="12" stroke-linecap="round"/>
+    <!-- Center binding/spine -->
+    <path d="M0 -200 L0 170" stroke="rgba(59, 130, 246, 0.15)" stroke-width="8" stroke-linecap="round"/>
   </g>
-  
-  <!-- Gradient definition -->
-  <defs>
-    <linearGradient id="gradient" x1="0" y1="0" x2="1024" y2="1024">
-      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.2"/>
-    </linearGradient>
-  </defs>
 </svg>
