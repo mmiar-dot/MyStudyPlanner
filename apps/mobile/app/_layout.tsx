@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { View, ActivityIndicator, StyleSheet, Platform, Text } from "react-native";
-import { useAuthStore } from "@mystudyplanner/api-client";
+import { View, ActivityIndicator, StyleSheet, Platform, Text, useColorScheme } from "react-native";
+import { useAuthStore } from "../src/store/authStore";
 import { runAutoUpdate } from "../src/services/updater";
 
 /**
@@ -24,10 +24,14 @@ type UpdateState =
   | { status: "error"; message: string };
 
 export default function RootLayout() {
-  const { checkAuth, isLoading, isAuthenticated } = useAuthStore();
+  const { checkAuth, isLoading, isAuthenticated, theme } = useAuthStore();
+  const systemColorScheme = useColorScheme();
 
   const [isReady, setIsReady] = useState(false);
   const [updateState, setUpdateState] = useState<UpdateState>({ status: "idle" });
+
+  // Determine actual theme
+  const actualTheme = theme === 'system' ? systemColorScheme || 'light' : theme;
 
   const segments = useSegments();
   const router = useRouter();
@@ -81,7 +85,7 @@ export default function RootLayout() {
     runUpdater();
   }, []);
 
-  // 2) Auth init - only run after hydration completes
+  // 2) Auth init
   useEffect(() => {
     const init = async () => {
       try {

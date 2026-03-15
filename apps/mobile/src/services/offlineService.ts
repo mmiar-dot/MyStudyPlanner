@@ -1,254 +1,161 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { StudySession, CatalogItem, PersonalEvent, ICSSubscription } from '../types';
 
-// Storage keys
-const KEYS = {
-  SESSIONS_CACHE: '@revisionmed_sessions',
-  CATALOG_CACHE: '@revisionmed_catalog',
-  EVENTS_CACHE: '@revisionmed_events',
-  ICS_CACHE: '@revisionmed_ics',
-  PENDING_ACTIONS: '@revisionmed_pending_actions',
-  LAST_SYNC: '@revisionmed_last_sync',
-  USER_CACHE: '@revisionmed_user',
-};
+const CACHE_PREFIX = 'cache_';
+const PENDING_ACTIONS_KEY = 'pending_offline_actions';
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-interface PendingAction {
-  id: string;
-  type: 'complete_session' | 'create_event' | 'delete_event' | 'update_settings';
-  payload: any;
-  timestamp: number;
-}
-
-interface CachedData<T> {
+export interface CachedData<T> {
   data: T;
   timestamp: number;
+  expiresAt: number;
 }
 
-class OfflineService {
-  private isOnline: boolean = true;
-  private pendingActions: PendingAction[] = [];
-  private syncInProgress: boolean = false;
+export interface PendingAction {
+  id: string;
+  type: 'complete_session' | 'skip_session' | 'reschedule_session' | 'add_note';
+  payload: any;
+  createdAt: number;
+}
 
-  constructor() {
-    this.initNetworkListener();
-    this.loadPendingActions();
-  }
+// Check network status
+export async function isOnline(): Promise<boolean> {
+  const state = await NetInfo.fetch();
+  return state.isConnected === true;
+}
 
-  private initNetworkListener() {
-    NetInfo.addEventListener((state) => {
-      const wasOffline = !this.isOnline;
-      this.isOnline = state.isConnected ?? false;
+// Subscribe to network changes
+export function subscribeToNetworkChanges(callback: (isConnected: boolean) => void) {
+  return NetInfo.addEventListener((state) => {
+    callback(state.isConnected === true);
+  });
+}
 
-      if (wasOffline && this.isOnline) {
-        // Just came online - sync pending actions
-        this.syncPendingActions();
-      }
+// Cache data
+export async function cacheData<T>(key: string, data: T, expiryMs: number = CACHE_EXPIRY_MS): Promise<void> {
+  const cacheEntry: CachedData<T> = {
+    data,
+    timestamp: Date.now(),
+    expiresAt: Date.now() + expiryMs,
+  };
+  
+  await AsyncStorage.setItem(CACHE_PREFIX + key, JSON.stringify(cacheEntry));
+}
 
-      console.log('Network status:', this.isOnline ? 'Online' : 'Offline');
-    });
-  }
-
-  async getNetworkStatus(): Promise<boolean> {
-    const state = await NetInfo.fetch();
-    this.isOnline = state.isConnected ?? false;
-    return this.isOnline;
-  }
-
-  // =============================
-  // CACHING METHODS
-  // =============================
-
-  async cacheSessions(sessions: StudySession[]) {
-    const cached: CachedData<StudySession[]> = {
-      data: sessions,
-      timestamp: Date.now(),
-    };
-    await AsyncStorage.setItem(KEYS.SESSIONS_CACHE, JSON.stringify(cached));
-  }
-
-  async getCachedSessions(): Promise<StudySession[] | null> {
-    try {
-      const json = await AsyncStorage.getItem(KEYS.SESSIONS_CACHE);
-      if (!json) return null;
-      const cached: CachedData<StudySession[]> = JSON.parse(json);
-      return cached.data;
-    } catch {
+// Get cached data
+export async function getCachedData<T>(key: string): Promise<T | null> {
+  try {
+    const cached = await AsyncStorage.getItem(CACHE_PREFIX + key);
+    if (!cached) return null;
+    
+    const cacheEntry: CachedData<T> = JSON.parse(cached);
+    
+    // Check if expired
+    if (Date.now() > cacheEntry.expiresAt) {
+      await AsyncStorage.removeItem(CACHE_PREFIX + key);
       return null;
     }
+    
+    return cacheEntry.data;
+  } catch {
+    return null;
   }
+}
 
-  async cacheCatalog(items: CatalogItem[]) {
-    const cached: CachedData<CatalogItem[]> = {
-      data: items,
-      timestamp: Date.now(),
-    };
-    await AsyncStorage.setItem(KEYS.CATALOG_CACHE, JSON.stringify(cached));
-  }
-
-  async getCachedCatalog(): Promise<CatalogItem[] | null> {
-    try {
-      const json = await AsyncStorage.getItem(KEYS.CATALOG_CACHE);
-      if (!json) return null;
-      const cached: CachedData<CatalogItem[]> = JSON.parse(json);
-      return cached.data;
-    } catch {
-      return null;
-    }
-  }
-
-  async cacheEvents(events: PersonalEvent[]) {
-    const cached: CachedData<PersonalEvent[]> = {
-      data: events,
-      timestamp: Date.now(),
-    };
-    await AsyncStorage.setItem(KEYS.EVENTS_CACHE, JSON.stringify(cached));
-  }
-
-  async getCachedEvents(): Promise<PersonalEvent[] | null> {
-    try {
-      const json = await AsyncStorage.getItem(KEYS.EVENTS_CACHE);
-      if (!json) return null;
-      const cached: CachedData<PersonalEvent[]> = JSON.parse(json);
-      return cached.data;
-    } catch {
-      return null;
-    }
-  }
-
-  async cacheICS(subscriptions: ICSSubscription[]) {
-    const cached: CachedData<ICSSubscription[]> = {
-      data: subscriptions,
-      timestamp: Date.now(),
-    };
-    await AsyncStorage.setItem(KEYS.ICS_CACHE, JSON.stringify(cached));
-  }
-
-  async getCachedICS(): Promise<ICSSubscription[] | null> {
-    try {
-      const json = await AsyncStorage.getItem(KEYS.ICS_CACHE);
-      if (!json) return null;
-      const cached: CachedData<ICSSubscription[]> = JSON.parse(json);
-      return cached.data;
-    } catch {
-      return null;
-    }
-  }
-
-  // =============================
-  // PENDING ACTIONS
-  // =============================
-
-  private async loadPendingActions() {
-    try {
-      const json = await AsyncStorage.getItem(KEYS.PENDING_ACTIONS);
-      if (json) {
-        this.pendingActions = JSON.parse(json);
-      }
-    } catch {
-      this.pendingActions = [];
-    }
-  }
-
-  private async savePendingActions() {
-    await AsyncStorage.setItem(KEYS.PENDING_ACTIONS, JSON.stringify(this.pendingActions));
-  }
-
-  async addPendingAction(type: PendingAction['type'], payload: any) {
-    const action: PendingAction = {
-      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      payload,
-      timestamp: Date.now(),
-    };
-    this.pendingActions.push(action);
-    await this.savePendingActions();
-
-    // Try to sync if online
-    if (this.isOnline) {
-      this.syncPendingActions();
-    }
-  }
-
-  async syncPendingActions(): Promise<boolean> {
-    if (this.syncInProgress || this.pendingActions.length === 0) return true;
-
-    this.syncInProgress = true;
-    const successfulIds: string[] = [];
-
-    try {
-      for (const action of this.pendingActions) {
-        const success = await this.executeAction(action);
-        if (success) {
-          successfulIds.push(action.id);
+// Clear expired cache
+export async function clearExpiredCache(): Promise<void> {
+  const keys = await AsyncStorage.getAllKeys();
+  const cacheKeys = keys.filter(k => k.startsWith(CACHE_PREFIX));
+  
+  for (const key of cacheKeys) {
+    const cached = await AsyncStorage.getItem(key);
+    if (cached) {
+      try {
+        const entry = JSON.parse(cached);
+        if (Date.now() > entry.expiresAt) {
+          await AsyncStorage.removeItem(key);
         }
+      } catch {
+        // Invalid cache entry, remove it
+        await AsyncStorage.removeItem(key);
       }
-
-      // Remove successful actions
-      this.pendingActions = this.pendingActions.filter(
-        (a) => !successfulIds.includes(a.id)
-      );
-      await this.savePendingActions();
-
-      // Update last sync timestamp
-      await AsyncStorage.setItem(KEYS.LAST_SYNC, Date.now().toString());
-
-      return this.pendingActions.length === 0;
-    } catch (error) {
-      console.error('Sync error:', error);
-      return false;
-    } finally {
-      this.syncInProgress = false;
     }
-  }
-
-  private async executeAction(action: PendingAction): Promise<boolean> {
-    // This will be implemented with actual API calls
-    // For now, just simulate success
-    try {
-      console.log('Executing pending action:', action.type, action.payload);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  getPendingActionsCount(): number {
-    return this.pendingActions.length;
-  }
-
-  // =============================
-  // UTILITY METHODS
-  // =============================
-
-  async getLastSyncTime(): Promise<Date | null> {
-    try {
-      const timestamp = await AsyncStorage.getItem(KEYS.LAST_SYNC);
-      if (!timestamp) return null;
-      return new Date(parseInt(timestamp));
-    } catch {
-      return null;
-    }
-  }
-
-  async clearAllCache() {
-    await AsyncStorage.multiRemove([
-      KEYS.SESSIONS_CACHE,
-      KEYS.CATALOG_CACHE,
-      KEYS.EVENTS_CACHE,
-      KEYS.ICS_CACHE,
-    ]);
-  }
-
-  async clearAll() {
-    await AsyncStorage.multiRemove(Object.values(KEYS));
-    this.pendingActions = [];
-  }
-
-  isCurrentlyOnline(): boolean {
-    return this.isOnline;
   }
 }
 
-export const offlineService = new OfflineService();
-export default offlineService;
+// Queue offline action
+export async function queueOfflineAction(action: Omit<PendingAction, 'id' | 'createdAt'>): Promise<void> {
+  const pending = await getPendingActions();
+  
+  const newAction: PendingAction = {
+    ...action,
+    id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    createdAt: Date.now(),
+  };
+  
+  pending.push(newAction);
+  await AsyncStorage.setItem(PENDING_ACTIONS_KEY, JSON.stringify(pending));
+}
+
+// Get pending actions
+export async function getPendingActions(): Promise<PendingAction[]> {
+  try {
+    const stored = await AsyncStorage.getItem(PENDING_ACTIONS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Remove pending action
+export async function removePendingAction(actionId: string): Promise<void> {
+  const pending = await getPendingActions();
+  const filtered = pending.filter(a => a.id !== actionId);
+  await AsyncStorage.setItem(PENDING_ACTIONS_KEY, JSON.stringify(filtered));
+}
+
+// Clear all pending actions
+export async function clearPendingActions(): Promise<void> {
+  await AsyncStorage.removeItem(PENDING_ACTIONS_KEY);
+}
+
+// Sync pending actions when online
+export async function syncPendingActions(
+  executor: (action: PendingAction) => Promise<boolean>
+): Promise<{ success: number; failed: number }> {
+  const online = await isOnline();
+  if (!online) {
+    return { success: 0, failed: 0 };
+  }
+  
+  const pending = await getPendingActions();
+  let success = 0;
+  let failed = 0;
+  
+  for (const action of pending) {
+    try {
+      const result = await executor(action);
+      if (result) {
+        await removePendingAction(action.id);
+        success++;
+      } else {
+        failed++;
+      }
+    } catch {
+      failed++;
+    }
+  }
+  
+  return { success, failed };
+}
+
+// Cache keys for common data
+export const CACHE_KEYS = {
+  SESSIONS_TODAY: 'sessions_today',
+  SESSIONS_LATE: 'sessions_late',
+  CATALOG: 'catalog',
+  USER_SETTINGS: 'user_settings',
+  PROGRESS: 'progress',
+  EVENTS: (date: string) => `events_${date}`,
+  SESSIONS: (date: string) => `sessions_${date}`,
+};
