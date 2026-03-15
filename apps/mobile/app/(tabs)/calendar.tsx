@@ -28,10 +28,12 @@ import { SessionCard } from '@mystudyplanner/shared-ui';
 import { SRSRatingModal } from '@mystudyplanner/shared-ui';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
 import { StudySession, CalendarDayData, PersonalEvent, ICSSubscription } from '@mystudyplanner/api-client';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function CalendarScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { colors, isDark, accentColor } = useTheme();
 
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -315,30 +317,30 @@ export default function CalendarScreen() {
   const completedSessions = daySessions.filter(s => s.status === 'completed');
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3B82F6']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[accentColor]} />
         }
       >
         {/* Header */}
         <View style={[styles.header, isDesktop && styles.headerDesktop]}>
-          <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Calendrier</Text>
+          <Text style={[styles.title, isDesktop && styles.titleDesktop, { color: colors.text }]}>Calendrier</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity 
-              style={styles.addButton}
+              style={[styles.addButton, { backgroundColor: accentColor }]}
               onPress={() => openEventModal()}
             >
               <Ionicons name="add" size={20} color="#FFFFFF" />
               {isDesktop && <Text style={styles.addButtonText}>Événement</Text>}
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.icsButton}
+              style={[styles.icsButton, { backgroundColor: colors.primaryLight }]}
               onPress={() => setShowICSModal(true)}
             >
-              <Ionicons name="link" size={20} color="#3B82F6" />
-              {isDesktop && <Text style={styles.icsButtonText}>Calendrier ICS</Text>}
+              <Ionicons name="link" size={20} color={accentColor} />
+              {isDesktop && <Text style={[styles.icsButtonText, { color: accentColor }]}>Calendrier ICS</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -348,7 +350,7 @@ export default function CalendarScreen() {
           {/* Calendar Column */}
           <View style={[styles.calendarColumn, isDesktop && styles.calendarColumnDesktop]}>
             {/* Calendar */}
-            <View style={styles.calendarContainer}>
+            <View style={[styles.calendarContainer, { backgroundColor: colors.surface }]}>
               <Calendar
                 current={format(currentMonth, 'yyyy-MM-dd')}
                 onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
@@ -358,17 +360,17 @@ export default function CalendarScreen() {
                 markedDates={markedDates}
                 markingType="multi-dot"
                 theme={{
-                  backgroundColor: '#FFFFFF',
-                  calendarBackground: '#FFFFFF',
-                  textSectionTitleColor: '#6B7280',
-                  selectedDayBackgroundColor: '#3B82F6',
+                  backgroundColor: colors.surface,
+                  calendarBackground: colors.surface,
+                  textSectionTitleColor: colors.textSecondary,
+                  selectedDayBackgroundColor: accentColor,
                   selectedDayTextColor: '#FFFFFF',
-                  todayTextColor: '#3B82F6',
-                  dayTextColor: '#1F2937',
-                  textDisabledColor: '#D1D5DB',
-                  dotColor: '#3B82F6',
-                  monthTextColor: '#1F2937',
-                  arrowColor: '#3B82F6',
+                  todayTextColor: accentColor,
+                  dayTextColor: colors.text,
+                  textDisabledColor: colors.textTertiary,
+                  dotColor: accentColor,
+                  monthTextColor: colors.text,
+                  arrowColor: accentColor,
                   textDayFontWeight: '500',
                   textMonthFontWeight: '600',
                   textDayHeaderFontWeight: '500',
