@@ -16,6 +16,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   googleAuth: (idToken: string, email: string, name: string) => Promise<void>;
+  appleAuth: (identityToken: string, userId: string, email?: string, fullName?: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -84,6 +85,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: any) {
       set({ 
         error: error.response?.data?.detail || 'Erreur Google Auth', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  appleAuth: async (identityToken: string, userId: string, email?: string, fullName?: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await api.post<AuthToken>('/auth/apple', { 
+        identity_token: identityToken, 
+        user_id: userId,
+        email,
+        full_name: fullName
+      });
+      await setToken(response.data.access_token);
+      set({ user: response.data.user, isAuthenticated: true, isLoading: false });
+    } catch (error: any) {
+      set({ 
+        error: error.response?.data?.detail || 'Erreur Apple Auth', 
         isLoading: false 
       });
       throw error;
