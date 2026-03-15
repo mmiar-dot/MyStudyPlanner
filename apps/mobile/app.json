@@ -2,7 +2,7 @@
   "expo": {
     "name": "MyStudyPlanner",
     "slug": "mystudyplanner",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mystudyplanner",
@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.miaropiret.mystudyplanner",
+      "buildNumber": "2",
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -25,7 +26,8 @@
         "backgroundColor": "#3B82F6"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.miaropiret.mystudyplanner"
+      "package": "com.miaropiret.mystudyplanner",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
