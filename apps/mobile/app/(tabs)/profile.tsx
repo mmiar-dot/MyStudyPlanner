@@ -315,6 +315,17 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/calendar-sync')}>
+                <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+                  <Ionicons name="sync" size={20} color="#10B981" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Sync Google/Apple</Text>
+                  <Text style={styles.menuSubtitle}>Synchroniser avec votre calendrier</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.menuItem} onPress={() => setShowNotifModal(true)}>
                 <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
                   <Ionicons name="notifications" size={20} color="#10B981" />
@@ -487,6 +498,17 @@ export default function ProfileScreen() {
               <View style={styles.menuContent}>
                 <Text style={styles.menuTitle}>Calendriers ICS</Text>
                 <Text style={styles.menuSubtitle}>{icsSubscriptions.length} abonnement(s)</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/calendar-sync')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+                <Ionicons name="sync" size={20} color="#10B981" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Sync Google/Apple</Text>
+                <Text style={styles.menuSubtitle}>Synchroniser avec votre calendrier</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
