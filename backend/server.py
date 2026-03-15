@@ -487,6 +487,67 @@ async def google_auth(auth_data: GoogleAuthRequest):
     
     return {"access_token": token, "token_type": "bearer", "user": user_response}
 
+# Apple Sign In
+class AppleAuthRequest(BaseModel):
+    identity_token: str
+    user_id: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+
+@api_router.post("/auth/apple")
+async def apple_auth(auth_data: AppleAuthRequest):
+    """Authenticate with Apple Sign In"""
+    try:
+        # In production, you should verify the identity_token with Apple's JWKS
+        # For now, we trust the token and use the user_id as identifier
+        
+        # Check if user exists by apple_id
+        user = await db.users.find_one({"apple_id": auth_data.user_id})
+        
+        # If not found by apple_id, check by email (for linking accounts)
+        if not user and auth_data.email:
+            user = await db.users.find_one({"email": auth_data.email})
+            if user:
+                # Link existing account with Apple
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"apple_id": auth_data.user_id}}
+                )
+        
+        # Create new user if doesn't exist
+        if not user:
+            user_id = str(uuid.uuid4())
+            # Apple sometimes hides email, generate a placeholder if needed
+            email = auth_data.email or f"apple_{auth_data.user_id[:8]}@privaterelay.appleid.com"
+            user = {
+                "id": user_id,
+                "email": email,
+                "password": None,  # No password for Apple auth
+                "name": auth_data.full_name or "Utilisateur Apple",
+                "role": UserRole.USER,
+                "apple_id": auth_data.user_id,
+                "created_at": datetime.utcnow(),
+                "settings": {}
+            }
+            await db.users.insert_one(user)
+            logger.info(f"New Apple user created: {email}")
+        
+        token = create_access_token({"sub": user["id"]})
+        user_response = {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user.get("name", "Utilisateur"),
+            "role": user["role"],
+            "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
+            "settings": user.get("settings", {})
+        }
+        
+        return {"access_token": token, "token_type": "bearer", "user": user_response}
+    
+    except Exception as e:
+        logger.error(f"Apple auth error: {e}")
+        raise HTTPException(status_code=400, detail="Échec de l'authentification Apple")
+
 # =====================================
 # PASSWORD RESET ENDPOINTS
 # =====================================

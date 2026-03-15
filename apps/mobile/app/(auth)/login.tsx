@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   ScrollView,
   ActivityIndicator,
   useWindowDimensions,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
@@ -27,7 +29,19 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
-  const { login, error, clearError } = useAuthStore();
+  const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
+  const { login, appleAuth, error, clearError } = useAuthStore();
+
+  useEffect(() => {
+    // Check if Apple Auth is available (iOS only)
+    const checkAppleAuth = async () => {
+      if (Platform.OS === 'ios') {
+        const isAvailable = await AppleAuthentication.isAvailableAsync();
+        setAppleAuthAvailable(isAvailable);
+      }
+    };
+    checkAppleAuth();
+  }, []);
 
   const handleLogin = async () => {
     setLocalError('');
@@ -43,6 +57,48 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (err) {
       // Error is handled by the store
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      setLocalError('');
+      
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        ],
+      });
+      
+      // Get full name if available
+      let fullName: string | undefined;
+      if (credential.fullName) {
+        const { givenName, familyName } = credential.fullName;
+        if (givenName || familyName) {
+          fullName = [givenName, familyName].filter(Boolean).join(' ');
+        }
+      }
+      
+      // Call our backend with Apple credentials
+      await appleAuth(
+        credential.identityToken || '',
+        credential.user,
+        credential.email || undefined,
+        fullName
+      );
+      
+      router.replace('/(tabs)');
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        // User canceled - do nothing
+      } else {
+        setLocalError('Erreur lors de la connexion Apple');
+        console.error('Apple Sign In Error:', e);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -163,6 +219,19 @@ export default function LoginScreen() {
                     <Text style={styles.googleButtonText}>Continuer avec Google</Text>
                   </TouchableOpacity>
 
+                  {(appleAuthAvailable || Platform.OS === 'web') && (
+                    <TouchableOpacity 
+                      style={styles.appleButton}
+                      onPress={handleAppleSignIn}
+                      disabled={isSubmitting || Platform.OS === 'web'}
+                    >
+                      <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
+                      <Text style={styles.appleButtonText}>
+                        {Platform.OS === 'web' ? 'Apple (iOS uniquement)' : 'Continuer avec Apple'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
                   <View style={styles.footer}>
                     <Text style={styles.footerText}>Pas encore de compte ? </Text>
                     <Link href="/(auth)/register" asChild>
@@ -255,6 +324,17 @@ export default function LoginScreen() {
                   <Ionicons name="logo-google" size={20} color="#1F2937" />
                   <Text style={styles.googleButtonText}>Continuer avec Google</Text>
                 </TouchableOpacity>
+
+                {appleAuthAvailable && (
+                  <TouchableOpacity 
+                    style={styles.appleButton}
+                    onPress={handleAppleSignIn}
+                    disabled={isSubmitting}
+                  >
+                    <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
+                    <Text style={styles.appleButtonText}>Continuer avec Apple</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.footer}>
@@ -484,6 +564,21 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 16,
     color: '#1F2937',
+    fontWeight: '500',
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 12,
+    marginTop: 12,
+  },
+  appleButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   footer: {
