@@ -90,12 +90,14 @@ export default function RootLayout() {
     const init = async () => {
       try {
         await checkAuth();
+      } catch (e) {
+        console.error('Auth check failed:', e);
       } finally {
         setIsReady(true);
       }
     };
     init();
-  }, [checkAuth]);
+  }, []);
 
   // 3) Route guard
   useEffect(() => {
@@ -108,10 +110,9 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, inAuthGroup, isReady, router]);
 
-  // Loading / Update screens
+  // Loading / Update screens - Don't block on isLoading after isReady
   const shouldBlockUI =
     !isReady ||
-    isLoading ||
     updateState.status === "checking" ||
     updateState.status === "downloading" ||
     updateState.status === "installing";
