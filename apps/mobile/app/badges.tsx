@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGamificationStore, BADGES, Badge, calculateLevel } from '../src/store/gamificationStore';
-import { useAnalyticsStore } from '../src/store/analyticsStore';
+import { useAnalyticsStore } from '@mystudyplanner/api-client';
 import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function BadgesScreen() {

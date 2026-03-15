@@ -337,6 +337,17 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/badges')}>
+                <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="trophy" size={20} color="#F59E0B" />
+                </View>
+                <View style={styles.menuContent}>
+                  <Text style={styles.menuTitle}>Badges & Niveaux</Text>
+                  <Text style={styles.menuSubtitle}>Votre progression gamifiée</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.menuItem} onPress={() => setShowStatsModal(true)}>
                 <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
                   <Ionicons name="bar-chart" size={20} color="#F59E0B" />
@@ -487,6 +498,28 @@ export default function ProfileScreen() {
               <View style={styles.menuContent}>
                 <Text style={styles.menuTitle}>Notifications</Text>
                 <Text style={styles.menuSubtitle}>Rappels et alertes</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/appearance')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
+                <Ionicons name="color-palette" size={20} color="#8B5CF6" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Apparence</Text>
+                <Text style={styles.menuSubtitle}>Thème, couleurs</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/badges')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="trophy" size={20} color="#F59E0B" />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Badges & Niveaux</Text>
+                <Text style={styles.menuSubtitle}>Votre progression gamifiée</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
