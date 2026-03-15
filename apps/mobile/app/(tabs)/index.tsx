@@ -292,6 +292,110 @@ export default function TodayScreen() {
                   })}
                 </View>
               </View>
+
+              {/* Desktop Stats Section - Under Week Calendar */}
+              {progress && (
+                <View style={styles.desktopStatsSectionUnderCalendar}>
+                  <Text style={styles.desktopStatsSectionTitle}>Statistiques</Text>
+                  <View style={styles.desktopStatsRowCompact}>
+                    <TouchableOpacity 
+                      style={styles.desktopStatCardCompact}
+                      onPress={() => {
+                        setStatsType('today');
+                        setShowStatsModal(true);
+                      }}
+                    >
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#EBF5FF' }]}>
+                        <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
+                      </View>
+                      <View style={styles.desktopStatInfo}>
+                        <Text style={styles.desktopStatValueCompact}>{progress.today_completed}</Text>
+                        <Text style={styles.desktopStatLabelCompact}>Aujourd'hui</Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.desktopStatCardCompact}
+                      onPress={() => {
+                        setStatsType('late');
+                        setShowStatsModal(true);
+                      }}
+                    >
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#FEF2F2' }]}>
+                        <Ionicons name="warning" size={20} color="#EF4444" />
+                      </View>
+                      <View style={styles.desktopStatInfo}>
+                        <Text style={[styles.desktopStatValueCompact, progress.late_sessions > 0 && { color: '#EF4444' }]}>
+                          {progress.late_sessions}
+                        </Text>
+                        <Text style={styles.desktopStatLabelCompact}>En retard</Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.desktopStatCardCompact}
+                      onPress={() => {
+                        setStatsType('completion');
+                        setShowStatsModal(true);
+                      }}
+                    >
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#D1FAE5' }]}>
+                        <Ionicons name="trending-up" size={20} color="#10B981" />
+                      </View>
+                      <View style={styles.desktopStatInfo}>
+                        <Text style={styles.desktopStatValueCompact}>{progress.completion_rate}%</Text>
+                        <Text style={styles.desktopStatLabelCompact}>Complétion</Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.desktopStatCardCompact}
+                      onPress={() => {
+                        setStatsType('courses');
+                        setShowStatsModal(true);
+                      }}
+                    >
+                      <View style={[styles.desktopStatIconSmall, { backgroundColor: '#FEF3C7' }]}>
+                        <Ionicons name="library" size={20} color="#F59E0B" />
+                      </View>
+                      <View style={styles.desktopStatInfo}>
+                        <Text style={styles.desktopStatValueCompact}>{progress.active_items}</Text>
+                        <Text style={styles.desktopStatLabelCompact}>Cours actifs</Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.desktopStatCardCompact, { backgroundColor: '#3B82F6' }]}
+                      onPress={() => {
+                        setStatsType('completion');
+                        setShowStatsModal(true);
+                      }}
+                    >
+                      <Ionicons name="trophy" size={20} color="#FFFFFF" />
+                      <View style={styles.desktopStatInfo}>
+                        <Text style={[styles.desktopStatValueCompact, { color: '#FFFFFF' }]}>{progress.completed_sessions}</Text>
+                        <Text style={[styles.desktopStatLabelCompact, { color: 'rgba(255,255,255,0.9)' }]}>Total terminées</Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    {progress.streak > 0 && (
+                      <TouchableOpacity 
+                        style={[styles.desktopStatCardCompact, styles.desktopStreakCardCompact]}
+                        onPress={() => {
+                          setStatsType('streak');
+                          setShowStatsModal(true);
+                        }}
+                      >
+                        <Ionicons name="flame" size={20} color="#F97316" />
+                        <View style={styles.desktopStatInfo}>
+                          <Text style={[styles.desktopStatValueCompact, { color: '#F97316' }]}>{progress.streak}</Text>
+                          <Text style={styles.desktopStatLabelCompact}>jours</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              )}
             </View>
           )}
 
@@ -398,102 +502,6 @@ export default function TodayScreen() {
             )}
           </View>
         </View>
-
-        {/* Desktop Stats Section - BOTTOM */}
-        {isDesktop && (
-          <View style={styles.desktopStatsSection}>
-            <Text style={styles.desktopStatsSectionTitle}>Statistiques</Text>
-            {progress ? (
-              <View style={styles.desktopStatsRow}>
-              <TouchableOpacity 
-                style={styles.desktopStatCard}
-                onPress={() => {
-                  setStatsType('today');
-                  setShowStatsModal(true);
-                }}
-              >
-                <View style={[styles.desktopStatIcon, { backgroundColor: '#EBF5FF' }]}>
-                  <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
-                </View>
-                <Text style={styles.desktopStatValue}>{progress.today_completed}</Text>
-                <Text style={styles.desktopStatLabel}>Aujourd'hui</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.desktopStatCard}
-                onPress={() => {
-                  setStatsType('late');
-                  setShowStatsModal(true);
-                }}
-              >
-                <View style={[styles.desktopStatIcon, { backgroundColor: '#FEF2F2' }]}>
-                  <Ionicons name="warning" size={24} color="#EF4444" />
-                </View>
-                <Text style={[styles.desktopStatValue, progress.late_sessions > 0 && { color: '#EF4444' }]}>
-                  {progress.late_sessions}
-                </Text>
-                <Text style={styles.desktopStatLabel}>En retard</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.desktopStatCard}
-                onPress={() => {
-                  setStatsType('completion');
-                  setShowStatsModal(true);
-                }}
-              >
-                <View style={[styles.desktopStatIcon, { backgroundColor: '#D1FAE5' }]}>
-                  <Ionicons name="trending-up" size={24} color="#10B981" />
-                </View>
-                <Text style={styles.desktopStatValue}>{progress.completion_rate}%</Text>
-                <Text style={styles.desktopStatLabel}>Complétion</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.desktopStatCard}
-                onPress={() => {
-                  setStatsType('courses');
-                  setShowStatsModal(true);
-                }}
-              >
-                <View style={[styles.desktopStatIcon, { backgroundColor: '#FEF3C7' }]}>
-                  <Ionicons name="library" size={24} color="#F59E0B" />
-                </View>
-                <Text style={styles.desktopStatValue}>{progress.active_items}</Text>
-                <Text style={styles.desktopStatLabel}>Cours actifs</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.desktopStatCard, { backgroundColor: '#3B82F6' }]}
-                onPress={() => {
-                  setStatsType('completion');
-                  setShowStatsModal(true);
-                }}
-              >
-                <Ionicons name="trophy" size={24} color="#FFFFFF" />
-                <Text style={[styles.desktopStatValue, { color: '#FFFFFF' }]}>{progress.completed_sessions}</Text>
-                <Text style={[styles.desktopStatLabel, { color: 'rgba(255,255,255,0.9)' }]}>Sessions terminées</Text>
-              </TouchableOpacity>
-              
-              {progress.streak > 0 && (
-                <TouchableOpacity 
-                  style={[styles.desktopStatCard, styles.desktopStreakCard]}
-                  onPress={() => {
-                    setStatsType('streak');
-                    setShowStatsModal(true);
-                  }}
-                >
-                  <Ionicons name="flame" size={24} color="#F97316" />
-                  <Text style={[styles.desktopStatValue, { color: '#F97316' }]}>{progress.streak}</Text>
-                  <Text style={styles.desktopStatLabel}>jours consécutifs</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            ) : (
-              <Text style={{ color: '#6B7280', fontStyle: 'italic' }}>Chargement des statistiques...</Text>
-            )}
-          </View>
-        )}
 
         {/* Mobile Progress Card */}
         {!isDesktop && progress && (
@@ -1136,5 +1144,56 @@ const styles = StyleSheet.create({
   desktopStreakCard: {
     borderWidth: 2,
     borderColor: '#FFF7ED',
+  },
+  // Stats under calendar - Compact version
+  desktopStatsSectionUnderCalendar: {
+    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  desktopStatsRowCompact: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  desktopStatCardCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    gap: 10,
+    minWidth: 130,
+    flex: 1,
+  },
+  desktopStatIconSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  desktopStatInfo: {
+    flex: 1,
+  },
+  desktopStatValueCompact: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  desktopStatLabelCompact: {
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  desktopStreakCardCompact: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FDBA74',
   },
 });
