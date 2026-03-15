@@ -10,9 +10,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mystudyplanner.app",
+      "bundleIdentifier": "com.miaropiret.mystudyplanner",
+      "usesAppleSignIn": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Prendre une photo de profil",
+        "NSPhotoLibraryUsageDescription": "Choisir une photo de profil",
+        "NSCalendarsUsageDescription": "Synchroniser vos sessions d'étude"
       }
     },
     "android": {
@@ -21,7 +25,7 @@
         "backgroundColor": "#3B82F6"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.mystudyplanner.app"
+      "package": "com.miaropiret.mystudyplanner"
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +43,8 @@
           "backgroundColor": "#3B82F6"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
