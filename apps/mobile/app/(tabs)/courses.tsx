@@ -20,12 +20,14 @@ import { MethodSelector } from '@mystudyplanner/shared-ui';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
 import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
 import { api } from '@mystudyplanner/api-client';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 type FilterType = 'all' | 'personal' | string; // string for custom section IDs
 
 export default function CoursesScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { colors, isDark, accentColor } = useTheme();
   
   const { 
     allItems, 
@@ -370,23 +372,23 @@ export default function CoursesScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3B82F6']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[accentColor]} />
         }
       >
         {/* Header */}
         <View style={[styles.header, isDesktop && styles.headerDesktop]}>
           <View>
-            <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Cours</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, isDesktop && styles.titleDesktop, { color: colors.text }]}>Cours</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               {allItems.filter(i => i.level > 0).length} cours disponibles
             </Text>
           </View>
           <TouchableOpacity 
-            style={styles.addButton}
+            style={[styles.addButton, { backgroundColor: accentColor }]}
             onPress={() => setShowAddCourse(true)}
           >
             <Ionicons name="add" size={24} color="#FFFFFF" />

@@ -165,3 +165,61 @@ export async function setBadgeCount(count: number): Promise<void> {
 export async function clearBadge(): Promise<void> {
   await Notifications.setBadgeCountAsync(0);
 }
+
+// Singleton pattern for notification service (used by profile page)
+class NotificationService {
+  private settings = {
+    dailyReminder: true,
+    lateSessionAlerts: true,
+    morningBrief: true,
+  };
+  private initialized: boolean = false;
+
+  async init() {
+    if (this.initialized) return;
+    
+    try {
+      if (Platform.OS !== 'web') {
+        await registerForPushNotifications();
+      }
+      
+      // Load settings from storage
+      const stored = await AsyncStorage.getItem('profile_notif_settings');
+      if (stored) {
+        this.settings = { ...this.settings, ...JSON.parse(stored) };
+      }
+      this.initialized = true;
+    } catch (error) {
+      console.log('Notification init error:', error);
+    }
+  }
+
+  getSettings() {
+    return this.settings;
+  }
+
+  async updateSettings(newSettings: typeof this.settings) {
+    this.settings = newSettings;
+    try {
+      await AsyncStorage.setItem('profile_notif_settings', JSON.stringify(newSettings));
+    } catch {}
+  }
+
+  async sendImmediateNotification(title: string, body: string) {
+    if (Platform.OS === 'web') {
+      console.log('Web notification:', title, body);
+      return;
+    }
+    
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+      },
+      trigger: null, // Immediate
+    });
+  }
+}
+
+const notificationService = new NotificationService();
+export default notificationService;

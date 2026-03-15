@@ -25,12 +25,20 @@ import { useEventStore } from '@mystudyplanner/api-client';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
 import { ProfilePhotoManager } from '@mystudyplanner/shared-ui';
 import { StatsDetailModal } from '@mystudyplanner/shared-ui';
-import notificationService, { NotificationSettings } from '../../src/services/notificationService';
+import notificationService from '../../src/services/notificationService';
+
+type LocalNotificationSettings = {
+  dailyReminder: boolean;
+  lateSessionAlerts: boolean;
+  morningBrief: boolean;
+};
 import { api } from '@mystudyplanner/api-client';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+  const { colors, isDark, accentColor } = useTheme();
   
   const { user, logout } = useAuthStore();
   const { progress, fetchProgress } = useAnalyticsStore();
@@ -69,7 +77,7 @@ export default function ProfileScreen() {
   const [editICSColor, setEditICSColor] = useState('#10B981');
 
   // Notification settings
-  const [notifSettings, setNotifSettings] = useState<NotificationSettings>(notificationService.getSettings());
+  const [notifSettings, setNotifSettings] = useState<LocalNotificationSettings>(notificationService.getSettings());
 
   useEffect(() => {
     // Initial load only for notifications
@@ -540,9 +548,9 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}>
-        {isDesktop && <Text style={styles.pageTitle}>Profil</Text>}
+        {isDesktop && <Text style={[styles.pageTitle, { color: colors.text }]}>Profil</Text>}
         {renderContent()}
       </ScrollView>
 
