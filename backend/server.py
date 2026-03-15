@@ -24,8 +24,11 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'revision_med_db')]
 
-# JWT Configuration
-SECRET_KEY = os.environ.get('JWT_SECRET', 'revision-med-secret-key-2025')
+# JWT Configuration - JWT_SECRET must be set in production
+SECRET_KEY = os.environ.get('JWT_SECRET')
+if not SECRET_KEY:
+    print("WARNING: JWT_SECRET not set, using development default - NOT SAFE FOR PRODUCTION")
+    SECRET_KEY = 'dev-only-secret-key-change-in-production'
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
@@ -492,13 +495,21 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@mystudyplanner.com')
-APP_URL = os.environ.get('APP_URL', 'https://mystudyplanner.com')
+SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', '')
+APP_URL = os.environ.get('APP_URL', '')
 
 async def send_password_reset_email(email: str, reset_token: str):
     """Send password reset email via SendGrid"""
     if not SENDGRID_API_KEY:
         logger.warning("SENDGRID_API_KEY not configured, skipping email")
+        return False
+    
+    if not APP_URL:
+        logger.warning("APP_URL not configured, cannot send reset email with valid link")
+        return False
+    
+    if not SENDGRID_FROM_EMAIL:
+        logger.warning("SENDGRID_FROM_EMAIL not configured, cannot send email")
         return False
     
     reset_link = f"{APP_URL}/reset-password?token={reset_token}"
