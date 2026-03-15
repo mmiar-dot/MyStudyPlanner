@@ -68,6 +68,7 @@ export default function AdminScreen() {
   const [confirmAction, setConfirmAction] = useState<'block' | 'unblock' | 'delete'>('block');
   const [blockReason, setBlockReason] = useState('');
   const [activeTab, setActiveTab] = useState<'users' | 'feedback' | 'courses'>('users');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Course form state
   const [courseTitle, setCourseTitle] = useState('');
@@ -422,11 +423,46 @@ export default function AdminScreen() {
         <>
           {activeTab === 'users' && (
             <ScrollView style={styles.content}>
+              {/* Search Bar */}
+              <View style={styles.searchContainer}>
+                <View style={styles.searchInputWrapper}>
+                  <Ionicons name="search" size={20} color="#9CA3AF" />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Rechercher un utilisateur..."
+                    placeholderTextColor="#9CA3AF"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                      <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
               <Text style={styles.sectionTitle}>
-                {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
+                {users.filter(u => 
+                  u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                ).length} utilisateur{users.filter(u => 
+                  u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                ).length > 1 ? 's' : ''} {searchQuery ? 'trouvé' : 'inscrit'}{users.filter(u => 
+                  u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                ).length > 1 ? 's' : ''}
               </Text>
 
-              {users.map((user) => (
+              {users
+                .filter(user => 
+                  user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (user.name && user.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                )
+                .map((user) => (
                 <TouchableOpacity
                   key={user.id}
                   style={[styles.userCard, user.is_blocked && styles.userCardBlocked]}
@@ -466,6 +502,17 @@ export default function AdminScreen() {
                   <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
               ))}
+              
+              {users.filter(u => 
+                u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+              ).length === 0 && searchQuery.length > 0 && (
+                <View style={styles.noResultsContainer}>
+                  <Ionicons name="search" size={48} color="#D1D5DB" />
+                  <Text style={styles.noResultsText}>Aucun utilisateur trouvé</Text>
+                  <Text style={styles.noResultsSubtext}>Essayez avec un autre terme de recherche</Text>
+                </View>
+              )}
             </ScrollView>
           )}
 
@@ -1465,5 +1512,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,
+  },
+  searchContainer: {
+    marginBottom: 16,
+  },
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#111827',
+    paddingVertical: 4,
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    gap: 8,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
   },
 });
