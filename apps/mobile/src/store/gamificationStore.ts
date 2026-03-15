@@ -1,7 +1,57 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create, StateCreator } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+// Custom simple persist middleware for web compatibility
+// This avoids the import.meta issue from zustand/middleware on web
+type StorageValue<S> = { state: S; version?: number };
+
+const createWebStorage = () => ({
+  getItem: (name: string): StorageValue<any> | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const value = window.localStorage.getItem(name);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: StorageValue<any>) => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(name, JSON.stringify(value));
+      } catch {}
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(name);
+      } catch {}
+    }
+  },
+});
+
+const createAsyncStorageAdapter = () => ({
+  getItem: async (name: string): Promise<StorageValue<any> | null> => {
+    try {
+      const value = await AsyncStorage.getItem(name);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  },
+  setItem: async (name: string, value: StorageValue<any>) => {
+    try {
+      await AsyncStorage.setItem(name, JSON.stringify(value));
+    } catch {}
+  },
+  removeItem: async (name: string) => {
+    try {
+      await AsyncStorage.removeItem(name);
+    } catch {}
+  },
+});
 
 // Badge definitions
 export interface Badge {
@@ -71,6 +121,42 @@ export const XP_REWARDS = {
   complete_course: 100,
 };
 
+// Simple persist wrapper compatible with both web and mobile
+const simplePersist = <T extends object>(
+  name: string, 
+  initializer: StateCreator<T>
+): StateCreator<T> => {
+  return (set, get, api) => {
+    const storage = Platform.OS === 'web' ? createWebStorage() : createAsyncStorageAdapter();
+    
+    // Load initial state from storage
+    const loadState = async () => {
+      try {
+        const stored = await storage.getItem(name);
+        if (stored?.state) {
+          set(stored.state as T);
+        }
+      } catch {}
+    };
+    
+    // Wrap set to persist on every update
+    const persistSet: typeof set = (...args) => {
+      set(...args);
+      // Save state after update
+      setTimeout(async () => {
+        try {
+          await storage.setItem(name, { state: get() as T });
+        } catch {}
+      }, 0);
+    };
+    
+    // Load state on init
+    loadState();
+    
+    return initializer(persistSet, get, api);
+  };
+};
+
 interface GamificationState {
   xp: number;
   unlockedBadges: string[];
@@ -86,26 +172,9 @@ interface GamificationState {
   getLockedBadges: () => Badge[];
 }
 
-const webStorage = {
-  getItem: (name: string) => {
-    if (typeof window === 'undefined') return null;
-    const value = window.localStorage.getItem(name);
-    return value ? JSON.parse(value) : null;
-  },
-  setItem: (name: string, value: any) => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(name, JSON.stringify(value));
-    }
-  },
-  removeItem: (name: string) => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(name);
-    }
-  },
-};
-
 export const useGamificationStore = create<GamificationState>()(
-  persist(
+  simplePersist(
+    'gamification-storage',
     (set, get) => ({
       xp: 0,
       unlockedBadges: [],
@@ -113,7 +182,7 @@ export const useGamificationStore = create<GamificationState>()(
       lastCheckedDate: null,
       
       addXP: (amount: number, reason?: string) => {
-        set((state) => ({ xp: state.xp + amount }));
+        set((state) => ({ ...state, xp: state.xp + amount }));
         console.log(`+${amount} XP${reason ? ` (${reason})` : ''}`);
       },
       
@@ -147,6 +216,7 @@ export const useGamificationStore = create<GamificationState>()(
         
         if (newBadges.length > 0) {
           set((state) => ({
+            ...state,
             unlockedBadges: [...state.unlockedBadges, ...newBadges],
             xp: state.xp + (newBadges.length * XP_REWARDS.unlock_badge),
           }));
@@ -161,6 +231,7 @@ export const useGamificationStore = create<GamificationState>()(
         
         if (lastCheckedDate !== today) {
           set((state) => ({
+            ...state,
             perfectDays: state.perfectDays + 1,
             lastCheckedDate: today,
             xp: state.xp + XP_REWARDS.perfect_day,
@@ -181,10 +252,6 @@ export const useGamificationStore = create<GamificationState>()(
         const { unlockedBadges } = get();
         return BADGES.filter((b) => !unlockedBadges.includes(b.id));
       },
-    }),
-    {
-      name: 'gamification-storage',
-      storage: Platform.OS === 'web' ? webStorage as any : createJSONStorage(() => AsyncStorage),
-    }
+    })
   )
 );
