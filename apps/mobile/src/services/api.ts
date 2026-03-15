@@ -18,7 +18,7 @@ const getBackendUrl = (): string => {
   }
   
   // 3. Fallback to production URL
-  return 'https://revision-med.preview.emergentagent.com';
+  return 'https://mystudyplanner-production.up.railway.app';
 };
 
 const BACKEND_URL = getBackendUrl();
