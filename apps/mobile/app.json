@@ -51,7 +51,7 @@
     },
     "extra": {
       "router": {},
-      "backendUrl": "https://revision-med.preview.emergentagent.com",
+      "backendUrl": "https://mystudyplanner-production.up.railway.app",
       "eas": {
         "projectId": "4a80a94e-cec4-45f9-a9a7-5a0ae1bc5419"
       }

@@ -8,19 +8,19 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://revision-med.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://mystudyplanner-production.up.railway.app"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://revision-med.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://mystudyplanner-production.up.railway.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://revision-med.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://mystudyplanner-production.up.railway.app"
       }
     }
   },
