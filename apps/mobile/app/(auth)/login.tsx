@@ -18,6 +18,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+
+// Required for web OAuth
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
@@ -30,7 +35,28 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
   const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
-  const { login, appleAuth, error, clearError } = useAuthStore();
+  const { login, appleAuth, googleAuth, error, clearError } = useAuthStore();
+
+  // Google Auth configuration
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: '1018659425498-xxxxxxxxxxxxxxxx.apps.googleusercontent.com',
+    iosClientId: '1018659425498-xxxxxxxxxxxxxxxx.apps.googleusercontent.com',
+    androidClientId: '1018659425498-xxxxxxxxxxxxxxxx.apps.googleusercontent.com',
+    webClientId: '1018659425498-xxxxxxxxxxxxxxxx.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+  });
+
+  // Handle Google Auth response
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      if (authentication?.accessToken) {
+        handleGoogleToken(authentication.accessToken);
+      }
+    } else if (response?.type === 'error') {
+      setLocalError('Erreur lors de la connexion Google');
+    }
+  }, [response]);
 
   useEffect(() => {
     // Check if Apple Auth is available (iOS only)
@@ -42,6 +68,46 @@ export default function LoginScreen() {
     };
     checkAppleAuth();
   }, []);
+
+  // Handle Google token - fetch user info and authenticate
+  const handleGoogleToken = async (accessToken: string) => {
+    try {
+      setIsSubmitting(true);
+      setLocalError('');
+      
+      // Fetch user info from Google
+      const userInfoResponse = await fetch(
+        'https://www.googleapis.com/userinfo/v2/me',
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      const userInfo = await userInfoResponse.json();
+      
+      if (userInfo.email) {
+        await googleAuth(accessToken, userInfo.email, userInfo.name || '');
+        router.replace('/(tabs)');
+      } else {
+        setLocalError('Impossible de récupérer les informations du compte Google');
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      setLocalError('Erreur lors de la connexion avec Google');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLocalError('');
+      clearError();
+      await promptAsync();
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setLocalError('Erreur lors de la connexion Google');
+    }
+  };
 
   const handleLogin = async () => {
     setLocalError('');
@@ -214,7 +280,11 @@ export default function LoginScreen() {
                     <View style={styles.dividerLine} />
                   </View>
 
-                  <TouchableOpacity style={styles.googleButton}>
+                  <TouchableOpacity 
+                    style={[styles.googleButton, isSubmitting && styles.loginButtonDisabled]}
+                    onPress={handleGoogleSignIn}
+                    disabled={isSubmitting || !request}
+                  >
                     <Ionicons name="logo-google" size={20} color="#1F2937" />
                     <Text style={styles.googleButtonText}>Continuer avec Google</Text>
                   </TouchableOpacity>
@@ -329,7 +399,11 @@ export default function LoginScreen() {
                   <View style={styles.dividerLine} />
                 </View>
 
-                <TouchableOpacity style={styles.googleButton}>
+                <TouchableOpacity 
+                  style={[styles.googleButton, isSubmitting && styles.loginButtonDisabled]}
+                  onPress={handleGoogleSignIn}
+                  disabled={isSubmitting || !request}
+                >
                   <Ionicons name="logo-google" size={20} color="#1F2937" />
                   <Text style={styles.googleButtonText}>Continuer avec Google</Text>
                 </TouchableOpacity>
