@@ -165,6 +165,17 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
         color: color || '#3B82F6',
       });
       await get().fetchAllItems();
+      
+      // Refresh sessions and calendar to show the new course
+      setTimeout(async () => {
+        if (sessionRefreshCallback) {
+          await sessionRefreshCallback();
+        }
+        if (calendarRefreshCallback) {
+          const now = new Date();
+          await calendarRefreshCallback(now.getMonth() + 1, now.getFullYear());
+        }
+      }, 300);
     } catch (error: any) {
       set({ error: error.message });
       throw error;
