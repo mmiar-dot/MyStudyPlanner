@@ -14,7 +14,7 @@ import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, i
 import { fr } from 'date-fns/locale';
 import { useSessionStore } from '@mystudyplanner/api-client';
 import { useAnalyticsStore } from '@mystudyplanner/api-client';
-import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '../../src/store/authStore';
 import { setSessionRefreshCallback, setCalendarRefreshCallback } from '@mystudyplanner/api-client';
 import { SessionCard } from '@mystudyplanner/shared-ui';
 import { SRSRatingModal } from '@mystudyplanner/shared-ui';
@@ -158,7 +158,7 @@ export default function TodayScreen() {
         <View style={[styles.header, isDesktop && styles.headerDesktop]}>
           <View style={styles.headerLeft}>
             <Text style={[styles.greeting, isDesktop && styles.greetingDesktop, { color: colors.text }]}>
-              Bonjour, {user?.name?.split(' ')[0] || 'Utilisateur'}
+              Bonjour, {(user?.name?.trim() ? user.name.split(' ')[0] : user?.email?.split('@')[0]) || 'Utilisateur'}
             </Text>
             <Text style={[styles.date, { color: colors.textSecondary }]}>
               {format(today, "EEEE d MMMM yyyy", { locale: fr })}

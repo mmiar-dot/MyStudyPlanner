@@ -442,10 +442,14 @@ async def login(credentials: UserLogin):
     await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.utcnow()}})
     
     token = create_access_token({"sub": user["id"]})
+    # Use email prefix as fallback if name is empty or None
+    user_name = user.get("name")
+    if not user_name or not user_name.strip():
+        user_name = user["email"].split("@")[0].capitalize()
     user_response = {
         "id": user["id"],
         "email": user["email"],
-        "name": user.get("name", user["email"].split("@")[0]),
+        "name": user_name,
         "role": user.get("role", UserRole.USER),
         "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
         "settings": user.get("settings", {}),
@@ -612,10 +616,14 @@ async def verify_reset_token(token: str):
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: dict = Depends(get_current_user)):
+    # Use email prefix as fallback if name is empty or None
+    user_name = user.get("name")
+    if not user_name or not user_name.strip():
+        user_name = user["email"].split("@")[0].capitalize()
     return UserResponse(
         id=user["id"],
         email=user["email"],
-        name=user.get("name", user["email"].split("@")[0]),
+        name=user_name,
         role=user["role"],
         created_at=user["created_at"],
         settings=user.get("settings", {}),

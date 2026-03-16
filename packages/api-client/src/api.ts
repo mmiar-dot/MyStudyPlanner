@@ -6,6 +6,16 @@ import Constants from 'expo-constants';
 
 // Get backend URL from multiple sources for reliability
 const getBackendUrl = (): string => {
+  // For web preview on Emergent, use relative API path (proxied to backend)
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    // In web mode, use relative URL which will be proxied
+    // This allows the preview to use the local backend
+    const hostname = window.location?.hostname || '';
+    if (hostname.includes('preview.emergentagent.com') || hostname === 'localhost') {
+      return ''; // Empty string means relative URL, will be prefixed with origin
+    }
+  }
+  
   // 1. Try expo-constants (works in EAS builds)
   const expoExtra = Constants.expoConfig?.extra;
   if (expoExtra?.backendUrl) {
