@@ -70,3 +70,7 @@ build/
 # Misc
 *.local
 test_result.md
+-e 
+# Environment files
+*.env
+*.env.*

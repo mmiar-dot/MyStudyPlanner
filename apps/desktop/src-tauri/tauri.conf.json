@@ -34,7 +34,7 @@
       "icons/icon.ico"
     ],
     "macOS": {
-      "signingIdentity": "Developer ID Application: Miaro Piret",
+      "signingIdentity": "Developer ID Application: MIARO ITOKIANA PIRET (M86792U2GY)",
       "entitlements": "./Entitlements.plist",
       "hardenedRuntime": false
     }
