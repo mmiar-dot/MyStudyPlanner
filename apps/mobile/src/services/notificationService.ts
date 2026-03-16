@@ -1,6 +1,12 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Lazy load expo-notifications only on native platforms
+let Notifications: typeof import('expo-notifications') | null = null;
+
+if (Platform.OS !== 'web') {
+  Notifications = require('expo-notifications');
+}
 
 const NOTIFICATION_SETTINGS_KEY = 'notification_settings';
 
@@ -21,7 +27,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 };
 
 // Configure notification handler - only on native platforms
-if (Platform.OS !== 'web') {
+if (Platform.OS !== 'web' && Notifications) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -34,6 +40,11 @@ if (Platform.OS !== 'web') {
 }
 
 export async function registerForPushNotifications(): Promise<string | null> {
+  if (Platform.OS === 'web' || !Notifications) {
+    console.log('Notifications not supported on web');
+    return null;
+  }
+  
   try {
     // Check if we have permission
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -103,6 +114,8 @@ export async function saveNotificationSettings(settings: NotificationSettings): 
 }
 
 export async function scheduleDailyReminder(time: string): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) return;
+  
   const [hours, minutes] = time.split(':').map(Number);
   
   await Notifications.scheduleNotificationAsync({
@@ -125,6 +138,8 @@ export async function scheduleSessionReminder(
   scheduledDate: Date,
   minutesBefore: number
 ): Promise<string> {
+  if (Platform.OS === 'web' || !Notifications) return '';
+  
   const triggerDate = new Date(scheduledDate.getTime() - minutesBefore * 60 * 1000);
   
   // Only schedule if in the future
@@ -148,23 +163,28 @@ export async function scheduleSessionReminder(
 }
 
 export async function cancelNotification(id: string): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(id);
 }
 
 export async function cancelAllNotifications(): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
 export async function getScheduledNotifications() {
+  if (Platform.OS === 'web' || !Notifications) return [];
   return await Notifications.getAllScheduledNotificationsAsync();
 }
 
 // Badge management
 export async function setBadgeCount(count: number): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) return;
   await Notifications.setBadgeCountAsync(count);
 }
 
 export async function clearBadge(): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) return;
   await Notifications.setBadgeCountAsync(0);
 }
 
@@ -208,7 +228,7 @@ class NotificationService {
   }
 
   async sendImmediateNotification(title: string, body: string) {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' || !Notifications) {
       console.log('Web notification:', title, body);
       return;
     }
