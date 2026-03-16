@@ -116,12 +116,16 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
 
-    if (!isAuthenticated && !inAuthGroup) {
+    // Allow access to legal page without authentication
+    const currentPath = segments?.join('/') || '';
+    const isLegalPage = currentPath === 'legal' || segments?.[0] === 'legal';
+    
+    if (!isAuthenticated && !inAuthGroup && !isLegalPage) {
       router.replace("/(auth)/login");
     } else if (isAuthenticated && inAuthGroup) {
       router.replace("/(tabs)");
     }
-  }, [isAuthenticated, inAuthGroup, isReady, router]);
+  }, [isAuthenticated, inAuthGroup, isReady, router, segments]);
 
   // Loading / Update screens - Don't block on isLoading after isReady
   const shouldBlockUI =
