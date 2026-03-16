@@ -95,9 +95,12 @@ export default function ProfileScreen() {
   );
 
   const handleLogout = async () => {
-    await logout();
     setShowLogoutModal(false);
-    router.replace('/(auth)/login');
+    await logout();
+    // Force immediate navigation
+    setTimeout(() => {
+      router.replace('/(auth)/login');
+    }, 100);
   };
 
   const handleAddICS = async () => {
