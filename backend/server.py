@@ -80,7 +80,7 @@ class UserLogin(BaseModel):
 class GoogleAuthRequest(BaseModel):
     id_token: str
     email: EmailStr
-    name: str
+    name: Optional[str] = None
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
@@ -399,13 +399,14 @@ async def register(user_data: UserCreate):
     if existing:
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
     
-    # Create user
+    # Create user with fallback name from email
     user_id = str(uuid.uuid4())
+    user_name = user_data.name if user_data.name.strip() else user_data.email.split("@")[0].capitalize()
     user = {
         "id": user_id,
         "email": user_data.email,
         "password": hash_password(user_data.password),
-        "name": user_data.name,
+        "name": user_name,
         "role": UserRole.USER,
         "created_at": datetime.utcnow(),
         "settings": {}
@@ -417,7 +418,7 @@ async def register(user_data: UserCreate):
     user_response = {
         "id": user["id"],
         "email": user["email"],
-        "name": user["name"],
+        "name": user_name,
         "role": user["role"],
         "created_at": user["created_at"].isoformat(),
         "settings": user.get("settings", {})
@@ -463,11 +464,13 @@ async def google_auth(auth_data: GoogleAuthRequest):
     
     if not user:
         user_id = str(uuid.uuid4())
+        # Use provided name or extract from email
+        user_name = auth_data.name if auth_data.name and auth_data.name.strip() else auth_data.email.split("@")[0].capitalize()
         user = {
             "id": user_id,
             "email": auth_data.email,
             "password": None,  # No password for Google auth
-            "name": auth_data.name,
+            "name": user_name,
             "role": UserRole.USER,
             "google_id": auth_data.id_token[:50],  # Store partial for reference
             "created_at": datetime.utcnow(),
@@ -479,7 +482,7 @@ async def google_auth(auth_data: GoogleAuthRequest):
     user_response = {
         "id": user["id"],
         "email": user["email"],
-        "name": user["name"],
+        "name": user.get("name") or user["email"].split("@")[0].capitalize(),
         "role": user["role"],
         "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
         "settings": user.get("settings", {})
@@ -519,11 +522,13 @@ async def apple_auth(auth_data: AppleAuthRequest):
             user_id = str(uuid.uuid4())
             # Apple sometimes hides email, generate a placeholder if needed
             email = auth_data.email or f"apple_{auth_data.user_id[:8]}@privaterelay.appleid.com"
+            # Use provided name or extract from email
+            user_name = auth_data.full_name if auth_data.full_name and auth_data.full_name.strip() else email.split("@")[0].capitalize()
             user = {
                 "id": user_id,
                 "email": email,
                 "password": None,  # No password for Apple auth
-                "name": auth_data.full_name or "Utilisateur Apple",
+                "name": user_name,
                 "role": UserRole.USER,
                 "apple_id": auth_data.user_id,
                 "created_at": datetime.utcnow(),

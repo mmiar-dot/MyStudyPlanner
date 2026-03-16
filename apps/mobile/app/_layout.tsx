@@ -159,6 +159,9 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="admin" />
         <Stack.Screen name="appearance" />
+        <Stack.Screen name="legal" />
+        <Stack.Screen name="badges" />
+        <Stack.Screen name="calendar-sync" />
       </Stack>
     </ThemeProvider>
   );

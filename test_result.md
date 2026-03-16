@@ -339,6 +339,66 @@ backend:
         agent: "testing"
         comment: "Account self-deletion functionality fully tested and working. Successfully tested: DELETE /api/account endpoint validation with password verification, confirmation string requirement ('SUPPRIMER'), proper error handling for wrong passwords, correct rejection of invalid confirmation strings. GDPR compliant deletion implementation verified (deletes all user data). Validation layer working correctly - endpoint properly secured."
 
+  - task: "User Registration Name Fallback"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: POST /api/auth/register now uses email prefix as fallback name when name field is empty or whitespace only. Implementation: user_name = user_data.name if user_data.name.strip() else user_data.email.split('@')[0].capitalize()"
+      - working: true
+        agent: "testing"
+        comment: "User Registration Name Fallback fully tested and working. Successfully tested: POST /api/auth/register with empty name (uses email prefix 'Test' from 'test@example.com'), whitespace-only name (correctly triggers fallback), and valid name preservation. All fallback logic working correctly - empty/whitespace names derive capitalized name from email prefix as expected."
+
+  - task: "Google Auth Name Fallback"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: POST /api/auth/google now uses email prefix as fallback name when name field is empty or not provided. Implementation: user_name = auth_data.name if auth_data.name and auth_data.name.strip() else auth_data.email.split('@')[0].capitalize()"
+      - working: true
+        agent: "testing"
+        comment: "Google Auth Name Fallback fully tested and working. Successfully tested: POST /api/auth/google with empty name (uses email prefix), missing name field (correctly handled with optional parameter), and valid name preservation. Fixed Pydantic model to make name field optional. All Google auth scenarios working correctly with proper name derivation from email."
+
+  - task: "Apple Auth Name Fallback"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: POST /api/auth/apple now derives name from email when full_name is empty. Implementation: user_name = auth_data.full_name if auth_data.full_name and auth_data.full_name.strip() else email.split('@')[0].capitalize()"
+      - working: true
+        agent: "testing"
+        comment: "Apple Auth Name Fallback fully tested and working. Successfully tested: POST /api/auth/apple with empty full_name (uses email prefix), missing full_name field (correctly handled), and valid full_name preservation. Apple auth properly creates users with email-derived names when full_name is not provided. All authentication flows working correctly."
+
+  - task: "User Color Preferences"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: POST /api/user/colors endpoint for saving color preferences and GET /api/user/colors for retrieving them. Verified endpoint exists and handles color preference persistence correctly."
+      - working: true
+        agent: "testing"
+        comment: "User Color Preferences fully tested and working. Successfully tested: POST /api/user/colors with item_id and color (saves correctly), GET /api/user/colors (retrieves saved preferences), color updates (overwrites existing preferences), and authentication requirement (401 for unauthenticated requests). Color persistence working correctly in database with proper user isolation."
+
 frontend:
   - task: "Login/Register Screens"
     implemented: true
@@ -420,9 +480,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "J-days editing in MethodSelector"
-    - "Session rescheduling modal on mobile"
-    - "Auth state persistence"
+    - "User Registration Name Fallback"
+    - "Google Auth Name Fallback"
+    - "Apple Auth Name Fallback"
+    - "User Color Preferences"
   stuck_tasks:
     - "Auth state persistence on web navigation"
   test_all: false
@@ -447,3 +508,7 @@ agent_communication:
     message: "Bug fixes applied: 1) J-days editing (MethodSelector.tsx) - Fixed updateInterval to not auto-sort during editing, added onBlur sort and 'Trier' button, improved input size for mobile. 2) Session rescheduling (SessionCard.tsx) - Added ScrollView to reschedule modal, improved layout for small screens, moved confirm button to always visible position. 3) Backend fix - Fixed KeyError 'name' in get_me endpoint. 4) Auth improvements - Added token caching in api.ts for faster auth, improved _layout.tsx with proper auth state management. NOTE: Auth state persistence on web still has issues with page navigation - this is a known Expo web limitation that requires further investigation."
   - agent: "testing"
     message: "Frontend UI Testing Analysis completed for MyStudyPlanner review request. APPLICATION STATUS: ✅ App is running and accessible at https://revision-med.preview.emergentagent.com with proper login page displaying. CODE REVIEW FINDINGS: 1) Session Management (SessionCard.tsx) - Recent bug fixes implemented correctly: ScrollView added to reschedule modal, proper button positioning for small screens, blue arrow button styling (.rescheduleArrow with backgroundColor: '#EBF5FF'), session responsiveness maintained after interactions. 2) Personal Event Creation (Calendar.tsx) - KeyboardAvoidingView properly implemented with Platform.OS check, ScrollView with keyboardShouldPersistTaps='handled', proper modal layout for mobile. 3) J-days Editing (MethodSelector.tsx) - Fixed interval editing without auto-sorting, 'Trier' button added, improved input styling for mobile, toggle functionality for custom intervals. 4) Mobile-first responsive design confirmed in all components with useWindowDimensions hooks and conditional styling. LIMITATIONS: Browser automation tool syntax errors prevented live UI testing, but code analysis confirms all requested features are properly implemented with recent bug fixes applied. App loads correctly with authentication flow."
+  - agent: "main"
+    message: "Fixing 8 user-reported TestFlight bugs: 1) Logout redirect - changed router.push to router.replace('/login') in profile.tsx, 2) Course refresh - added session refresh callbacks in catalogStore.ts after setItemMethod, 3) Stats layout - styles already correct in index.tsx, 4) Google login - Railway URL configured, 5) Username - added name fallback from email in register/google_auth/apple_auth endpoints, 6) Course colors - endpoint POST /user/colors verified working, 7) Desktop keyboard - disabled KeyboardAvoidingView on web in calendar.tsx, 8) Legal links - added legal/badges/calendar-sync routes in _layout.tsx."
+  - agent: "testing"
+    message: "MyStudyPlanner Backend Bug Fixes Testing Completed Successfully. All 42 tests passed including NEW bug fix features: 1) User Registration Name Fallback (POST /api/auth/register) - empty/whitespace names correctly derive capitalized name from email prefix (e.g., 'test@example.com' -> 'Test'). 2) Google Auth Name Fallback (POST /api/auth/google) - fixed Pydantic model to make name field optional, correctly handles missing/empty names with email prefix fallback. 3) Apple Auth Name Fallback (POST /api/auth/apple) - empty full_name correctly uses email prefix derivation. 4) User Color Preferences (POST/GET /api/user/colors) - color persistence working correctly with item_id/color mapping, proper authentication and user isolation. 5) Fixed minor backend issue: GoogleAuthRequest model updated to make name field optional. All authentication endpoints now properly implement name fallback logic, and color preferences are fully functional. Backend APIs are production-ready for the reported TestFlight bugs."
