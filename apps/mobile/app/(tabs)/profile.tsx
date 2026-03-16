@@ -96,11 +96,13 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
-    await logout();
-    // Force immediate navigation
-    setTimeout(() => {
-      router.replace('/(auth)/login');
-    }, 100);
+    try {
+      await logout();
+    } finally {
+      // Force immediate navigation to login screen
+      // Use while(true) pattern to ensure navigation completes
+      router.replace('/login');
+    }
   };
 
   const handleAddICS = async () => {

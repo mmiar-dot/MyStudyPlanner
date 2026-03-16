@@ -11,6 +11,18 @@ export interface CustomSection {
   created_at: string;
 }
 
+// Callback to notify session stores to refresh
+let sessionRefreshCallback: (() => Promise<void>) | null = null;
+let calendarRefreshCallback: ((month: number, year: number) => Promise<void>) | null = null;
+
+export const setSessionRefreshCallback = (callback: () => Promise<void>) => {
+  sessionRefreshCallback = callback;
+};
+
+export const setCalendarRefreshCallback = (callback: (month: number, year: number) => Promise<void>) => {
+  calendarRefreshCallback = callback;
+};
+
 interface CatalogState {
   items: CatalogItem[];
   allItems: CatalogItem[];
@@ -123,6 +135,17 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
         tours_settings: toursSettings,
       });
       await get().fetchUserSettings();
+      
+      // Refresh sessions after a short delay to allow backend to generate sessions
+      setTimeout(async () => {
+        if (sessionRefreshCallback) {
+          await sessionRefreshCallback();
+        }
+        if (calendarRefreshCallback) {
+          const now = new Date();
+          await calendarRefreshCallback(now.getMonth() + 1, now.getFullYear());
+        }
+      }, 500);
     } catch (error: any) {
       set({ error: error.message });
       throw error;

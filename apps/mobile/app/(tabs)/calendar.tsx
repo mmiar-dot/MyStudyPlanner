@@ -565,6 +565,118 @@ export default function CalendarScreen() {
 
       {/* Create Event Modal */}
       <Modal visible={showEventModal} animationType="slide" transparent>
+        {Platform.OS === 'web' ? (
+          // On web/desktop, don't use KeyboardAvoidingView as it interferes with keyboard input
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
+                </Text>
+                <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
+                  <Ionicons name="close" size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView 
+                style={styles.eventFormScroll}
+                showsVerticalScrollIndicator={false}
+              >
+                {/* Date selector */}
+                <TouchableOpacity 
+                  style={styles.dateSelector}
+                  onPress={() => setShowEventDatePicker(!showEventDatePicker)}
+                >
+                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+                  <Text style={styles.dateSelectorText}>
+                    {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : eventDate), "EEEE d MMMM yyyy", { locale: fr })}
+                  </Text>
+                  <Ionicons name={showEventDatePicker ? "chevron-up" : "chevron-down"} size={20} color="#6B7280" />
+                </TouchableOpacity>
+
+                {showEventDatePicker && (
+                  <Calendar
+                    current={eventDate}
+                    onDayPress={(day) => {
+                      setEventDate(day.dateString);
+                      setShowEventDatePicker(false);
+                    }}
+                    markedDates={{
+                      [eventDate]: { selected: true, selectedColor: '#3B82F6' }
+                    }}
+                    theme={{
+                      todayTextColor: '#3B82F6',
+                      selectedDayBackgroundColor: '#3B82F6',
+                    }}
+                    firstDay={1}
+                    style={styles.eventDateCalendar}
+                  />
+                )}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Titre de l'événement"
+                  placeholderTextColor="#9CA3AF"
+                  value={eventTitle}
+                  onChangeText={setEventTitle}
+                />
+
+                <View style={styles.descriptionContainer}>
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    placeholder="Description (optionnel)"
+                    placeholderTextColor="#9CA3AF"
+                    value={eventDescription}
+                    onChangeText={setEventDescription}
+                    multiline
+                    numberOfLines={3}
+                    returnKeyType="default"
+                  />
+                </View>
+
+                <View style={styles.timeRow}>
+                  <View style={styles.timeInput}>
+                    <Text style={styles.timeLabel}>Début</Text>
+                    <TextInput
+                      style={styles.timeField}
+                      placeholder="09:00"
+                      placeholderTextColor="#9CA3AF"
+                      value={eventStartTime}
+                      onChangeText={setEventStartTime}
+                    />
+                  </View>
+                  <View style={styles.timeInput}>
+                    <Text style={styles.timeLabel}>Fin</Text>
+                    <TextInput
+                      style={styles.timeField}
+                      placeholder="10:00"
+                      placeholderTextColor="#9CA3AF"
+                      value={eventEndTime}
+                      onChangeText={setEventEndTime}
+                    />
+                  </View>
+                </View>
+
+                <Text style={styles.colorLabel}>Couleur</Text>
+                <ColorPicker selectedColor={eventColor} onColorSelect={setEventColor} compact />
+
+                <TouchableOpacity
+                  style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+                  onPress={handleCreateEvent}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.createButtonText}>
+                      {editingEvent ? 'Enregistrer' : 'Créer l\'événement'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </View>
+        ) : (
         <KeyboardAvoidingView 
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -689,6 +801,7 @@ export default function CalendarScreen() {
             </View>
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
+        )}
       </Modal>
 
       {/* Delete Confirmation Modal */}

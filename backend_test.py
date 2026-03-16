@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 MyStudyPlanner Backend API Test Script
-Tests functionality: Account Settings (Password Change, Account Deletion), Admin User Management, Hidden Items
+Tests bug fixes: Registration/Google/Apple Auth Name Fallback, User Color Preferences
+Also tests: Account Settings (Password Change, Account Deletion), Admin User Management, Hidden Items, Course Notes
 """
 
 import requests
@@ -504,6 +505,355 @@ class BackendTester:
         except Exception as e:
             self.log_result("Admin User Management", False, f"Exception: {str(e)}")
 
+    def test_registration_name_fallback(self):
+        """Test user registration with name fallback from email"""
+        try:
+            # Test 1: Registration with empty name should use email prefix
+            test_email = f"testuser{uuid.uuid4().hex[:8]}@example.com"
+            test_password = "password123"
+            
+            registration_data = {
+                "email": test_email,
+                "password": test_password,
+                "name": ""  # Empty name should trigger fallback
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/auth/register",
+                json=registration_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                user = data["user"]
+                expected_name = test_email.split("@")[0].capitalize()
+                
+                if user["name"] == expected_name:
+                    self.log_result("Registration Empty Name Fallback", True, f"Name correctly set to '{expected_name}' from email")
+                else:
+                    self.log_result("Registration Empty Name Fallback", False, f"Expected '{expected_name}', got '{user['name']}'")
+            else:
+                self.log_result("Registration Empty Name Fallback", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+            # Test 2: Registration with whitespace-only name should use email prefix  
+            test_email2 = f"testuser{uuid.uuid4().hex[:8]}@example.com"
+            registration_data2 = {
+                "email": test_email2,
+                "password": test_password,
+                "name": "   "  # Whitespace-only name should trigger fallback
+            }
+            
+            response2 = requests.post(
+                f"{self.base_url}/auth/register",
+                json=registration_data2,
+                timeout=30
+            )
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                user2 = data2["user"]
+                expected_name2 = test_email2.split("@")[0].capitalize()
+                
+                if user2["name"] == expected_name2:
+                    self.log_result("Registration Whitespace Name Fallback", True, f"Name correctly set to '{expected_name2}' from email")
+                else:
+                    self.log_result("Registration Whitespace Name Fallback", False, f"Expected '{expected_name2}', got '{user2['name']}'")
+            else:
+                self.log_result("Registration Whitespace Name Fallback", False, f"Status: {response2.status_code}, Response: {response2.text}")
+                
+            # Test 3: Registration with valid name should keep provided name
+            test_email3 = f"testuser{uuid.uuid4().hex[:8]}@example.com"
+            provided_name = "John Doe"
+            registration_data3 = {
+                "email": test_email3,
+                "password": test_password,
+                "name": provided_name
+            }
+            
+            response3 = requests.post(
+                f"{self.base_url}/auth/register",
+                json=registration_data3,
+                timeout=30
+            )
+            
+            if response3.status_code == 200:
+                data3 = response3.json()
+                user3 = data3["user"]
+                
+                if user3["name"] == provided_name:
+                    self.log_result("Registration Valid Name Preserved", True, f"Name correctly preserved as '{provided_name}'")
+                else:
+                    self.log_result("Registration Valid Name Preserved", False, f"Expected '{provided_name}', got '{user3['name']}'")
+            else:
+                self.log_result("Registration Valid Name Preserved", False, f"Status: {response3.status_code}, Response: {response3.text}")
+                
+        except Exception as e:
+            self.log_result("Registration Name Fallback", False, f"Exception: {str(e)}")
+
+    def test_google_auth_name_fallback(self):
+        """Test Google auth with name fallback from email"""
+        try:
+            # Test 1: Google auth with empty name should use email prefix
+            test_email = f"googleuser{uuid.uuid4().hex[:8]}@gmail.com"
+            
+            google_auth_data = {
+                "id_token": f"fake_google_token_{uuid.uuid4().hex}",
+                "email": test_email,
+                "name": ""  # Empty name should trigger fallback
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/auth/google",
+                json=google_auth_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                user = data["user"]
+                expected_name = test_email.split("@")[0].capitalize()
+                
+                if user["name"] == expected_name:
+                    self.log_result("Google Auth Empty Name Fallback", True, f"Name correctly set to '{expected_name}' from email")
+                else:
+                    self.log_result("Google Auth Empty Name Fallback", False, f"Expected '{expected_name}', got '{user['name']}'")
+            else:
+                self.log_result("Google Auth Empty Name Fallback", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+            # Test 2: Google auth without name field should use email prefix
+            test_email2 = f"googleuser{uuid.uuid4().hex[:8]}@gmail.com"
+            
+            google_auth_data2 = {
+                "id_token": f"fake_google_token_{uuid.uuid4().hex}",
+                "email": test_email2
+                # No name field provided
+            }
+            
+            response2 = requests.post(
+                f"{self.base_url}/auth/google",
+                json=google_auth_data2,
+                timeout=30
+            )
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                user2 = data2["user"]
+                expected_name2 = test_email2.split("@")[0].capitalize()
+                
+                if user2["name"] == expected_name2:
+                    self.log_result("Google Auth Missing Name Fallback", True, f"Name correctly set to '{expected_name2}' from email")
+                else:
+                    self.log_result("Google Auth Missing Name Fallback", False, f"Expected '{expected_name2}', got '{user2['name']}'")
+            else:
+                self.log_result("Google Auth Missing Name Fallback", False, f"Status: {response2.status_code}, Response: {response2.text}")
+                
+            # Test 3: Google auth with valid name should preserve it
+            test_email3 = f"googleuser{uuid.uuid4().hex[:8]}@gmail.com"
+            provided_name = "Jane Smith"
+            
+            google_auth_data3 = {
+                "id_token": f"fake_google_token_{uuid.uuid4().hex}",
+                "email": test_email3,
+                "name": provided_name
+            }
+            
+            response3 = requests.post(
+                f"{self.base_url}/auth/google",
+                json=google_auth_data3,
+                timeout=30
+            )
+            
+            if response3.status_code == 200:
+                data3 = response3.json()
+                user3 = data3["user"]
+                
+                if user3["name"] == provided_name:
+                    self.log_result("Google Auth Valid Name Preserved", True, f"Name correctly preserved as '{provided_name}'")
+                else:
+                    self.log_result("Google Auth Valid Name Preserved", False, f"Expected '{provided_name}', got '{user3['name']}'")
+            else:
+                self.log_result("Google Auth Valid Name Preserved", False, f"Status: {response3.status_code}, Response: {response3.text}")
+                
+        except Exception as e:
+            self.log_result("Google Auth Name Fallback", False, f"Exception: {str(e)}")
+
+    def test_apple_auth_name_fallback(self):
+        """Test Apple auth with name fallback from email"""
+        try:
+            # Test 1: Apple auth with empty full_name should use email prefix
+            test_email = f"appleuser{uuid.uuid4().hex[:8]}@icloud.com"
+            
+            apple_auth_data = {
+                "identity_token": f"fake_apple_token_{uuid.uuid4().hex}",
+                "user_id": f"apple_user_{uuid.uuid4().hex}",
+                "email": test_email,
+                "full_name": ""  # Empty full_name should trigger fallback
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/auth/apple",
+                json=apple_auth_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                user = data["user"]
+                expected_name = test_email.split("@")[0].capitalize()
+                
+                if user["name"] == expected_name:
+                    self.log_result("Apple Auth Empty Name Fallback", True, f"Name correctly set to '{expected_name}' from email")
+                else:
+                    self.log_result("Apple Auth Empty Name Fallback", False, f"Expected '{expected_name}', got '{user['name']}'")
+            else:
+                self.log_result("Apple Auth Empty Name Fallback", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+            # Test 2: Apple auth without full_name field should use email prefix
+            test_email2 = f"appleuser{uuid.uuid4().hex[:8]}@icloud.com"
+            
+            apple_auth_data2 = {
+                "identity_token": f"fake_apple_token_{uuid.uuid4().hex}",
+                "user_id": f"apple_user_{uuid.uuid4().hex}",
+                "email": test_email2
+                # No full_name field provided
+            }
+            
+            response2 = requests.post(
+                f"{self.base_url}/auth/apple",
+                json=apple_auth_data2,
+                timeout=30
+            )
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                user2 = data2["user"]
+                expected_name2 = test_email2.split("@")[0].capitalize()
+                
+                if user2["name"] == expected_name2:
+                    self.log_result("Apple Auth Missing Name Fallback", True, f"Name correctly set to '{expected_name2}' from email")
+                else:
+                    self.log_result("Apple Auth Missing Name Fallback", False, f"Expected '{expected_name2}', got '{user2['name']}'")
+            else:
+                self.log_result("Apple Auth Missing Name Fallback", False, f"Status: {response2.status_code}, Response: {response2.text}")
+                
+            # Test 3: Apple auth with valid full_name should preserve it
+            test_email3 = f"appleuser{uuid.uuid4().hex[:8]}@icloud.com"
+            provided_name = "Mike Johnson"
+            
+            apple_auth_data3 = {
+                "identity_token": f"fake_apple_token_{uuid.uuid4().hex}",
+                "user_id": f"apple_user_{uuid.uuid4().hex}",
+                "email": test_email3,
+                "full_name": provided_name
+            }
+            
+            response3 = requests.post(
+                f"{self.base_url}/auth/apple",
+                json=apple_auth_data3,
+                timeout=30
+            )
+            
+            if response3.status_code == 200:
+                data3 = response3.json()
+                user3 = data3["user"]
+                
+                if user3["name"] == provided_name:
+                    self.log_result("Apple Auth Valid Name Preserved", True, f"Name correctly preserved as '{provided_name}'")
+                else:
+                    self.log_result("Apple Auth Valid Name Preserved", False, f"Expected '{provided_name}', got '{user3['name']}'")
+            else:
+                self.log_result("Apple Auth Valid Name Preserved", False, f"Status: {response3.status_code}, Response: {response3.text}")
+                
+        except Exception as e:
+            self.log_result("Apple Auth Name Fallback", False, f"Exception: {str(e)}")
+
+    def test_user_color_preferences(self):
+        """Test user color preferences functionality"""
+        try:
+            # Test 1: Set color preference for an item
+            test_item_id = f"test-item-{uuid.uuid4().hex[:8]}"
+            test_color = "#FF5733"
+            
+            color_data = {
+                "item_id": test_item_id,
+                "color": test_color
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/user/colors",
+                json=color_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                self.log_result("Set Color Preference", True, f"Successfully set color {test_color} for item {test_item_id}")
+            else:
+                self.log_result("Set Color Preference", False, f"Status: {response.status_code}, Response: {response.text}")
+                return
+                
+            # Test 2: Retrieve color preferences
+            response = requests.get(
+                f"{self.base_url}/user/colors",
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                colors = response.json()
+                
+                if test_item_id in colors and colors[test_item_id] == test_color:
+                    self.log_result("Get Color Preferences", True, f"Color preference correctly retrieved: {test_item_id} -> {test_color}")
+                else:
+                    self.log_result("Get Color Preferences", False, f"Color not found or incorrect. Expected {test_item_id}: {test_color}, got: {colors}")
+            else:
+                self.log_result("Get Color Preferences", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+            # Test 3: Update existing color preference
+            updated_color = "#00FF33"
+            updated_color_data = {
+                "item_id": test_item_id,
+                "color": updated_color
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/user/colors",
+                json=updated_color_data,
+                headers=self.get_headers(),
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                self.log_result("Update Color Preference", True, f"Successfully updated color to {updated_color}")
+                
+                # Verify update
+                verify_response = requests.get(
+                    f"{self.base_url}/user/colors",
+                    headers=self.get_headers(),
+                    timeout=30
+                )
+                
+                if verify_response.status_code == 200:
+                    updated_colors = verify_response.json()
+                    
+                    if test_item_id in updated_colors and updated_colors[test_item_id] == updated_color:
+                        self.log_result("Verify Color Update", True, f"Color preference correctly updated to {updated_color}")
+                    else:
+                        self.log_result("Verify Color Update", False, f"Color not updated correctly. Expected {updated_color}, got: {updated_colors.get(test_item_id)}")
+            else:
+                self.log_result("Update Color Preference", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+            # Test 4: Verify authentication requirement
+            unauth_response = requests.get(f"{self.base_url}/user/colors", timeout=30)
+            if unauth_response.status_code == 401:
+                self.log_result("Color Preferences Auth Required", True, "Correctly rejected unauthenticated request")
+            else:
+                self.log_result("Color Preferences Auth Required", False, f"Expected 401, got {unauth_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("User Color Preferences", False, f"Exception: {str(e)}")
+
     def test_hidden_items_management(self):
         """Test hidden items management"""
         try:
@@ -579,43 +929,55 @@ class BackendTester:
 
     def run_all_tests(self):
         """Run all tests in sequence"""
-        self.log("=== MyStudyPlanner Backend Account Settings & Admin Test ===")
+        self.log("=== MyStudyPlanner Backend Bug Fixes Test ===")
         
-        # Test 1: Login
+        # Test 1: Login (required for some tests)
         if not self.login():
             self.log("CRITICAL: Cannot proceed without login", "ERROR")
             return False
-            
-        # Test 2: Account Settings - Password Change
+        
+        # Test 2: NEW - User Registration Name Fallback
+        self.test_registration_name_fallback()
+        
+        # Test 3: NEW - Google Auth Name Fallback
+        self.test_google_auth_name_fallback()
+        
+        # Test 4: NEW - Apple Auth Name Fallback
+        self.test_apple_auth_name_fallback()
+        
+        # Test 5: NEW - User Color Preferences
+        self.test_user_color_preferences()
+        
+        # Test 6: Account Settings - Password Change
         self.test_account_password_change()
         
-        # Test 3: Account Settings - Password Validation
+        # Test 7: Account Settings - Password Validation
         self.test_account_password_validation()
         
-        # Test 4: Account Settings - Account Deletion Validation
+        # Test 8: Account Settings - Account Deletion Validation
         self.test_account_deletion_validation()
         
-        # Test 5: Admin User Management
+        # Test 9: Admin User Management
         self.test_admin_user_management()
         
-        # Test 6: Hidden Items Management
+        # Test 10: Hidden Items Management
         self.test_hidden_items_management()
         
-        # Test 7: Authentication requirements
+        # Test 11: Authentication requirements
         self.test_authentication_requirements()
         
-        # Test 8: Hidden items endpoint details
+        # Test 12: Hidden items endpoint details
         self.test_hidden_items_endpoint()
         
-        # Test 9: Create test course for notes testing
+        # Test 13: Create test course for notes testing
         course_id = self.create_test_course()
         if not course_id:
             self.log("ERROR: Cannot test notes without a course", "ERROR")
         else:
-            # Test 10: Course notes CRUD operations
+            # Test 14: Course notes CRUD operations
             self.test_course_notes_crud(course_id)
             
-            # Test 11: Personal course deletion
+            # Test 15: Personal course deletion
             self.test_personal_course_deletion(course_id)
         
         return True
@@ -647,7 +1009,7 @@ def main():
         all_passed = tester.print_summary()
         
         if all_passed:
-            print("\n🎉 All tests passed! Backend notes functionality is working correctly.")
+            print("\n🎉 All tests passed! Backend bug fixes and functionality are working correctly.")
             sys.exit(0)
         else:
             print("\n❌ Some tests failed. Check the details above.")

@@ -15,6 +15,7 @@ import { fr } from 'date-fns/locale';
 import { useSessionStore } from '@mystudyplanner/api-client';
 import { useAnalyticsStore } from '@mystudyplanner/api-client';
 import { useAuthStore } from '@mystudyplanner/api-client';
+import { setSessionRefreshCallback, setCalendarRefreshCallback } from '@mystudyplanner/api-client';
 import { SessionCard } from '@mystudyplanner/shared-ui';
 import { SRSRatingModal } from '@mystudyplanner/shared-ui';
 import { StatsDetailModal } from '@mystudyplanner/shared-ui';
@@ -82,6 +83,17 @@ export default function TodayScreen() {
     }
     setWeekSessions(sessionsMap);
   };
+
+  // Setup callbacks for session refresh when courses are added/updated
+  useEffect(() => {
+    setSessionRefreshCallback(async () => {
+      await fetchTodaySessions();
+      await fetchLateSessions();
+    });
+    setCalendarRefreshCallback(async (month: number, year: number) => {
+      await fetchCalendarData(month, year);
+    });
+  }, [fetchTodaySessions, fetchLateSessions, fetchCalendarData]);
 
   useEffect(() => {
     loadData();
