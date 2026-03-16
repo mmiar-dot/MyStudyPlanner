@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '../../src/store/authStore';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');

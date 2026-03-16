@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
-import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '../../src/store/authStore';
 import { useAnalyticsStore } from '@mystudyplanner/api-client';
 import { useEventStore } from '@mystudyplanner/api-client';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
@@ -98,11 +98,16 @@ export default function ProfileScreen() {
     setShowLogoutModal(false);
     try {
       await logout();
-    } finally {
-      // Force immediate navigation to login screen
-      // Use while(true) pattern to ensure navigation completes
-      router.replace('/login');
+      // Clear any cached state
+    } catch (error) {
+      console.error('Logout error:', error);
     }
+    // Force navigation to login screen after logout
+    // The _layout.tsx will also handle this via isAuthenticated change,
+    // but we force it here to ensure immediate feedback
+    setTimeout(() => {
+      router.replace('/login');
+    }, 100);
   };
 
   const handleAddICS = async () => {
@@ -231,10 +236,10 @@ export default function ProfileScreen() {
         <ProfilePhotoManager
           currentPhoto={user?.profile_photo}
           photoType={user?.photo_type}
-          userName={user?.name || 'U'}
+          userName={(user?.name?.trim() ? user.name : user?.email?.split('@')[0]) || 'U'}
           onPhotoUpdated={handlePhotoUpdated}
         />
-        <Text style={[styles.name, isDesktop && styles.nameDesktop]}>{user?.name || 'Utilisateur'}</Text>
+        <Text style={[styles.name, isDesktop && styles.nameDesktop]}>{(user?.name?.trim() ? user.name : user?.email?.split('@')[0]) || 'Utilisateur'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
         {isAdmin && (
           <View style={styles.adminBadge}>

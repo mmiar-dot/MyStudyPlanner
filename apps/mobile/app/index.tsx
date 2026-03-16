@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useAuthStore } from '@mystudyplanner/api-client';
+import { useAuthStore } from '../src/store/authStore';
 
 export default function Index() {
   const { isAuthenticated } = useAuthStore();
