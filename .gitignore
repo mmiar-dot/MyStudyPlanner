@@ -1,119 +1,72 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# IDE and editors
-.idea/
-.vscode/
-
 # Dependencies
 node_modules/
-/node_modules
-/.pnp
+.pnp
 .pnp.js
-.yarn/install-state.gz
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-next-env.d.ts
-*.tsbuildinfo
-
-# Production builds
-/build
+# Expo
+.expo/
 dist/
-dist
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
 
-# Environment files (comprehensive coverage)
+# Metro
+.metro-cache/
 
-*token.json*
-*credentials.json*
+# Native builds
+*.hprof
+*.ipa
+*.apk
+*.aab
+android/
+ios/
 
-# Logs and debug files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-dump.rdb
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
 
-# System files
-.DS_Store
-*.pem
+# Tauri
+apps/desktop/src-tauri/target/
 
 # Python
 __pycache__/
-*pyc*
+*.py[cod]
+*$py.class
+.Python
 venv/
-.venv/
+env/
+*.egg-info/
 
-# Development tools
-chainlit.md
-.chainlit
-.ipynb_checkpoints/
-.ac
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Deployment
-.vercel
+# OS
+.DS_Store
+Thumbs.db
 
-# Data and databases
-agenthub/agents/youtube/db
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
+# Testing
+coverage/
+.nyc_output/
 
-# Build caches
-.cache/
+# Build artifacts
+build/
+*.tsbuildinfo
 
-# Mobile development
-android-sdk/ -e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+# Misc
+*.local
+test_result.md
