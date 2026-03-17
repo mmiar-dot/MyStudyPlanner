@@ -6,13 +6,25 @@ import Constants from 'expo-constants';
 
 // Get backend URL from multiple sources for reliability
 const getBackendUrl = (): string => {
-  // For web preview on Emergent, use relative API path (proxied to backend)
+  // For web/desktop builds
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    // In web mode, use relative URL which will be proxied
-    // This allows the preview to use the local backend
     const hostname = window.location?.hostname || '';
-    if (hostname.includes('preview.emergentagent.com') || hostname === 'localhost') {
-      return ''; // Empty string means relative URL, will be prefixed with origin
+    const protocol = window.location?.protocol || '';
+    
+    // Tauri desktop app uses tauri:// or https://tauri.localhost
+    const isTauri = protocol === 'tauri:' || 
+                    hostname === 'tauri.localhost' ||
+                    hostname === 'localhost' ||
+                    (typeof window !== 'undefined' && '__TAURI__' in window);
+    
+    // Emergent preview - use relative URL (proxied)
+    if (hostname.includes('preview.emergentagent.com')) {
+      return ''; // Relative URL, will be prefixed with origin
+    }
+    
+    // Tauri desktop or localhost - use production backend directly
+    if (isTauri || hostname === 'localhost') {
+      return 'https://mystudyplanner-production.up.railway.app';
     }
   }
 
