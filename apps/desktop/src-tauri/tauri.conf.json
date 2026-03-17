@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../../mobile/dist",
     "devUrl": "http://localhost:8081",
-    "beforeDevCommand": "cd ../mobile && npx expo start --web",
-    "beforeBuildCommand": "cd ../mobile && npx expo export"
+    "beforeDevCommand": "cd ../mobile && npx expo start --web --port 8081",
+    "beforeBuildCommand": "cd ../mobile && npx expo export -p web"
   },
   "app": {
     "windows": [
