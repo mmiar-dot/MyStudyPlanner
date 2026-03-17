@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "MyStudyPlanner",
-  "version": "1.1.4",
+  "version": "1.1.6",
   "identifier": "com.miaropiret.mystudyplanner",
   "build": {
     "frontendDist": "../../mobile/dist",
@@ -34,7 +34,6 @@
       "icons/icon.ico"
     ],
     "macOS": {
-      "signingIdentity": "C9B735CE05D98FE81C8EB32FB246C8657C115B86",
       "entitlements": "./Entitlements.plist",
       "hardenedRuntime": true
     }
