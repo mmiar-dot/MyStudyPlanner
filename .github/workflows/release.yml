@@ -32,11 +32,11 @@ jobs:
 
       - name: Install mobile dependencies
         working-directory: apps/mobile
-        run: npm ci
+        run: npm install
 
       - name: Install desktop dependencies
         working-directory: apps/desktop
-        run: npm ci
+        run: npm install
 
       - name: Build web export (Expo)
         working-directory: apps/mobile
