@@ -158,12 +158,26 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
 
   createPersonalCourse: async (title: string, parentId?: string | null, description?: string, color?: string) => {
     try {
-      await api.post('/user/courses', {
+      const response = await api.post('/user/courses', {
         title,
         parent_id: parentId || null,
         description,
         color: color || '#3B82F6',
       });
+      
+      // Get the created course ID from response and save color
+      const createdCourse = response.data;
+      const courseId = createdCourse?.id || createdCourse?.item_id;
+      const courseColor = color || '#3B82F6';
+      
+      // Save color immediately to user colors
+      if (courseId && courseColor) {
+        await api.post('/user/colors', { item_id: courseId, color: courseColor });
+        set((state) => ({
+          itemColors: { ...state.itemColors, [courseId]: courseColor }
+        }));
+      }
+      
       await get().fetchAllItems();
       
       // Refresh sessions and calendar to show the new course

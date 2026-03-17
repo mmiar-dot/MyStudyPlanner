@@ -24,6 +24,7 @@ import { fr } from 'date-fns/locale';
 import { useSessionStore } from '@mystudyplanner/api-client';
 import { useAnalyticsStore } from '@mystudyplanner/api-client';
 import { useEventStore, CalendarEvent } from '@mystudyplanner/api-client';
+import { setCalendarRefreshCallback } from '@mystudyplanner/api-client';
 import { SessionCard } from '@mystudyplanner/shared-ui';
 import { SRSRatingModal } from '@mystudyplanner/shared-ui';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
@@ -111,6 +112,15 @@ export default function CalendarScreen() {
   useEffect(() => {
     loadDaySessions();
   }, [selectedDate]);
+
+  // Register calendar refresh callback for when courses are added
+  useEffect(() => {
+    setCalendarRefreshCallback(async (month: number, year: number) => {
+      await loadMonthData();
+      await loadDaySessions();
+    });
+    return () => setCalendarRefreshCallback(null);
+  }, [loadMonthData, loadDaySessions]);
 
   const onRefresh = async () => {
     setRefreshing(true);

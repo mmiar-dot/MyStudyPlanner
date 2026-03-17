@@ -12,6 +12,7 @@ import {
   Alert,
   useWindowDimensions,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -767,7 +768,10 @@ export default function CoursesScreen() {
 
       {/* Add Course Modal */}
       <Modal visible={showAddCourse} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nouveau cours</Text>
@@ -814,7 +818,7 @@ export default function CoursesScreen() {
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Add Section Modal */}

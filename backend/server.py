@@ -516,10 +516,28 @@ async def apple_auth(auth_data: AppleAuthRequest):
             user = await db.users.find_one({"email": auth_data.email})
             if user:
                 # Link existing account with Apple
+                update_data = {"apple_id": auth_data.user_id}
+                # Also update name if provided and current name is empty or default
+                if auth_data.full_name and auth_data.full_name.strip():
+                    current_name = user.get("name", "")
+                    if not current_name or current_name == "Utilisateur" or current_name.startswith("apple_"):
+                        update_data["name"] = auth_data.full_name.strip()
                 await db.users.update_one(
                     {"id": user["id"]},
-                    {"$set": {"apple_id": auth_data.user_id}}
+                    {"$set": update_data}
                 )
+                # Refresh user data after update
+                user = await db.users.find_one({"id": user["id"]})
+        
+        # If user exists and name is provided, update name if it's currently default
+        if user and auth_data.full_name and auth_data.full_name.strip():
+            current_name = user.get("name", "")
+            if not current_name or current_name == "Utilisateur" or current_name.startswith("apple_"):
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"name": auth_data.full_name.strip()}}
+                )
+                user["name"] = auth_data.full_name.strip()
         
         # Create new user if doesn't exist
         if not user:
@@ -527,7 +545,7 @@ async def apple_auth(auth_data: AppleAuthRequest):
             # Apple sometimes hides email, generate a placeholder if needed
             email = auth_data.email or f"apple_{auth_data.user_id[:8]}@privaterelay.appleid.com"
             # Use provided name or extract from email
-            user_name = auth_data.full_name if auth_data.full_name and auth_data.full_name.strip() else email.split("@")[0].capitalize()
+            user_name = auth_data.full_name if auth_data.full_name and auth_data.full_name.strip() else email.split("@")[0].replace("_", " ").title()
             user = {
                 "id": user_id,
                 "email": email,
@@ -542,10 +560,15 @@ async def apple_auth(auth_data: AppleAuthRequest):
             logger.info(f"New Apple user created: {email}")
         
         token = create_access_token({"sub": user["id"]})
+        # Fallback for name: use email prefix if name is empty
+        user_name = user.get("name")
+        if not user_name or not user_name.strip() or user_name == "Utilisateur":
+            user_name = user["email"].split("@")[0].replace("_", " ").title()
+        
         user_response = {
             "id": user["id"],
             "email": user["email"],
-            "name": user.get("name", "Utilisateur"),
+            "name": user_name,
             "role": user["role"],
             "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
             "settings": user.get("settings", {})
