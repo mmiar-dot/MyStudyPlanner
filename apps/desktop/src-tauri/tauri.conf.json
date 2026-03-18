@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "MyStudyPlanner",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "identifier": "com.miaropiret.mystudyplanner",
   "build": {
     "frontendDist": "../../mobile/dist",
@@ -40,10 +40,7 @@
     "macOS": {
       "entitlements": "./Entitlements.plist",
       "hardenedRuntime": true,
-      "minimumSystemVersion": "10.13",
-      "notarize": {
-        "teamId": "M86792U2GY"
-      }
+      "minimumSystemVersion": "10.13"
     },
     "windows": {
       "webviewInstallMode": {
