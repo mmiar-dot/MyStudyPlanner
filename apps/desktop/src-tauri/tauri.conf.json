@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "MyStudyPlanner",
-  "version": "1.1.9",
+  "version": "1.2.0",
   "identifier": "com.miaropiret.mystudyplanner",
   "build": {
     "frontendDist": "../../mobile/dist",
@@ -44,7 +44,7 @@
       "endpoints": [
         "https://github.com/mmiar-dot/MyStudyPlanner/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFQkJCMTkyRjZBNzE4RkIKUldUN0dLZjJrckc3TGtJVGJJVElZeTZvU0tMaFdNTHo5RDROUUhjcGFESUJxQjJ2Mm1hOUtUNGYK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0QzI2MUI2QTI2N0VGMUUKUldRZTcyZWl0bUhDdE1KQW5JSDJYZUpDdGRzYzJTOUM3MUs5ZGFuMHdVV21vYXdSZkVwVDMrVEUK"
     }
   }
 }
