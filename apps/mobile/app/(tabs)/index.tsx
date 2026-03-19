@@ -131,8 +131,8 @@ export default function TodayScreen() {
     }
   };
 
-  const pendingSessions = todaySessions.filter(s => s.status === 'pending');
-  const completedSessions = todaySessions.filter(s => s.status === 'completed');
+  const pendingSessions = (todaySessions || []).filter(s => s.status === 'pending');
+  const completedSessions = (todaySessions || []).filter(s => s.status === 'completed');
 
   const getWeekDayData = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
@@ -421,7 +421,7 @@ export default function TodayScreen() {
           {/* Sessions Column (center on desktop) */}
           <View style={[styles.leftColumn, isDesktop && styles.sessionsColumnDesktop]}>
             {/* Late Sessions */}
-            {lateSessions.length > 0 && (
+            {(lateSessions || []).length > 0 && (
               <View style={[styles.section, { backgroundColor: colors.surface }]}>
                 <TouchableOpacity
                   style={styles.sectionHeader}
@@ -432,7 +432,7 @@ export default function TodayScreen() {
                       <Ionicons name="warning" size={18} color="#FFFFFF" />
                     </View>
                     <Text style={styles.sectionTitleLate}>
-                      Retards ({lateSessions.length})
+                      Retards ({(lateSessions || []).length})
                     </Text>
                   </View>
                   <Ionicons
@@ -444,7 +444,7 @@ export default function TodayScreen() {
 
                 {showLateSessions && (
                   <View style={styles.sessionsList}>
-                    {lateSessions.map((session) => (
+                    {(lateSessions || []).map((session) => (
                       <SessionCard
                         key={session.id}
                         session={session}
@@ -582,7 +582,7 @@ export default function TodayScreen() {
         statType={statsType}
         progress={{
           todayCompleted: progress?.today_completed || 0,
-          todayTotal: todaySessions.length,
+          todayTotal: (todaySessions || []).length,
           lateCount: progress?.late_sessions || 0,
           totalCompleted: progress?.completed_sessions || 0,
           currentStreak: progress?.streak || 0,

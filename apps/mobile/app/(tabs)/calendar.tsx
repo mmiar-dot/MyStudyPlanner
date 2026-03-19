@@ -259,7 +259,7 @@ export default function CalendarScreen() {
   };
 
   // Get events for selected date (combine personal + ICS events)
-  const dayEvents = allCalendarEvents.filter(e => {
+  const dayEvents = (allCalendarEvents || []).filter(e => {
     const eventDate = e.start_time.split('T')[0];
     return eventDate === selectedDate;
   });
@@ -289,7 +289,7 @@ export default function CalendarScreen() {
   });
 
   // Mark all calendar event dates (personal + ICS)
-  allCalendarEvents.forEach(event => {
+  (allCalendarEvents || []).forEach(event => {
     const eventDate = event.start_time.split('T')[0];
     if (markedDates[eventDate]) {
       markedDates[eventDate].dots = [
@@ -323,8 +323,8 @@ export default function CalendarScreen() {
     markedDates[today] = { today: true };
   }
 
-  const pendingSessions = daySessions.filter(s => s.status !== 'completed');
-  const completedSessions = daySessions.filter(s => s.status === 'completed');
+  const pendingSessions = (daySessions || []).filter(s => s.status !== 'completed');
+  const completedSessions = (daySessions || []).filter(s => s.status === 'completed');
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -520,7 +520,7 @@ export default function CalendarScreen() {
             )}
 
             {/* Study Sessions */}
-            {daySessions.length === 0 && dayEvents.length === 0 ? (
+            {(daySessions || []).length === 0 && (dayEvents || []).length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="calendar-outline" size={40} color="#9CA3AF" />
                 <Text style={styles.emptyText}>Aucune session ni événement</Text>
