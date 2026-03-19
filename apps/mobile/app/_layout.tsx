@@ -99,6 +99,27 @@ export default function RootLayout() {
     runUpdater();
   }, []);
 
+  // Devtools keyboard shortcut for Tauri (Cmd+Option+I on macOS)
+  useEffect(() => {
+    if (!isTauriRuntime() || Platform.OS !== 'web') return;
+    
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      // Cmd+Option+I on macOS or Ctrl+Alt+I on Windows/Linux
+      if ((event.metaKey || event.ctrlKey) && event.altKey && event.key === 'i') {
+        event.preventDefault();
+        try {
+          const { emit } = await import('@tauri-apps/api/event');
+          await emit('toggle-devtools');
+        } catch (e) {
+          console.log('Could not toggle devtools:', e);
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // 2) Auth init - with timeout to prevent infinite loading
   useEffect(() => {
     const init = async () => {

@@ -73,7 +73,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
       set({ isLoading: true });
       const url = parentId ? `/catalog?parent_id=${parentId}` : '/catalog';
       const response = await api.get<CatalogItem[]>(url);
-      set({ items: response.data, isLoading: false });
+      set({ items: response.data || [], isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
@@ -83,7 +83,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get<CatalogItem[]>('/catalog/all');
-      set({ allItems: response.data, isLoading: false });
+      set({ allItems: response.data || [], isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
@@ -92,7 +92,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   fetchUserSettings: async () => {
     try {
       const response = await api.get<UserItemSettings[]>('/user/items/settings');
-      set({ userSettings: response.data });
+      set({ userSettings: response.data || [] });
     } catch (error: any) {
       set({ error: error.message });
     }
@@ -101,7 +101,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   fetchCustomSections: async () => {
     try {
       const response = await api.get<CustomSection[]>('/user/sections');
-      set({ customSections: response.data });
+      set({ customSections: response.data || [] });
     } catch (error: any) {
       set({ error: error.message });
     }
@@ -110,7 +110,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   fetchItemColors: async () => {
     try {
       const response = await api.get<Record<string, string>>('/user/colors');
-      set({ itemColors: response.data });
+      set({ itemColors: response.data || {} });
     } catch (error: any) {
       set({ error: error.message });
     }
@@ -119,7 +119,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   fetchItemSections: async () => {
     try {
       const response = await api.get<Record<string, string>>('/user/items/sections');
-      set({ itemSections: response.data });
+      set({ itemSections: response.data || {} });
     } catch (error: any) {
       set({ error: error.message });
     }
