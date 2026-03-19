@@ -7,6 +7,7 @@ const lightColors = {
   background: '#F9FAFB',
   surface: '#FFFFFF',
   surfaceVariant: '#F3F4F6',
+  surfaceElevated: '#FFFFFF',
   text: '#111827',
   textSecondary: '#6B7280',
   textTertiary: '#9CA3AF',
@@ -14,25 +15,31 @@ const lightColors = {
   error: '#EF4444',
   success: '#10B981',
   warning: '#F59E0B',
+  card: '#FFFFFF',
+  cardBorder: '#E5E7EB',
 };
 
 const darkColors = {
-  background: '#111827',
-  surface: '#1F2937',
-  surfaceVariant: '#374151',
-  text: '#F9FAFB',
-  textSecondary: '#D1D5DB',
-  textTertiary: '#9CA3AF',
-  border: '#374151',
-  error: '#F87171',
-  success: '#34D399',
-  warning: '#FBBF24',
+  background: '#0F172A',
+  surface: '#1E293B',
+  surfaceVariant: '#334155',
+  surfaceElevated: '#1E293B',
+  text: '#F8FAFC',
+  textSecondary: '#CBD5E1',
+  textTertiary: '#94A3B8',
+  border: '#475569',
+  error: '#FB7185',
+  success: '#4ADE80',
+  warning: '#FCD34D',
+  card: '#1E293B',
+  cardBorder: '#334155',
 };
 
 export interface ThemeColors {
   background: string;
   surface: string;
   surfaceVariant: string;
+  surfaceElevated: string;
   text: string;
   textSecondary: string;
   textTertiary: string;
@@ -42,6 +49,8 @@ export interface ThemeColors {
   warning: string;
   primary: string;
   primaryLight: string;
+  card: string;
+  cardBorder: string;
 }
 
 interface ThemeContextValue {
@@ -88,7 +97,11 @@ export const useTheme = () => {
     // Return default values if not in provider
     return {
       isDark: false,
-      colors: { ...lightColors, primary: '#3B82F6', primaryLight: '#3B82F620' },
+      colors: { 
+        ...lightColors, 
+        primary: '#3B82F6', 
+        primaryLight: '#3B82F620',
+      },
       accentColor: '#3B82F6',
     };
   }

@@ -458,7 +458,7 @@ export default function TodayScreen() {
             )}
 
             {/* Today's Sessions */}
-            <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <View style={[styles.sessionsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <View style={[styles.sectionIcon, { backgroundColor: colors.primaryLight }]}>
@@ -471,8 +471,10 @@ export default function TodayScreen() {
               </View>
 
               {pendingSessions.length === 0 && completedSessions.length === 0 ? (
-                <View style={[styles.emptyState, { backgroundColor: colors.surfaceVariant }]}>
-                  <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+                <View style={[styles.emptyState, { backgroundColor: isDark ? colors.surfaceVariant : colors.surfaceVariant }]}>
+                  <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
+                    <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+                  </View>
                   <Text style={[styles.emptyTitle, { color: colors.text }]}>Aucune session prévue</Text>
                   <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                     Ajoutez des cours à réviser depuis l'onglet Cours
@@ -495,13 +497,13 @@ export default function TodayScreen() {
 
             {/* Completed Today */}
             {completedSessions.length > 0 && (
-              <View style={[styles.section, { backgroundColor: colors.surface }]}>
+              <View style={[styles.sessionsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionTitleRow}>
                     <View style={[styles.sectionIcon, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
                       <Ionicons name="checkmark" size={18} color="#10B981" />
                     </View>
-                    <Text style={styles.sectionTitleCompleted}>
+                    <Text style={[styles.sectionTitle, { color: colors.success }]}>
                       Terminées ({completedSessions.length})
                     </Text>
                   </View>
@@ -677,6 +679,12 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
   },
+  sessionsCard: {
+    marginBottom: 24,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -723,21 +731,27 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    padding: 40,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    padding: 32,
+    borderRadius: 12,
+  },
+  emptyIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#1F2937',
-    marginTop: 16,
+    marginTop: 12,
   },
   emptyText: {
     fontSize: 14,
-    color: '#6B7280',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 6,
+    lineHeight: 20,
   },
   // Week Calendar
   weekCalendarCard: {

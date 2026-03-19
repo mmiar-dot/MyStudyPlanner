@@ -7,6 +7,7 @@ import { useSessionStore } from '../store/sessionStore';
 import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '../services/api';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SessionCardProps {
   session: StudySession;
@@ -24,6 +25,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onStatusChange,
 }) => {
   const { uncompleteSession, rescheduleSession, courseNotes, fetchCourseNotes, addCourseNote } = useSessionStore();
+  const { isDark, colors, accentColor } = useTheme();
   
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -184,7 +186,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   return (
     <>
       <TouchableOpacity 
-        style={[styles.card, isCompleted && styles.cardCompleted, isLate && styles.cardLate]}
+        style={[
+          styles.card, 
+          { backgroundColor: colors.card, borderColor: colors.cardBorder },
+          isCompleted && { backgroundColor: isDark ? '#064E3B' : '#F0FDF4', opacity: 0.9 }, 
+          isLate && styles.cardLate
+        ]}
         onPress={() => setShowOptionsModal(true)}
         activeOpacity={0.7}
       >
@@ -193,20 +200,20 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </View>
         
         <View style={styles.content}>
-          <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }, isCompleted && styles.titleCompleted]} numberOfLines={2}>
             {session.item_title}
           </Text>
           
           {/* Show notes indicator */}
           {notes.length > 0 && (
             <View style={styles.notesIndicator}>
-              <Ionicons name="document-text" size={12} color="#F59E0B" />
-              <Text style={styles.notesCount}>{notes.length} note(s)</Text>
+              <Ionicons name="document-text" size={12} color={colors.warning} />
+              <Text style={[styles.notesCount, { color: colors.warning }]}>{notes.length} note(s)</Text>
             </View>
           )}
           
           {session.scheduled_time && (
-            <Text style={styles.time}>
+            <Text style={[styles.time, { color: colors.textSecondary }]}>
               <Ionicons name="time-outline" size={12} /> {session.scheduled_time}
             </Text>
           )}
@@ -220,13 +227,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               onComplete(session);
             }}
           >
-            <Ionicons name="ellipse-outline" size={32} color={isLate ? '#EF4444' : '#3B82F6'} />
+            <Ionicons name="ellipse-outline" size={32} color={isLate ? colors.error : accentColor} />
           </TouchableOpacity>
         )}
 
         {isCompleted && (
           <View style={styles.completedIcon}>
-            <Ionicons name="checkmark-circle" size={28} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={28} color={colors.success} />
           </View>
         )}
       </TouchableOpacity>
@@ -234,11 +241,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Options Modal */}
       <Modal visible={showOptionsModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{session.item_title}</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{session.item_title}</Text>
               <TouchableOpacity onPress={() => setShowOptionsModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -248,41 +255,42 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   {isCompleted ? 'Terminée' : isLate ? 'En retard' : isSkipped ? 'Ignorée' : 'En attente'}
                 </Text>
               </View>
-              <Text style={styles.sessionDate}>
+              <Text style={[styles.sessionDate, { color: colors.textSecondary }]}>
                 Planifiée le {format(new Date(session.scheduled_date), 'dd MMMM yyyy', { locale: fr })}
               </Text>
             </View>
 
             {/* Course Notes Section */}
-            <View style={styles.notesSection}>
+            <View style={[styles.notesSection, { backgroundColor: isDark ? '#422006' : '#FFFBEB' }]}>
               <View style={styles.notesSectionHeader}>
-                <Ionicons name="document-text-outline" size={18} color="#F59E0B" />
-                <Text style={styles.notesSectionTitle}>Notes du cours</Text>
+                <Ionicons name="document-text-outline" size={18} color={colors.warning} />
+                <Text style={[styles.notesSectionTitle, { color: isDark ? '#FBBF24' : '#92400E' }]}>Notes du cours</Text>
               </View>
               
               {notes.length > 0 ? (
                 <ScrollView style={styles.notesList} nestedScrollEnabled>
                   {notes.map((note) => (
-                    <View key={note.id} style={styles.noteItem}>
+                    <View key={note.id} style={[styles.noteItem, { backgroundColor: colors.surfaceVariant }]}>
                       {editingNoteId === note.id ? (
                         <View style={styles.editNoteContainer}>
                           <TextInput
-                            style={styles.editNoteInput}
+                            style={[styles.editNoteInput, { backgroundColor: colors.surface, borderColor: accentColor, color: colors.text }]}
                             value={editNoteContent}
                             onChangeText={setEditNoteContent}
                             multiline
                             autoFocus
+                            placeholderTextColor={colors.textTertiary}
                           />
                           <View style={styles.editNoteActions}>
                             <TouchableOpacity 
                               onPress={() => setEditingNoteId(null)}
-                              style={styles.editNoteCancel}
+                              style={[styles.editNoteCancel, { backgroundColor: colors.surfaceVariant }]}
                             >
-                              <Text style={styles.editNoteCancelText}>Annuler</Text>
+                              <Text style={[styles.editNoteCancelText, { color: colors.textSecondary }]}>Annuler</Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
                               onPress={() => handleUpdateNote(note.id)}
-                              style={styles.editNoteSave}
+                              style={[styles.editNoteSave, { backgroundColor: accentColor }]}
                             >
                               <Text style={styles.editNoteSaveText}>Sauvegarder</Text>
                             </TouchableOpacity>
@@ -290,9 +298,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                         </View>
                       ) : (
                         <>
-                          <Text style={styles.noteContent}>{note.content}</Text>
+                          <Text style={[styles.noteContent, { color: colors.text }]}>{note.content}</Text>
                           <View style={styles.noteFooter}>
-                            <Text style={styles.noteDate}>
+                            <Text style={[styles.noteDate, { color: colors.textTertiary }]}>
                               {format(new Date(note.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
                             </Text>
                             <View style={styles.noteActions}>
@@ -303,13 +311,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                                 }}
                                 style={styles.noteActionButton}
                               >
-                                <Ionicons name="pencil" size={16} color="#3B82F6" />
+                                <Ionicons name="pencil" size={16} color={accentColor} />
                               </TouchableOpacity>
                               <TouchableOpacity 
                                 onPress={() => handleDeleteNote(note.id)}
                                 style={styles.noteActionButton}
                               >
-                                <Ionicons name="trash" size={16} color="#EF4444" />
+                                <Ionicons name="trash" size={16} color={colors.error} />
                               </TouchableOpacity>
                             </View>
                           </View>
@@ -319,14 +327,14 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   ))}
                 </ScrollView>
               ) : (
-                <Text style={styles.noNotes}>Aucune note pour ce cours</Text>
+                <Text style={[styles.noNotes, { color: colors.textTertiary }]}>Aucune note pour ce cours</Text>
               )}
 
               <View style={styles.addNoteRow}>
                 <TextInput
-                  style={styles.noteInput}
+                  style={[styles.noteInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                   placeholder="Ajouter une note..."
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={colors.textTertiary}
                   value={newNoteContent}
                   onChangeText={setNewNoteContent}
                   multiline
@@ -337,16 +345,16 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   disabled={!newNoteContent.trim() || isLoading}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color="#3B82F6" />
+                    <ActivityIndicator size="small" color={accentColor} />
                   ) : (
-                    <Ionicons name="add-circle" size={28} color="#3B82F6" />
+                    <Ionicons name="add-circle" size={28} color={accentColor} />
                   )}
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Actions */}
-            <View style={styles.actions}>
+            <View style={[styles.actions, { borderTopColor: colors.border }]}>
               {!isCompleted && !isSkipped && (
                 <TouchableOpacity 
                   style={styles.actionButton}
@@ -355,8 +363,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onComplete(session);
                   }}
                 >
-                  <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                  <Text style={[styles.actionText, { color: '#10B981' }]}>Terminer</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                  <Text style={[styles.actionText, { color: colors.success }]}>Terminer</Text>
                 </TouchableOpacity>
               )}
 
@@ -366,8 +374,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   onPress={handleUncomplete}
                   disabled={isLoading}
                 >
-                  <Ionicons name="refresh" size={20} color="#F59E0B" />
-                  <Text style={[styles.actionText, { color: '#F59E0B' }]}>Annuler</Text>
+                  <Ionicons name="refresh" size={20} color={colors.warning} />
+                  <Text style={[styles.actionText, { color: colors.warning }]}>Annuler</Text>
                 </TouchableOpacity>
               )}
 
@@ -379,8 +387,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   setTimeout(() => setShowRescheduleModal(true), 100);
                 }}
               >
-                <Ionicons name="calendar" size={20} color="#3B82F6" />
-                <Text style={[styles.actionText, { color: '#3B82F6' }]}>Déplacer</Text>
+                <Ionicons name="calendar" size={20} color={accentColor} />
+                <Text style={[styles.actionText, { color: accentColor }]}>Déplacer</Text>
               </TouchableOpacity>
 
               {!isCompleted && !isSkipped && onSkip && (
@@ -391,8 +399,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onSkip(session);
                   }}
                 >
-                  <Ionicons name="close-circle" size={20} color="#9CA3AF" />
-                  <Text style={[styles.actionText, { color: '#9CA3AF' }]}>Ignorer</Text>
+                  <Ionicons name="close-circle" size={20} color={colors.textTertiary} />
+                  <Text style={[styles.actionText, { color: colors.textTertiary }]}>Ignorer</Text>
                 </TouchableOpacity>
               )}
 
@@ -404,8 +412,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   setShowUpcomingModal(true);
                 }}
               >
-                <Ionicons name="list" size={20} color="#6B7280" />
-                <Text style={[styles.actionText, { color: '#6B7280' }]}>Toutes les sessions</Text>
+                <Ionicons name="list" size={20} color={colors.textSecondary} />
+                <Text style={[styles.actionText, { color: colors.textSecondary }]}>Toutes les sessions</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -415,11 +423,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Reschedule Modal */}
       <Modal visible={showRescheduleModal} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.rescheduleModal}>
+          <View style={[styles.rescheduleModal, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Déplacer la session</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Déplacer la session</Text>
               <TouchableOpacity onPress={() => setShowRescheduleModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -428,37 +436,45 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
-              <Text style={styles.rescheduleLabel}>Dates rapides :</Text>
+              <Text style={[styles.rescheduleLabel, { color: colors.textSecondary }]}>Dates rapides :</Text>
 
               <View style={styles.quickDates}>
                 {quickDates.map((qd) => (
                   <TouchableOpacity
                     key={qd.date}
-                    style={[styles.quickDateButton, selectedDate === qd.date && styles.quickDateSelected]}
+                    style={[
+                      styles.quickDateButton, 
+                      { backgroundColor: colors.surfaceVariant },
+                      selectedDate === qd.date && { backgroundColor: accentColor }
+                    ]}
                     onPress={() => setSelectedDate(qd.date)}
                   >
-                    <Text style={[styles.quickDateText, selectedDate === qd.date && styles.quickDateTextSelected]}>
+                    <Text style={[
+                      styles.quickDateText, 
+                      { color: colors.text },
+                      selectedDate === qd.date && styles.quickDateTextSelected
+                    ]}>
                       {qd.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <Text style={styles.rescheduleLabel}>Ou choisir une date :</Text>
+              <Text style={[styles.rescheduleLabel, { color: colors.textSecondary }]}>Ou choisir une date :</Text>
               
               <TouchableOpacity 
-                style={styles.calendarToggle}
+                style={[styles.calendarToggle, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
                 onPress={() => setShowCalendarPicker(!showCalendarPicker)}
               >
-                <Ionicons name="calendar" size={20} color="#3B82F6" />
-                <Text style={styles.calendarToggleText}>
+                <Ionicons name="calendar" size={20} color={accentColor} />
+                <Text style={[styles.calendarToggleText, { color: colors.text }]}>
                   {format(new Date(selectedDate), 'dd MMMM yyyy', { locale: fr })}
                 </Text>
-                <Ionicons name={showCalendarPicker ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+                <Ionicons name={showCalendarPicker ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textSecondary} />
               </TouchableOpacity>
 
               {showCalendarPicker && (
-                <View style={styles.calendarContainer}>
+                <View style={[styles.calendarContainer, { borderColor: colors.border }]}>
                   <Calendar
                     current={selectedDate}
                     onDayPress={(day: any) => {
@@ -466,14 +482,21 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                       setShowCalendarPicker(false);
                     }}
                     markedDates={{
-                      [selectedDate]: { selected: true, selectedColor: '#3B82F6' },
-                      [session.scheduled_date]: { marked: true, dotColor: '#EF4444' }
+                      [selectedDate]: { selected: true, selectedColor: accentColor },
+                      [session.scheduled_date]: { marked: true, dotColor: colors.error }
                     }}
                     minDate={format(new Date(), 'yyyy-MM-dd')}
                     theme={{
-                      todayTextColor: '#3B82F6',
-                      selectedDayBackgroundColor: '#3B82F6',
-                      arrowColor: '#3B82F6',
+                      backgroundColor: colors.card,
+                      calendarBackground: colors.card,
+                      textSectionTitleColor: colors.textSecondary,
+                      dayTextColor: colors.text,
+                      todayTextColor: accentColor,
+                      selectedDayBackgroundColor: accentColor,
+                      selectedDayTextColor: '#FFFFFF',
+                      monthTextColor: colors.text,
+                      arrowColor: accentColor,
+                      textDisabledColor: colors.textTertiary,
                     }}
                   />
                 </View>
@@ -487,13 +510,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   setShowUpcomingModal(true);
                 }}
               >
-                <Ionicons name="list" size={18} color="#3B82F6" />
-                <Text style={styles.viewUpcomingText}>Voir toutes les sessions de ce cours</Text>
+                <Ionicons name="list" size={18} color={accentColor} />
+                <Text style={[styles.viewUpcomingText, { color: accentColor }]}>Voir toutes les sessions de ce cours</Text>
               </TouchableOpacity>
             </ScrollView>
 
             <TouchableOpacity
-              style={[styles.rescheduleButton, isLoading && styles.buttonDisabled]}
+              style={[styles.rescheduleButton, { backgroundColor: accentColor }, isLoading && styles.buttonDisabled]}
               onPress={handleReschedule}
               disabled={isLoading}
             >
@@ -510,15 +533,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Upcoming Sessions Modal */}
       <Modal visible={showUpcomingModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.upcomingModal}>
+          <View style={[styles.upcomingModal, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Sessions planifiées</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Sessions planifiées</Text>
               <TouchableOpacity onPress={() => setShowUpcomingModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.upcomingSubtitle}>{session.item_title}</Text>
+            <Text style={[styles.upcomingSubtitle, { color: accentColor }]}>{session.item_title}</Text>
 
             <ScrollView style={styles.upcomingList}>
               {upcomingSessions.map((s, idx) => {
@@ -536,34 +559,35 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     key={s.id} 
                     style={[
                       styles.upcomingItem,
+                      { borderBottomColor: colors.border },
                       s.status === 'completed' && styles.upcomingItemCompleted,
-                      isCurrent && styles.upcomingItemCurrent
+                      isCurrent && { backgroundColor: isDark ? accentColor + '30' : '#EBF5FF' }
                     ]}
                   >
                     <View style={[
                       styles.upcomingDot,
-                      { backgroundColor: s.status === 'completed' ? '#10B981' : isPast ? '#EF4444' : isToday ? '#F59E0B' : '#3B82F6' }
+                      { backgroundColor: s.status === 'completed' ? colors.success : isPast ? colors.error : isToday ? colors.warning : accentColor }
                     ]} />
                     <View style={styles.upcomingInfo}>
-                      <Text style={styles.upcomingLabel}>
+                      <Text style={[styles.upcomingLabel, { color: colors.text }]}>
                         {s.j_day !== undefined ? `J${s.j_day}` : s.tour_number ? `Tour ${s.tour_number}` : 'SRS'}
                         {isCurrent && ' (actuel)'}
                       </Text>
-                      <Text style={styles.upcomingDate}>
+                      <Text style={[styles.upcomingDate, { color: colors.textSecondary }]}>
                         {format(new Date(s.scheduled_date), 'dd MMMM yyyy', { locale: fr })}
                         {isToday && ' (aujourd\'hui)'}
                       </Text>
                     </View>
                     <View style={styles.upcomingStatus}>
                       {s.status === 'completed' ? (
-                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                        <Ionicons name="checkmark-circle" size={20} color={colors.success} />
                       ) : s.status === 'skipped' ? (
-                        <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                        <Ionicons name="close-circle" size={20} color={colors.textTertiary} />
                       ) : isPast ? (
-                        <Text style={styles.upcomingLateText}>En retard</Text>
+                        <Text style={[styles.upcomingLateText, { color: colors.error }]}>En retard</Text>
                       ) : (
                         <TouchableOpacity
-                          style={styles.rescheduleArrow}
+                          style={[styles.rescheduleArrow, { backgroundColor: isDark ? accentColor + '30' : '#EBF5FF' }]}
                           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                           onPress={() => {
                             setSessionToReschedule(s);
@@ -571,7 +595,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                             setShowUpcomingCalendar(true);
                           }}
                         >
-                          <Ionicons name="calendar-outline" size={24} color="#3B82F6" />
+                          <Ionicons name="calendar-outline" size={24} color={accentColor} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -588,16 +612,16 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   contentContainerStyle={styles.upcomingCalendarScrollContent}
                   showsVerticalScrollIndicator={false}
                 >
-                  <View style={styles.upcomingCalendarContainer}>
+                  <View style={[styles.upcomingCalendarContainer, { backgroundColor: colors.card }]}>
                     <View style={styles.upcomingCalendarHeader}>
-                      <Text style={styles.upcomingCalendarTitle}>
+                      <Text style={[styles.upcomingCalendarTitle, { color: colors.text }]}>
                         Déplacer {sessionToReschedule.j_day !== undefined ? `J${sessionToReschedule.j_day}` : 'la session'}
                       </Text>
                       <TouchableOpacity onPress={() => {
                         setShowUpcomingCalendar(false);
                         setSessionToReschedule(null);
                       }}>
-                        <Ionicons name="close" size={24} color="#6B7280" />
+                        <Ionicons name="close" size={24} color={colors.textSecondary} />
                       </TouchableOpacity>
                     </View>
                     
@@ -605,29 +629,36 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                       current={rescheduleTargetDate}
                       onDayPress={(day: any) => setRescheduleTargetDate(day.dateString)}
                       markedDates={{
-                        [rescheduleTargetDate]: { selected: true, selectedColor: '#3B82F6' },
-                        [sessionToReschedule.scheduled_date]: { marked: true, dotColor: '#EF4444' }
+                        [rescheduleTargetDate]: { selected: true, selectedColor: accentColor },
+                        [sessionToReschedule.scheduled_date]: { marked: true, dotColor: colors.error }
                       }}
                       minDate={format(new Date(), 'yyyy-MM-dd')}
                       theme={{
-                        todayTextColor: '#3B82F6',
-                        selectedDayBackgroundColor: '#3B82F6',
-                        arrowColor: '#3B82F6',
+                        backgroundColor: colors.card,
+                        calendarBackground: colors.card,
+                        textSectionTitleColor: colors.textSecondary,
+                        dayTextColor: colors.text,
+                        todayTextColor: accentColor,
+                        selectedDayBackgroundColor: accentColor,
+                        selectedDayTextColor: '#FFFFFF',
+                        monthTextColor: colors.text,
+                        arrowColor: accentColor,
+                        textDisabledColor: colors.textTertiary,
                       }}
                     />
 
                     <View style={styles.upcomingCalendarActions}>
                       <TouchableOpacity 
-                        style={styles.upcomingCalendarCancel}
+                        style={[styles.upcomingCalendarCancel, { backgroundColor: colors.surfaceVariant }]}
                         onPress={() => {
                           setShowUpcomingCalendar(false);
                           setSessionToReschedule(null);
                         }}
                       >
-                        <Text style={styles.upcomingCalendarCancelText}>Annuler</Text>
+                        <Text style={[styles.upcomingCalendarCancelText, { color: colors.textSecondary }]}>Annuler</Text>
                       </TouchableOpacity>
                       <TouchableOpacity 
-                        style={[styles.upcomingCalendarConfirm, isLoading && styles.buttonDisabled]}
+                        style={[styles.upcomingCalendarConfirm, { backgroundColor: accentColor }, isLoading && styles.buttonDisabled]}
                         onPress={async () => {
                           if (!sessionToReschedule) return;
                           setIsLoading(true);
