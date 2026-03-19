@@ -6,12 +6,24 @@ import Constants from 'expo-constants';
 
 // Get backend URL from multiple sources for reliability
 const getBackendUrl = (): string => {
-  // For web preview on Emergent, use relative API path (proxied to backend)
+  // Production Railway URL
+  const PRODUCTION_URL = 'https://mystudyplanner-production.up.railway.app';
+  
+  // Check if running in Tauri desktop app
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    // In web mode, use relative URL which will be proxied
-    // This allows the preview to use the local backend
+    // Tauri apps have __TAURI__ or __TAURI_INTERNALS__ on window
+    const isTauri = !!(window as any).__TAURI__ || !!(window as any).__TAURI_INTERNALS__;
+    
+    if (isTauri) {
+      // Tauri app always uses production backend
+      console.log('API URL (Tauri):', PRODUCTION_URL);
+      return PRODUCTION_URL;
+    }
+    
+    // For web preview on Emergent, use relative API path (proxied to backend)
     const hostname = window.location?.hostname || '';
     if (hostname.includes('preview.emergentagent.com') || hostname === 'localhost') {
+      console.log('API URL (Web Preview): relative');
       return ''; // Empty string means relative URL, will be prefixed with origin
     }
   }
@@ -19,16 +31,19 @@ const getBackendUrl = (): string => {
   // 1. Try expo-constants (works in EAS builds)
   const expoExtra = Constants.expoConfig?.extra;
   if (expoExtra?.backendUrl) {
+    console.log('API URL (Expo Config):', expoExtra.backendUrl);
     return expoExtra.backendUrl;
   }
   
   // 2. Try environment variable (works in development)
   if (process.env.EXPO_PUBLIC_BACKEND_URL) {
+    console.log('API URL (Env):', process.env.EXPO_PUBLIC_BACKEND_URL);
     return process.env.EXPO_PUBLIC_BACKEND_URL;
   }
   
   // 3. Fallback to production URL
-  return 'https://mystudyplanner-production.up.railway.app';
+  console.log('API URL (Fallback):', PRODUCTION_URL);
+  return PRODUCTION_URL;
 };
 
 const BACKEND_URL = getBackendUrl();
