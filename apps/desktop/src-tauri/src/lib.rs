@@ -1,20 +1,11 @@
-use tauri::Manager;
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
-    .setup(|app| {
+    .setup(|_app| {
       // Enable devtools in debug mode - auto-opens on launch
       #[cfg(debug_assertions)]
       {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-        
-        // Open devtools on the main window in debug mode
-        if let Some(window) = app.get_webview_window("main") {
+        if let Some(window) = _app.get_webview_window("main") {
           let _ = window.open_devtools();
         }
       }

@@ -73,7 +73,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   fetchSessionsByDate: async (date: string) => {
     try {
       const response = await api.get<StudySession[]>(`/sessions?date=${date}`);
-      return response.data;
+      return response.data || [];
     } catch (error: any) {
       return [];
     }
@@ -137,7 +137,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     try {
       const response = await api.get<CourseNote[]>(`/courses/${itemId}/notes`);
       set((state) => ({
-        courseNotes: { ...state.courseNotes, [itemId]: response.data }
+        courseNotes: { ...state.courseNotes, [itemId]: response.data || [] }
       }));
     } catch (error: any) {
       set({ error: error.message });

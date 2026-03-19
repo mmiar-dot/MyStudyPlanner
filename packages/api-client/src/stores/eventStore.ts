@@ -154,7 +154,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     try {
       const response = await api.get<ICSEvent[]>(`/ics/${subscriptionId}/events`);
       set((state) => ({
-        icsEvents: { ...state.icsEvents, [subscriptionId]: response.data },
+        icsEvents: { ...state.icsEvents, [subscriptionId]: response.data || [] },
       }));
     } catch (error: any) {
       set({ error: error.message });
