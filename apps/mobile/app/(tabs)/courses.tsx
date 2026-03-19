@@ -448,8 +448,9 @@ export default function CoursesScreen() {
                 key={section.id}
                 style={[
                   styles.filterButton, 
-                  activeFilter === section.id && styles.filterButtonActive,
-                  { borderColor: activeFilter === section.id ? section.color : '#E5E7EB' }
+                  { backgroundColor: colors.surfaceVariant },
+                  activeFilter === section.id && { backgroundColor: section.color + '20' },
+                  { borderColor: activeFilter === section.id ? section.color : colors.border }
                 ]}
                 onPress={() => setActiveFilter(section.id)}
                 onLongPress={() => {
@@ -461,7 +462,7 @@ export default function CoursesScreen() {
                 }}
               >
                 <View style={[styles.sectionDot, { backgroundColor: section.color }]} />
-                <Text style={[styles.filterText, activeFilter === section.id && { color: section.color }]}>
+                <Text style={[styles.filterText, { color: colors.textSecondary }, activeFilter === section.id && { color: section.color }]}>
                   {section.name}
                 </Text>
                 {/* Desktop edit button */}
@@ -477,7 +478,7 @@ export default function CoursesScreen() {
                       ]);
                     }}
                   >
-                    <Ionicons name="ellipsis-vertical" size={14} color="#9CA3AF" />
+                    <Ionicons name="ellipsis-vertical" size={14} color={colors.textTertiary} />
                   </TouchableOpacity>
                 )}
               </TouchableOpacity>
@@ -485,7 +486,7 @@ export default function CoursesScreen() {
 
             {/* Add Section Button */}
             <TouchableOpacity
-              style={[styles.addSectionButton, { borderColor: colors.border }]}
+              style={[styles.addSectionButton, { borderColor: colors.border, backgroundColor: colors.surfaceVariant }]}
               onPress={() => setShowAddSection(true)}
             >
               <Ionicons name="add" size={18} color={colors.textSecondary} />
@@ -1031,7 +1032,6 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 14,
-    color: '#6B7280',
     fontWeight: '500',
   },
   filterTextActive: {
@@ -1046,11 +1046,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     borderStyle: 'dashed',
   },
   contentWrapper: {
@@ -1062,7 +1060,6 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     padding: 40,
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
   },
   emptyTitle: {

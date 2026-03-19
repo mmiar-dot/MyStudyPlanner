@@ -978,8 +978,8 @@ export default function ProfileScreen() {
                 style={[styles.settingsTab, settingsTab === 'delete' && styles.settingsTabDanger]}
                 onPress={() => setSettingsTab('delete')}
               >
-                <Ionicons name="trash" size={18} color={settingsTab === 'delete' ? '#EF4444' : '#6B7280'} />
-                <Text style={[styles.settingsTabText, settingsTab === 'delete' && { color: '#EF4444' }]}>
+                <Ionicons name="trash" size={18} color={settingsTab === 'delete' ? '#EF4444' : colors.textSecondary} />
+                <Text style={[styles.settingsTabText, { color: colors.textSecondary }, settingsTab === 'delete' && { color: '#EF4444' }]}>
                   Supprimer
                 </Text>
               </TouchableOpacity>
@@ -988,35 +988,35 @@ export default function ProfileScreen() {
             <ScrollView style={styles.settingsContent}>
               {settingsTab === 'password' ? (
                 <View>
-                  <Text style={styles.settingsDescription}>
+                  <Text style={[styles.settingsDescription, { color: colors.textSecondary }]}>
                     Modifiez votre mot de passe. Vous devrez vous reconnecter après.
                   </Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
                     placeholder="Mot de passe actuel"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     secureTextEntry
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
                   />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
                     placeholder="Nouveau mot de passe"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     secureTextEntry
                     value={newPassword}
                     onChangeText={setNewPassword}
                   />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
                     placeholder="Confirmer le nouveau mot de passe"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     secureTextEntry
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                   />
                   <TouchableOpacity
-                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    style={[styles.submitButton, { backgroundColor: accentColor }, isSubmitting && styles.submitButtonDisabled]}
                     onPress={handleChangePassword}
                     disabled={isSubmitting}
                   >
@@ -1030,23 +1030,23 @@ export default function ProfileScreen() {
               ) : settingsTab === 'export' ? (
                 <View>
                   <View style={styles.exportInfo}>
-                    <Ionicons name="download" size={32} color="#3B82F6" />
-                    <Text style={styles.exportTitle}>Exporter mes données</Text>
-                    <Text style={styles.exportDescription}>
+                    <Ionicons name="download" size={32} color={accentColor} />
+                    <Text style={[styles.exportTitle, { color: colors.text }]}>Exporter mes données</Text>
+                    <Text style={[styles.exportDescription, { color: colors.textSecondary }]}>
                       Conformément au RGPD, vous pouvez télécharger toutes vos données personnelles au format JSON :
                     </Text>
                   </View>
                   <View style={styles.exportList}>
-                    <Text style={styles.exportListItem}>• Informations de compte</Text>
-                    <Text style={styles.exportListItem}>• Cours personnels</Text>
-                    <Text style={styles.exportListItem}>• Paramètres de révision</Text>
-                    <Text style={styles.exportListItem}>• Sessions planifiées</Text>
-                    <Text style={styles.exportListItem}>• Événements personnels</Text>
-                    <Text style={styles.exportListItem}>• Notes de cours</Text>
-                    <Text style={styles.exportListItem}>• Calendriers ICS</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Informations de compte</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Cours personnels</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Paramètres de révision</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Sessions planifiées</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Événements personnels</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Notes de cours</Text>
+                    <Text style={[styles.exportListItem, { color: colors.text }]}>• Calendriers ICS</Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    style={[styles.submitButton, { backgroundColor: accentColor }, isSubmitting && styles.submitButtonDisabled]}
                     onPress={async () => {
                       setIsSubmitting(true);
                       try {
@@ -1096,17 +1096,17 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
                     placeholder="Votre mot de passe"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     secureTextEntry
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
                   />
                   <TextInput
-                    style={[styles.input, styles.dangerInput]}
+                    style={[styles.input, styles.dangerInput, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
                     placeholder="Tapez SUPPRIMER pour confirmer"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     value={deleteConfirmation}
                     onChangeText={setDeleteConfirmation}
                     autoCapitalize="characters"
@@ -1127,15 +1127,15 @@ export default function ProfileScreen() {
 
               {/* Legal links */}
               <TouchableOpacity 
-                style={styles.settingsLegalLink}
+                style={[styles.settingsLegalLink, { borderTopColor: colors.border }]}
                 onPress={() => {
                   setShowSettingsModal(false);
                   router.push('/legal');
                 }}
               >
-                <Ionicons name="document-text-outline" size={18} color="#6B7280" />
-                <Text style={styles.settingsLegalLinkText}>Informations légales</Text>
-                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+                <Ionicons name="document-text-outline" size={18} color={colors.textSecondary} />
+                <Text style={[styles.settingsLegalLinkText, { color: colors.text }]}>Informations légales</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -1148,15 +1148,15 @@ export default function ProfileScreen() {
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card, maxHeight: '80%' }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Signaler un problème</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Signaler un problème</Text>
               <TouchableOpacity onPress={() => {
                 setShowReportModal(false);
                 setReportMessage('');
                 setReportType('bug');
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
