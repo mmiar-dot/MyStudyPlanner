@@ -98,14 +98,21 @@ export default function RootLayout() {
     runUpdater();
   }, []);
 
-  // 2) Auth init
+  // 2) Auth init - with timeout to prevent infinite loading
   useEffect(() => {
     const init = async () => {
+      // Set a timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.warn('Auth check timeout - continuing without auth');
+        setIsReady(true);
+      }, 5000); // 5 second timeout
+      
       try {
         await checkAuth();
       } catch (e) {
         console.error('Auth check failed:', e);
       } finally {
+        clearTimeout(timeoutId);
         setIsReady(true);
       }
     };
