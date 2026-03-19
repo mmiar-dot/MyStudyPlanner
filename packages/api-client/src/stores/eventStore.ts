@@ -53,9 +53,10 @@ export const useEventStore = create<EventState>((set, get) => ({
         url += `?start_date=${startDate}&end_date=${endDate}`;
       }
       const response = await api.get<PersonalEvent[]>(url);
-      set({ events: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ events: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ events: [], error: error.message, isLoading: false });
     }
   },
 
@@ -63,9 +64,10 @@ export const useEventStore = create<EventState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get<CalendarEvent[]>(`/calendar/all-events?start_date=${startDate}&end_date=${endDate}`);
-      set({ allCalendarEvents: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ allCalendarEvents: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ allCalendarEvents: [], error: error.message, isLoading: false });
     }
   },
 
@@ -102,9 +104,10 @@ export const useEventStore = create<EventState>((set, get) => ({
   fetchICSSubscriptions: async () => {
     try {
       const response = await api.get<ICSSubscription[]>('/ics/subscriptions');
-      set({ icsSubscriptions: response.data || [] });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ icsSubscriptions: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ icsSubscriptions: [], error: error.message });
     }
   },
 

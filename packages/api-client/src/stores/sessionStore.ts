@@ -45,18 +45,20 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get<StudySession[]>('/sessions/today');
-      set({ todaySessions: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ todaySessions: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ todaySessions: [], error: error.message, isLoading: false });
     }
   },
 
   fetchLateSessions: async () => {
     try {
       const response = await api.get<StudySession[]>('/sessions/late');
-      set({ lateSessions: response.data || [] });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ lateSessions: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ lateSessions: [], error: error.message });
     }
   },
 
@@ -64,16 +66,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get<StudySession[]>('/sessions');
-      set({ allSessions: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ allSessions: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ allSessions: [], error: error.message, isLoading: false });
     }
   },
 
   fetchSessionsByDate: async (date: string) => {
     try {
       const response = await api.get<StudySession[]>(`/sessions?date=${date}`);
-      return response.data || [];
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error: any) {
       return [];
     }

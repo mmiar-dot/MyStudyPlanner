@@ -73,9 +73,10 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
       set({ isLoading: true });
       const url = parentId ? `/catalog?parent_id=${parentId}` : '/catalog';
       const response = await api.get<CatalogItem[]>(url);
-      set({ items: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ items: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ items: [], error: error.message, isLoading: false });
     }
   },
 
@@ -83,45 +84,50 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get<CatalogItem[]>('/catalog/all');
-      set({ allItems: response.data || [], isLoading: false });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ allItems: data, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ allItems: [], error: error.message, isLoading: false });
     }
   },
 
   fetchUserSettings: async () => {
     try {
       const response = await api.get<UserItemSettings[]>('/user/items/settings');
-      set({ userSettings: response.data || [] });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ userSettings: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ userSettings: [], error: error.message });
     }
   },
 
   fetchCustomSections: async () => {
     try {
       const response = await api.get<CustomSection[]>('/user/sections');
-      set({ customSections: response.data || [] });
+      const data = Array.isArray(response.data) ? response.data : [];
+      set({ customSections: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ customSections: [], error: error.message });
     }
   },
 
   fetchItemColors: async () => {
     try {
       const response = await api.get<Record<string, string>>('/user/colors');
-      set({ itemColors: response.data || {} });
+      const data = response.data && typeof response.data === 'object' && !Array.isArray(response.data) ? response.data : {};
+      set({ itemColors: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ itemColors: {}, error: error.message });
     }
   },
 
   fetchItemSections: async () => {
     try {
       const response = await api.get<Record<string, string>>('/user/items/sections');
-      set({ itemSections: response.data || {} });
+      const data = response.data && typeof response.data === 'object' && !Array.isArray(response.data) ? response.data : {};
+      set({ itemSections: data });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ itemSections: {}, error: error.message });
     }
   },
 
