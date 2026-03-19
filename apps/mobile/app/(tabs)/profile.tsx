@@ -232,7 +232,7 @@ export default function ProfileScreen() {
   const renderContent = () => (
     <>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface }, isDesktop && styles.headerDesktop]}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }, isDesktop && styles.headerDesktop]}>
         <ProfilePhotoManager
           currentPhoto={user?.profile_photo}
           photoType={user?.photo_type}
@@ -295,7 +295,7 @@ export default function ProfileScreen() {
         <View style={styles.desktopGrid}>
           {/* Left Column - Menu */}
           <View style={styles.desktopColumn}>
-            <View style={[styles.menuSection, { backgroundColor: colors.surface }]}>
+            <View style={[styles.menuSection, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }]}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Paramètres</Text>
               
               {isAdmin && (
@@ -1256,12 +1256,16 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
   },
   headerDesktop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
     marginBottom: 32,
+    padding: 32,
   },
   avatar: {
     width: 80,
@@ -1359,18 +1363,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937',
     marginBottom: 16,
-    paddingHorizontal: 4,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   menuSection: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   menuItem: {
     flexDirection: 'row',
