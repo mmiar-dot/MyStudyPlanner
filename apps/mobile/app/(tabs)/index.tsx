@@ -422,16 +422,16 @@ export default function TodayScreen() {
           <View style={[styles.leftColumn, isDesktop && styles.sessionsColumnDesktop]}>
             {/* Late Sessions */}
             {(lateSessions || []).length > 0 && (
-              <View style={[styles.section, { backgroundColor: colors.surface }]}>
+              <View style={[styles.sessionsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
                 <TouchableOpacity
                   style={styles.sectionHeader}
                   onPress={() => setShowLateSessions(!showLateSessions)}
                 >
                   <View style={styles.sectionTitleRow}>
-                    <View style={styles.lateIcon}>
-                      <Ionicons name="warning" size={18} color="#FFFFFF" />
+                    <View style={[styles.sectionIcon, { backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2' }]}>
+                      <Ionicons name="warning" size={18} color="#EF4444" />
                     </View>
-                    <Text style={styles.sectionTitleLate}>
+                    <Text style={[styles.sectionTitle, { color: colors.error }]}>
                       Retards ({(lateSessions || []).length})
                     </Text>
                   </View>

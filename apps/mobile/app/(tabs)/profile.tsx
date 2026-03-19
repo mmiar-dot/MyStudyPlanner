@@ -232,17 +232,17 @@ export default function ProfileScreen() {
   const renderContent = () => (
     <>
       {/* Header */}
-      <View style={[styles.header, isDesktop && styles.headerDesktop]}>
+      <View style={[styles.header, { backgroundColor: colors.surface }, isDesktop && styles.headerDesktop]}>
         <ProfilePhotoManager
           currentPhoto={user?.profile_photo}
           photoType={user?.photo_type}
           userName={(user?.name?.trim() ? user.name : user?.email?.split('@')[0]) || 'U'}
           onPhotoUpdated={handlePhotoUpdated}
         />
-        <Text style={[styles.name, isDesktop && styles.nameDesktop]}>{(user?.name?.trim() ? user.name : user?.email?.split('@')[0]) || 'Utilisateur'}</Text>
-        <Text style={styles.email}>{user?.email}</Text>
+        <Text style={[styles.name, { color: colors.text }, isDesktop && styles.nameDesktop]}>{(user?.name?.trim() ? user.name : user?.email?.split('@')[0]) || 'Utilisateur'}</Text>
+        <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email}</Text>
         {isAdmin && (
-          <View style={styles.adminBadge}>
+          <View style={[styles.adminBadge, { backgroundColor: isDark ? '#4C1D95' : '#F3E8FF' }]}>
             <Ionicons name="shield-checkmark" size={14} color="#8B5CF6" />
             <Text style={styles.adminText}>Administrateur</Text>
           </View>
@@ -251,7 +251,7 @@ export default function ProfileScreen() {
 
       {/* Stats Card */}
       {progress && (
-        <View style={[styles.statsCard, isDesktop && styles.statsCardDesktop]}>
+        <View style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.border }, isDesktop && styles.statsCardDesktop]}>
           <TouchableOpacity 
             style={styles.statItem}
             onPress={() => {
@@ -260,10 +260,10 @@ export default function ProfileScreen() {
             }}
           >
             <Ionicons name="flame" size={24} color="#F59E0B" />
-            <Text style={styles.statValue}>{progress.streak}</Text>
-            <Text style={styles.statLabel}>Jours de suite</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{progress.streak}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Jours de suite</Text>
           </TouchableOpacity>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <TouchableOpacity 
             style={styles.statItem}
             onPress={() => {
@@ -272,10 +272,10 @@ export default function ProfileScreen() {
             }}
           >
             <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-            <Text style={styles.statValue}>{progress.completed_sessions}</Text>
-            <Text style={styles.statLabel}>Sessions terminées</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{progress.completed_sessions}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Sessions terminées</Text>
           </TouchableOpacity>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <TouchableOpacity 
             style={styles.statItem}
             onPress={() => {
@@ -283,9 +283,9 @@ export default function ProfileScreen() {
               setShowStatsDetailModal(true);
             }}
           >
-            <Ionicons name="book" size={24} color="#3B82F6" />
-            <Text style={styles.statValue}>{progress.active_items}</Text>
-            <Text style={styles.statLabel}>Cours actifs</Text>
+            <Ionicons name="book" size={24} color={accentColor} />
+            <Text style={[styles.statValue, { color: colors.text }]}>{progress.active_items}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Cours actifs</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -295,109 +295,109 @@ export default function ProfileScreen() {
         <View style={styles.desktopGrid}>
           {/* Left Column - Menu */}
           <View style={styles.desktopColumn}>
-            <View style={styles.menuSection}>
-              <Text style={styles.sectionTitle}>Paramètres</Text>
+            <View style={[styles.menuSection, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Paramètres</Text>
               
               {isAdmin && (
                 <TouchableOpacity
-                  style={styles.menuItem}
+                  style={[styles.menuItem, { borderBottomColor: colors.border }]}
                   onPress={() => router.push('/admin')}
                 >
-                  <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
+                  <View style={[styles.menuIcon, { backgroundColor: isDark ? '#4C1D95' : '#F3E8FF' }]}>
                     <Ionicons name="settings" size={20} color="#8B5CF6" />
                   </View>
                   <View style={styles.menuContent}>
-                    <Text style={styles.menuTitle}>Administration</Text>
-                    <Text style={styles.menuSubtitle}>Gérer les cours et utilisateurs</Text>
+                    <Text style={[styles.menuTitle, { color: colors.text }]}>Administration</Text>
+                    <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Gérer les cours et utilisateurs</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                  <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
               )}
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => setShowICSModal(true)}>
-                <View style={[styles.menuIcon, { backgroundColor: '#EBF5FF' }]}>
-                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => setShowICSModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#1E3A5F' : '#EBF5FF' }]}>
+                  <Ionicons name="calendar" size={20} color={accentColor} />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Calendriers ICS</Text>
-                  <Text style={styles.menuSubtitle}>{icsSubscriptions.length} abonnement(s)</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Calendriers ICS</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>{icsSubscriptions.length} abonnement(s)</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/calendar-sync')}>
-                <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push('/calendar-sync')}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
                   <Ionicons name="sync" size={20} color="#10B981" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Sync Google/Apple</Text>
-                  <Text style={styles.menuSubtitle}>Synchroniser avec votre calendrier</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Sync Google/Apple</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Synchroniser avec votre calendrier</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => setShowNotifModal(true)}>
-                <View style={[styles.menuIcon, { backgroundColor: '#D1FAE5' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => setShowNotifModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' }]}>
                   <Ionicons name="notifications" size={20} color="#10B981" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Notifications</Text>
-                  <Text style={styles.menuSubtitle}>Rappels et alertes</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Notifications</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Rappels et alertes</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/appearance')}>
-                <View style={[styles.menuIcon, { backgroundColor: '#F3E8FF' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push('/appearance')}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#4C1D95' : '#F3E8FF' }]}>
                   <Ionicons name="color-palette" size={20} color="#8B5CF6" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Apparence</Text>
-                  <Text style={styles.menuSubtitle}>Thème, couleurs</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Apparence</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Thème, couleurs</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/badges')}>
-                <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push('/badges')}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#78350F' : '#FEF3C7' }]}>
                   <Ionicons name="trophy" size={20} color="#F59E0B" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Badges & Niveaux</Text>
-                  <Text style={styles.menuSubtitle}>Votre progression gamifiée</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Badges & Niveaux</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Votre progression gamifiée</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => setShowStatsModal(true)}>
-                <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => setShowStatsModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#78350F' : '#FEF3C7' }]}>
                   <Ionicons name="bar-chart" size={20} color="#F59E0B" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Statistiques</Text>
-                  <Text style={styles.menuSubtitle}>Votre progression détaillée</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Statistiques</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Votre progression détaillée</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => setShowSettingsModal(true)}>
-                <View style={[styles.menuIcon, { backgroundColor: '#E5E7EB' }]}>
-                  <Ionicons name="settings" size={20} color="#6B7280" />
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => setShowSettingsModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: colors.surfaceVariant }]}>
+                  <Ionicons name="settings" size={20} color={colors.textSecondary} />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Paramètres</Text>
-                  <Text style={styles.menuSubtitle}>Mot de passe, compte</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Paramètres</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Mot de passe, compte</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => setShowReportModal(true)}>
-                <View style={[styles.menuIcon, { backgroundColor: '#FEE2E2' }]}>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => setShowReportModal(true)}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2' }]}>
                   <Ionicons name="flag" size={20} color="#EF4444" />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Signaler un problème</Text>
-                  <Text style={styles.menuSubtitle}>Feedback, bugs, suggestions</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Signaler un problème</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Feedback, bugs, suggestions</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>

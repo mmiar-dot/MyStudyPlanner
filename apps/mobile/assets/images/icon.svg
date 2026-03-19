@@ -1,18 +1,28 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background with iOS-style rounded corners -->
-  <rect width="1024" height="1024" rx="224" fill="#3B82F6"/>
+  <!-- Background with iOS-style rounded corners - Light Blue -->
+  <rect width="1024" height="1024" rx="224" fill="#DBEAFE"/>
   
-  <!-- Open Book Icon - White -->
+  <!-- Open Book Icon - Blue (#3B82F6) -->
   <g transform="translate(512, 512)">
     <!-- Left page -->
     <path d="M-40 -200 C-40 -200 -180 -180 -280 -140 C-300 -132 -320 -110 -320 -80 L-320 200 C-320 220 -300 232 -280 226 C-180 190 -40 170 -40 170 Z" 
-          fill="white" fill-opacity="0.95"/>
+          fill="#3B82F6" fill-opacity="0.95"/>
     
     <!-- Right page -->
     <path d="M40 -200 C40 -200 180 -180 280 -140 C300 -132 320 -110 320 -80 L320 200 C320 220 300 232 280 226 C180 190 40 170 40 170 Z" 
-          fill="white" fill-opacity="0.85"/>
+          fill="#3B82F6" fill-opacity="0.85"/>
     
     <!-- Center binding/spine -->
-    <path d="M0 -200 L0 170" stroke="rgba(59, 130, 246, 0.15)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M0 -200 L0 170" stroke="#DBEAFE" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Page lines on left -->
+    <line x1="-220" y1="-80" x2="-80" y2="-110" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <line x1="-230" y1="-20" x2="-70" y2="-50" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <line x1="-240" y1="40" x2="-60" y2="10" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    
+    <!-- Page lines on right -->
+    <line x1="220" y1="-80" x2="80" y2="-110" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <line x1="230" y1="-20" x2="70" y2="-50" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <line x1="240" y1="40" x2="60" y2="10" stroke="#DBEAFE" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
   </g>
 </svg>

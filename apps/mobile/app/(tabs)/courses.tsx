@@ -759,9 +759,9 @@ export default function CoursesScreen() {
         )}
 
         {showHiddenItems && hiddenItems.length === 0 && (
-          <View style={styles.emptyHiddenSection}>
-            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-            <Text style={styles.emptyHiddenText}>Aucun cours masqué</Text>
+          <View style={[styles.emptyHiddenSection, { backgroundColor: colors.surface }]}>
+            <Ionicons name="checkmark-circle" size={48} color={colors.success} />
+            <Text style={[styles.emptyHiddenText, { color: colors.text }]}>Aucun cours masqué</Text>
           </View>
         )}
       </ScrollView>
@@ -772,42 +772,42 @@ export default function CoursesScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouveau cours</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Nouveau cours</Text>
               <TouchableOpacity onPress={() => {
                 setShowAddCourse(false);
                 setNewCourseTitle('');
                 setNewCourseParent(null);
                 setNewCourseColor('#3B82F6');
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {newCourseParent && (
-              <View style={styles.parentInfo}>
-                <Ionicons name="folder" size={16} color="#3B82F6" />
-                <Text style={styles.parentInfoText}>
+              <View style={[styles.parentInfo, { backgroundColor: colors.surfaceVariant }]}>
+                <Ionicons name="folder" size={16} color={accentColor} />
+                <Text style={[styles.parentInfoText, { color: colors.text }]}>
                   Dans : {allItems.find(i => i.id === newCourseParent)?.title || 'Chapitre'}
                 </Text>
               </View>
             )}
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="Titre du cours"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={newCourseTitle}
               onChangeText={setNewCourseTitle}
               autoFocus
             />
 
-            <Text style={styles.colorLabel}>Couleur</Text>
+            <Text style={[styles.colorLabel, { color: colors.textSecondary }]}>Couleur</Text>
             <ColorPicker selectedColor={newCourseColor} onColorSelect={setNewCourseColor} />
 
             <TouchableOpacity
-              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              style={[styles.createButton, { backgroundColor: accentColor }, isSubmitting && styles.createButtonDisabled]}
               onPress={handleAddPersonalCourse}
               disabled={isSubmitting}
             >
@@ -824,32 +824,32 @@ export default function CoursesScreen() {
       {/* Add Section Modal */}
       <Modal visible={showAddSection} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouvelle section</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Nouvelle section</Text>
               <TouchableOpacity onPress={() => {
                 setShowAddSection(false);
                 setNewSectionName('');
                 setNewSectionColor('#8B5CF6');
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="Nom de la section"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={newSectionName}
               onChangeText={setNewSectionName}
               autoFocus
             />
 
-            <Text style={styles.colorLabel}>Couleur</Text>
+            <Text style={[styles.colorLabel, { color: colors.textSecondary }]}>Couleur</Text>
             <ColorPicker selectedColor={newSectionColor} onColorSelect={setNewSectionColor} />
 
             <TouchableOpacity
-              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              style={[styles.createButton, { backgroundColor: accentColor }, isSubmitting && styles.createButtonDisabled]}
               onPress={handleAddSection}
               disabled={isSubmitting}
             >
@@ -866,25 +866,25 @@ export default function CoursesScreen() {
       {/* Color Picker Modal */}
       <Modal visible={showColorPicker} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choisir une couleur</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Choisir une couleur</Text>
               <TouchableOpacity onPress={() => {
                 setShowColorPicker(false);
                 setColorPickerItem(null);
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {colorPickerItem && (
-              <Text style={styles.colorPickerSubtitle}>{colorPickerItem.title}</Text>
+              <Text style={[styles.colorPickerSubtitle, { color: colors.textSecondary }]}>{colorPickerItem.title}</Text>
             )}
 
             <ColorPicker selectedColor={tempColor} onColorSelect={setTempColor} />
 
             <TouchableOpacity
-              style={styles.createButton}
+              style={[styles.createButton, { backgroundColor: accentColor }]}
               onPress={handleSaveColor}
             >
               <Text style={styles.createButtonText}>Appliquer</Text>
@@ -896,9 +896,9 @@ export default function CoursesScreen() {
       {/* Rename Modal */}
       <Modal visible={showRenameModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
                 {renameType === 'course' ? 'Renommer le cours' : 'Renommer la section'}
               </Text>
               <TouchableOpacity onPress={() => {
@@ -906,21 +906,21 @@ export default function CoursesScreen() {
                 setRenameItem(null);
                 setNewName('');
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="Nouveau nom"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={newName}
               onChangeText={setNewName}
               autoFocus
             />
 
             <TouchableOpacity
-              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              style={[styles.createButton, { backgroundColor: accentColor }, isSubmitting && styles.createButtonDisabled]}
               onPress={handleRename}
               disabled={isSubmitting}
             >
