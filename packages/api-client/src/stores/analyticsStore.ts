@@ -7,6 +7,7 @@ interface AnalyticsState {
   calendarData: Record<string, CalendarDayData>;
   isLoading: boolean;
   error: string | null;
+  reset: () => void;
   fetchProgress: () => Promise<void>;
   fetchCalendarData: (month: number, year: number) => Promise<void>;
 }
@@ -16,6 +17,16 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   calendarData: {},
   isLoading: false,
   error: null,
+  
+  // Reset function to clear all analytics data on logout
+  reset: () => {
+    set({
+      progress: null,
+      calendarData: {},
+      isLoading: false,
+      error: null,
+    });
+  },
 
   fetchProgress: async () => {
     try {

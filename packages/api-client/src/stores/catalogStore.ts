@@ -32,6 +32,7 @@ interface CatalogState {
   itemSections: Record<string, string>;
   isLoading: boolean;
   error: string | null;
+  reset: () => void;
   fetchItems: (parentId?: string | null) => Promise<void>;
   fetchAllItems: () => Promise<void>;
   fetchUserSettings: () => Promise<void>;
@@ -67,6 +68,20 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   itemSections: {},
   isLoading: false,
   error: null,
+  
+  // Reset function to clear all catalog data on logout
+  reset: () => {
+    set({
+      items: [],
+      allItems: [],
+      userSettings: [],
+      customSections: [],
+      itemColors: {},
+      itemSections: {},
+      isLoading: false,
+      error: null,
+    });
+  },
 
   fetchItems: async (parentId?: string | null) => {
     try {

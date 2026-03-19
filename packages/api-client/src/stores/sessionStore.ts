@@ -18,6 +18,7 @@ interface SessionState {
   courseNotes: Record<string, CourseNote[]>;
   isLoading: boolean;
   error: string | null;
+  reset: () => void;
   fetchTodaySessions: () => Promise<void>;
   fetchLateSessions: () => Promise<void>;
   fetchAllSessions: () => Promise<void>;
@@ -40,6 +41,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   courseNotes: {},
   isLoading: false,
   error: null,
+  
+  // Reset function to clear all session data on logout
+  reset: () => {
+    set({
+      todaySessions: [],
+      lateSessions: [],
+      allSessions: [],
+      courseNotes: {},
+      isLoading: false,
+      error: null,
+    });
+  },
 
   fetchTodaySessions: async () => {
     try {

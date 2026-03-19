@@ -13,6 +13,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
+  reset: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -73,6 +74,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     await removeToken();
     set({ user: null, isAuthenticated: false });
+    // Note: Other stores should be reset by calling their reset functions
+    // This is handled by the component calling logout
+  },
+  
+  // Reset function to clear all auth state
+  reset: () => {
+    set({ user: null, isAuthenticated: false, isLoading: false, error: null });
   },
 
   checkAuth: async () => {

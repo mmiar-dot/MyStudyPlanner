@@ -24,6 +24,7 @@ interface EventState {
   icsEvents: Record<string, ICSEvent[]>;
   isLoading: boolean;
   error: string | null;
+  reset: () => void;
   fetchEvents: (startDate?: string, endDate?: string) => Promise<void>;
   fetchAllCalendarEvents: (startDate: string, endDate: string) => Promise<void>;
   createEvent: (event: Omit<PersonalEvent, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
@@ -44,6 +45,18 @@ export const useEventStore = create<EventState>((set, get) => ({
   icsEvents: {},
   isLoading: false,
   error: null,
+  
+  // Reset function to clear all event data on logout
+  reset: () => {
+    set({
+      events: [],
+      allCalendarEvents: [],
+      icsSubscriptions: [],
+      icsEvents: {},
+      isLoading: false,
+      error: null,
+    });
+  },
 
   fetchEvents: async (startDate?: string, endDate?: string) => {
     try {
