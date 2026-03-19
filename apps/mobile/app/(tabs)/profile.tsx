@@ -399,33 +399,33 @@ export default function ProfileScreen() {
                   <Text style={[styles.menuTitle, { color: colors.text }]}>Signaler un problème</Text>
                   <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Feedback, bugs, suggestions</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/legal')}>
-                <View style={[styles.menuIcon, { backgroundColor: '#F3F4F6' }]}>
-                  <Ionicons name="document-text" size={20} color="#6B7280" />
+              <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push('/legal')}>
+                <View style={[styles.menuIcon, { backgroundColor: colors.surfaceVariant }]}>
+                  <Ionicons name="document-text" size={20} color={colors.textSecondary} />
                 </View>
                 <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>Informations légales</Text>
-                  <Text style={styles.menuSubtitle}>Confidentialité, CGU, cookies</Text>
+                  <Text style={[styles.menuTitle, { color: colors.text }]}>Informations légales</Text>
+                  <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>Confidentialité, CGU, cookies</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.logoutButton} onPress={() => setShowLogoutModal(true)}>
+            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2' }]} onPress={() => setShowLogoutModal(true)}>
               <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-              <Text style={styles.logoutText}>Déconnexion</Text>
+              <Text style={[styles.logoutText, { color: colors.error }]}>Déconnexion</Text>
             </TouchableOpacity>
           </View>
 
           {/* Right Column - ICS Calendars */}
           <View style={styles.desktopColumn}>
-            <View style={styles.icsSection}>
+            <View style={[styles.icsSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.icsSectionHeader}>
-                <Text style={styles.sectionTitle}>Calendriers ICS</Text>
-                <TouchableOpacity style={styles.addICSButton} onPress={() => setShowICSModal(true)}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Calendriers ICS</Text>
+                <TouchableOpacity style={[styles.addICSButton, { backgroundColor: accentColor }]} onPress={() => setShowICSModal(true)}>
                   <Ionicons name="add" size={20} color="#FFFFFF" />
                   <Text style={styles.addICSButtonText}>Ajouter</Text>
                 </TouchableOpacity>
@@ -433,19 +433,19 @@ export default function ProfileScreen() {
               
               {icsSubscriptions.length === 0 ? (
                 <View style={styles.emptyICS}>
-                  <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
-                  <Text style={styles.emptyICSText}>Aucun calendrier ICS</Text>
-                  <Text style={styles.emptyICSSubtext}>Ajoutez un lien ICS pour synchroniser votre emploi du temps</Text>
+                  <Ionicons name="calendar-outline" size={48} color={colors.textTertiary} />
+                  <Text style={[styles.emptyICSText, { color: colors.text }]}>Aucun calendrier ICS</Text>
+                  <Text style={[styles.emptyICSSubtext, { color: colors.textSecondary }]}>Ajoutez un lien ICS pour synchroniser votre emploi du temps</Text>
                 </View>
               ) : (
                 icsSubscriptions.map((sub) => (
-                  <View key={sub.id} style={styles.icsItem}>
+                  <View key={sub.id} style={[styles.icsItem, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
                     <View style={[styles.icsColor, { backgroundColor: sub.color }]} />
                     <View style={styles.icsInfo}>
-                      <Text style={styles.icsName}>{sub.name}</Text>
-                      <Text style={styles.icsUrl} numberOfLines={1}>{sub.url}</Text>
+                      <Text style={[styles.icsName, { color: colors.text }]}>{sub.name}</Text>
+                      <Text style={[styles.icsUrl, { color: colors.textSecondary }]} numberOfLines={1}>{sub.url}</Text>
                       {sub.last_synced && (
-                        <Text style={styles.icsLastSync}>
+                        <Text style={[styles.icsLastSync, { color: colors.textTertiary }]}>
                           Dernière synchro: {new Date(sub.last_synced).toLocaleString('fr-FR')}
                         </Text>
                       )}
@@ -647,37 +647,37 @@ export default function ProfileScreen() {
       {/* ICS Modal */}
       <Modal visible={showICSModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Ajouter un calendrier ICS</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Ajouter un calendrier ICS</Text>
               <TouchableOpacity onPress={() => setShowICSModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="Nom du calendrier (ex: EDT Médecine)"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={icsName}
               onChangeText={setIcsName}
             />
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="URL du fichier ICS"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={icsUrl}
               onChangeText={setIcsUrl}
               autoCapitalize="none"
               keyboardType="url"
             />
 
-            <Text style={styles.colorLabel}>Couleur</Text>
+            <Text style={[styles.colorLabel, { color: colors.textSecondary }]}>Couleur</Text>
             <ColorPicker selectedColor={icsColor} onColorSelect={setIcsColor} />
 
             <TouchableOpacity
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              style={[styles.submitButton, { backgroundColor: accentColor }, isSubmitting && styles.submitButtonDisabled]}
               onPress={handleAddICS}
               disabled={isSubmitting}
             >
@@ -690,21 +690,21 @@ export default function ProfileScreen() {
 
             {/* Existing subscriptions */}
             {icsSubscriptions.length > 0 && (
-              <View style={styles.existingICS}>
-                <Text style={styles.existingICSTitle}>Calendriers existants</Text>
+              <View style={[styles.existingICS, { borderTopColor: colors.border }]}>
+                <Text style={[styles.existingICSTitle, { color: colors.text }]}>Calendriers existants</Text>
                 {icsSubscriptions.map((sub) => (
-                  <View key={sub.id} style={styles.icsItemCompact}>
+                  <View key={sub.id} style={[styles.icsItemCompact, { backgroundColor: colors.surfaceVariant }]}>
                     <View style={[styles.icsColorDot, { backgroundColor: sub.color }]} />
-                    <Text style={styles.icsItemName} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.icsItemName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <TouchableOpacity onPress={() => handleSyncICS(sub.id)}>
                       {syncingId === sub.id ? (
-                        <ActivityIndicator size="small" color="#3B82F6" />
+                        <ActivityIndicator size="small" color={accentColor} />
                       ) : (
-                        <Ionicons name="sync" size={18} color="#3B82F6" />
+                        <Ionicons name="sync" size={18} color={accentColor} />
                       )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => deleteICSSubscription(sub.id)}>
-                      <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                      <Ionicons name="trash-outline" size={18} color={colors.error} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -717,18 +717,18 @@ export default function ProfileScreen() {
       {/* Stats Modal */}
       <Modal visible={showStatsModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Statistiques détaillées</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Statistiques détaillées</Text>
               <TouchableOpacity onPress={() => setShowStatsModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {progress && (
               <View style={styles.statsGrid}>
                 <TouchableOpacity 
-                  style={styles.statBox}
+                  style={[styles.statBox, { backgroundColor: colors.surfaceVariant }]}
                   onPress={() => {
                     setShowStatsModal(false);
                     setStatsDetailType('streak');
@@ -736,12 +736,12 @@ export default function ProfileScreen() {
                   }}
                 >
                   <Ionicons name="flame" size={32} color="#F59E0B" />
-                  <Text style={styles.statBoxValue}>{progress.streak}</Text>
-                  <Text style={styles.statBoxLabel}>Jours consécutifs</Text>
-                  <Text style={styles.statBoxHint}>Tap pour voir le calendrier</Text>
+                  <Text style={[styles.statBoxValue, { color: colors.text }]}>{progress.streak}</Text>
+                  <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Jours consécutifs</Text>
+                  <Text style={[styles.statBoxHint, { color: colors.textTertiary }]}>Tap pour voir le calendrier</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.statBox}
+                  style={[styles.statBox, { backgroundColor: colors.surfaceVariant }]}
                   onPress={() => {
                     setShowStatsModal(false);
                     setStatsDetailType('completion');
@@ -749,25 +749,25 @@ export default function ProfileScreen() {
                   }}
                 >
                   <Ionicons name="checkmark-done" size={32} color="#10B981" />
-                  <Text style={styles.statBoxValue}>{progress.completed_sessions}</Text>
-                  <Text style={styles.statBoxLabel}>Sessions terminées</Text>
-                  <Text style={styles.statBoxHint}>Tap pour les détails</Text>
+                  <Text style={[styles.statBoxValue, { color: colors.text }]}>{progress.completed_sessions}</Text>
+                  <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Sessions terminées</Text>
+                  <Text style={[styles.statBoxHint, { color: colors.textTertiary }]}>Tap pour les détails</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.statBox}
+                  style={[styles.statBox, { backgroundColor: colors.surfaceVariant }]}
                   onPress={() => {
                     setShowStatsModal(false);
                     setStatsDetailType('courses');
                     setShowStatsDetailModal(true);
                   }}
                 >
-                  <Ionicons name="book" size={32} color="#3B82F6" />
-                  <Text style={styles.statBoxValue}>{progress.active_items}</Text>
-                  <Text style={styles.statBoxLabel}>Cours en révision</Text>
-                  <Text style={styles.statBoxHint}>Tap pour la liste</Text>
+                  <Ionicons name="book" size={32} color={accentColor} />
+                  <Text style={[styles.statBoxValue, { color: colors.text }]}>{progress.active_items}</Text>
+                  <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Cours en révision</Text>
+                  <Text style={[styles.statBoxHint, { color: colors.textTertiary }]}>Tap pour la liste</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.statBox}
+                  style={[styles.statBox, { backgroundColor: colors.surfaceVariant }]}
                   onPress={() => {
                     setShowStatsModal(false);
                     setStatsDetailType('completion');
@@ -775,13 +775,13 @@ export default function ProfileScreen() {
                   }}
                 >
                   <Ionicons name="trending-up" size={32} color="#8B5CF6" />
-                  <Text style={styles.statBoxValue}>
+                  <Text style={[styles.statBoxValue, { color: colors.text }]}>
                     {progress.completed_sessions > 0 
                       ? Math.round((progress.completed_sessions / (progress.completed_sessions + progress.active_items)) * 100) 
                       : 0}%
                   </Text>
-                  <Text style={styles.statBoxLabel}>Taux de complétion</Text>
-                  <Text style={styles.statBoxHint}>Tap pour les détails</Text>
+                  <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Taux de complétion</Text>
+                  <Text style={[styles.statBoxHint, { color: colors.textTertiary }]}>Tap pour les détails</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -792,19 +792,19 @@ export default function ProfileScreen() {
       {/* Notifications Modal */}
       <Modal visible={showNotifModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notifications</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Notifications</Text>
               <TouchableOpacity onPress={() => setShowNotifModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.notifSection}>
-              <View style={styles.notifItem}>
+              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
                 <View style={styles.notifInfo}>
-                  <Text style={styles.notifTitle}>Rappels de révision</Text>
-                  <Text style={styles.notifSubtitle}>Notification quotidienne pour vos sessions</Text>
+                  <Text style={[styles.notifTitle, { color: colors.text }]}>Rappels de révision</Text>
+                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Notification quotidienne pour vos sessions</Text>
                 </View>
                 <Switch
                   value={notifSettings.dailyReminder}
@@ -813,15 +813,15 @@ export default function ProfileScreen() {
                     setNotifSettings(newSettings);
                     notificationService.updateSettings(newSettings);
                   }}
-                  trackColor={{ false: '#E5E7EB', true: '#93C5FD' }}
-                  thumbColor={notifSettings.dailyReminder ? '#3B82F6' : '#F4F4F5'}
+                  trackColor={{ false: colors.border, true: '#93C5FD' }}
+                  thumbColor={notifSettings.dailyReminder ? accentColor : colors.surfaceVariant}
                 />
               </View>
 
-              <View style={styles.notifItem}>
+              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
                 <View style={styles.notifInfo}>
-                  <Text style={styles.notifTitle}>Sessions en retard</Text>
-                  <Text style={styles.notifSubtitle}>Alerte pour les révisions manquées</Text>
+                  <Text style={[styles.notifTitle, { color: colors.text }]}>Sessions en retard</Text>
+                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Alerte pour les révisions manquées</Text>
                 </View>
                 <Switch
                   value={notifSettings.lateSessionAlerts}
@@ -830,15 +830,15 @@ export default function ProfileScreen() {
                     setNotifSettings(newSettings);
                     notificationService.updateSettings(newSettings);
                   }}
-                  trackColor={{ false: '#E5E7EB', true: '#FCA5A5' }}
-                  thumbColor={notifSettings.lateSessionAlerts ? '#EF4444' : '#F4F4F5'}
+                  trackColor={{ false: colors.border, true: '#FCA5A5' }}
+                  thumbColor={notifSettings.lateSessionAlerts ? '#EF4444' : colors.surfaceVariant}
                 />
               </View>
 
-              <View style={styles.notifItem}>
+              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
                 <View style={styles.notifInfo}>
-                  <Text style={styles.notifTitle}>Rappel matinal</Text>
-                  <Text style={styles.notifSubtitle}>Résumé des tâches à 8h00</Text>
+                  <Text style={[styles.notifTitle, { color: colors.text }]}>Rappel matinal</Text>
+                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Résumé des tâches à 8h00</Text>
                 </View>
                 <Switch
                   value={notifSettings.morningBrief}
@@ -847,7 +847,7 @@ export default function ProfileScreen() {
                     setNotifSettings(newSettings);
                     notificationService.updateSettings(newSettings);
                   }}
-                  trackColor={{ false: '#E5E7EB', true: '#86EFAC' }}
+                  trackColor={{ false: colors.border, true: '#86EFAC' }}
                   thumbColor={notifSettings.morningBrief ? '#10B981' : '#F4F4F5'}
                 />
               </View>
@@ -870,8 +870,8 @@ export default function ProfileScreen() {
                   );
                 }}
               >
-                <Ionicons name="notifications" size={18} color="#3B82F6" />
-                <Text style={styles.testNotifText}>Tester les notifications</Text>
+                <Ionicons name="notifications" size={18} color={accentColor} />
+                <Text style={[styles.testNotifText, { color: accentColor }]}>Tester les notifications</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -881,30 +881,30 @@ export default function ProfileScreen() {
       {/* Edit ICS Modal */}
       <Modal visible={showEditICSModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Modifier le calendrier</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Modifier le calendrier</Text>
               <TouchableOpacity onPress={() => {
                 setShowEditICSModal(false);
                 setEditingICS(null);
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, borderColor: colors.border, color: colors.text }]}
               placeholder="Nom du calendrier"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               value={editICSName}
               onChangeText={setEditICSName}
             />
 
-            <Text style={styles.colorLabel}>Couleur</Text>
+            <Text style={[styles.colorLabel, { color: colors.textSecondary }]}>Couleur</Text>
             <ColorPicker selectedColor={editICSColor} onColorSelect={setEditICSColor} />
 
             <TouchableOpacity
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              style={[styles.submitButton, { backgroundColor: accentColor }, isSubmitting && styles.submitButtonDisabled]}
               onPress={handleUpdateICS}
               disabled={isSubmitting}
             >
@@ -940,9 +940,9 @@ export default function ProfileScreen() {
       {/* Settings Modal */}
       <Modal visible={showSettingsModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxWidth: 450 }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card, maxWidth: 450 }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Paramètres du compte</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Paramètres du compte</Text>
               <TouchableOpacity onPress={() => {
                 setShowSettingsModal(false);
                 setCurrentPassword('');
@@ -950,23 +950,23 @@ export default function ProfileScreen() {
                 setConfirmPassword('');
                 setDeleteConfirmation('');
               }}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {/* Tabs */}
-            <View style={styles.settingsTabs}>
+            <View style={[styles.settingsTabs, { borderBottomColor: colors.border }]}>
               <TouchableOpacity
-                style={[styles.settingsTab, settingsTab === 'password' && styles.settingsTabActive]}
+                style={[styles.settingsTab, settingsTab === 'password' && { backgroundColor: colors.primaryLight }]}
                 onPress={() => setSettingsTab('password')}
               >
-                <Ionicons name="key" size={18} color={settingsTab === 'password' ? '#3B82F6' : '#6B7280'} />
-                <Text style={[styles.settingsTabText, settingsTab === 'password' && styles.settingsTabTextActive]}>
+                <Ionicons name="key" size={18} color={settingsTab === 'password' ? accentColor : colors.textSecondary} />
+                <Text style={[styles.settingsTabText, { color: colors.textSecondary }, settingsTab === 'password' && { color: accentColor }]}>
                   Mot de passe
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.settingsTab, settingsTab === 'export' && styles.settingsTabActive]}
+                style={[styles.settingsTab, settingsTab === 'export' && { backgroundColor: colors.primaryLight }]}
                 onPress={() => setSettingsTab('export')}
               >
                 <Ionicons name="download" size={18} color={settingsTab === 'export' ? '#3B82F6' : '#6B7280'} />
