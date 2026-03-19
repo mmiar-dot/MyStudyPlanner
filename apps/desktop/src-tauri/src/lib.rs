@@ -2,13 +2,24 @@
 pub fn run() {
   tauri::Builder::default()
     .setup(|app| {
-      if cfg!(debug_assertions) {
+      // Always enable devtools for debugging
+      #[cfg(debug_assertions)]
+      {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Info)
             .build(),
         )?;
       }
+      
+      // Open devtools on all windows in debug mode
+      #[cfg(debug_assertions)]
+      {
+        for (_, window) in app.webview_windows() {
+          window.open_devtools();
+        }
+      }
+      
       Ok(())
     })
     .plugin(tauri_plugin_updater::Builder::new().build())
