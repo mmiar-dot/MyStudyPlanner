@@ -46,9 +46,12 @@ const getBackendUrl = (): string => {
 const BACKEND_URL = getBackendUrl();
 const API_URL = `${BACKEND_URL}/api`;
 
-// Log the URL in development for debugging
-if (__DEV__) {
-  console.log('API URL:', API_URL);
+// Always log the URL for debugging
+console.log('API URL:', API_URL);
+console.log('Platform:', Platform.OS);
+if (typeof window !== 'undefined') {
+  console.log('Window location:', window.location?.href);
+  console.log('Is Tauri:', '__TAURI__' in window);
 }
 
 const api = axios.create({
