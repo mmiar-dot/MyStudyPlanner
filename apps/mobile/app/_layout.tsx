@@ -127,7 +127,7 @@ export default function RootLayout() {
       const timeoutId = setTimeout(() => {
         console.warn('Auth check timeout - continuing without auth');
         setIsReady(true);
-      }, 5000); // 5 second timeout
+      }, 3000); // 3 second timeout
       
       try {
         await checkAuth();

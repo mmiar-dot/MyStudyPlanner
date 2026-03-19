@@ -32,7 +32,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       const response = await api.get<Record<string, CalendarDayData>>(
         `/analytics/calendar?month=${month}&year=${year}`
       );
-      set({ calendarData: response.data });
+      set({ calendarData: response.data || {} });
     } catch (error: any) {
       set({ error: error.message });
     }
