@@ -405,39 +405,39 @@ export default function CoursesScreen() {
             contentContainerStyle={styles.filterRow}
           >
             <TouchableOpacity
-              style={[styles.filterButton, activeFilter === 'all' && styles.filterButtonActive]}
+              style={[styles.filterButton, { backgroundColor: colors.surfaceVariant }, activeFilter === 'all' && { backgroundColor: colors.primaryLight }]}
               onPress={() => setActiveFilter('all')}
             >
-              <Text style={[styles.filterText, activeFilter === 'all' && styles.filterTextActive]}>
+              <Text style={[styles.filterText, { color: colors.textSecondary }, activeFilter === 'all' && { color: accentColor }]}>
                 Tous
               </Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.filterButton, activeFilter === 'personal' && styles.filterButtonActive]}
+              style={[styles.filterButton, { backgroundColor: colors.surfaceVariant }, activeFilter === 'personal' && { backgroundColor: colors.primaryLight }]}
               onPress={() => setActiveFilter('personal')}
             >
               <Ionicons 
                 name="person" 
                 size={16} 
-                color={activeFilter === 'personal' ? '#3B82F6' : '#6B7280'} 
+                color={activeFilter === 'personal' ? accentColor : colors.textSecondary} 
               />
-              <Text style={[styles.filterText, activeFilter === 'personal' && styles.filterTextActive]}>
+              <Text style={[styles.filterText, { color: colors.textSecondary }, activeFilter === 'personal' && { color: accentColor }]}>
                 Mes cours
               </Text>
             </TouchableOpacity>
 
             {/* Hidden Items Toggle */}
             <TouchableOpacity
-              style={[styles.filterButton, showHiddenItems && styles.filterButtonHidden]}
+              style={[styles.filterButton, { backgroundColor: colors.surfaceVariant }, showHiddenItems && { backgroundColor: isDark ? '#7F1D1D' : '#FEF2F2' }]}
               onPress={() => setShowHiddenItems(!showHiddenItems)}
             >
               <Ionicons 
                 name={showHiddenItems ? "eye" : "eye-off"} 
                 size={16} 
-                color={showHiddenItems ? '#EF4444' : '#6B7280'} 
+                color={showHiddenItems ? colors.error : colors.textSecondary} 
               />
-              <Text style={[styles.filterText, showHiddenItems && { color: '#EF4444' }]}>
+              <Text style={[styles.filterText, { color: colors.textSecondary }, showHiddenItems && { color: colors.error }]}>
                 Masqués
               </Text>
             </TouchableOpacity>
@@ -485,10 +485,10 @@ export default function CoursesScreen() {
 
             {/* Add Section Button */}
             <TouchableOpacity
-              style={styles.addSectionButton}
+              style={[styles.addSectionButton, { borderColor: colors.border }]}
               onPress={() => setShowAddSection(true)}
             >
-              <Ionicons name="add" size={18} color="#6B7280" />
+              <Ionicons name="add" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -496,13 +496,13 @@ export default function CoursesScreen() {
         {/* Content */}
         <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
           {chapters.length === 0 && standaloneCourses.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="library-outline" size={48} color="#9CA3AF" />
-              <Text style={styles.emptyTitle}>
+            <View style={[styles.emptyState, { backgroundColor: colors.surface }]}>
+              <Ionicons name="library-outline" size={48} color={colors.textTertiary} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 {activeFilter === 'personal' ? 'Aucun cours personnel' : 
                  activeFilter !== 'all' ? 'Aucun cours dans cette section' : 'Aucun cours disponible'}
               </Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                 {activeFilter === 'personal' 
                   ? 'Ajoutez vos propres cours avec le bouton +' 
                   : 'Ajoutez des cours ou changez de filtre'}
@@ -519,7 +519,7 @@ export default function CoursesScreen() {
                 const chapterColor = getItemColor(chapter.id);
 
                 return (
-                  <View key={chapter.id} style={[styles.chapterCard, isDesktop && styles.chapterCardDesktop]}>
+                  <View key={chapter.id} style={[styles.chapterCard, { backgroundColor: colors.surface, borderColor: colors.border }, isDesktop && styles.chapterCardDesktop]}>
                     <TouchableOpacity
                       style={styles.chapterHeader}
                       onPress={() => toggleChapter(chapter.id)}
@@ -528,14 +528,14 @@ export default function CoursesScreen() {
                       <View style={[styles.chapterColorBar, { backgroundColor: chapterColor }]} />
                       <View style={styles.chapterInfo}>
                         <View style={styles.chapterTitleRow}>
-                          <Text style={styles.chapterTitle}>{chapter.title}</Text>
+                          <Text style={[styles.chapterTitle, { color: colors.text }]}>{chapter.title}</Text>
                           {chapter.is_personal && (
-                            <View style={styles.personalBadge}>
+                            <View style={[styles.personalBadge, { backgroundColor: isDark ? '#4C1D95' : '#F3E8FF' }]}>
                               <Ionicons name="person" size={12} color="#8B5CF6" />
                             </View>
                           )}
                         </View>
-                        <Text style={styles.chapterCount}>
+                        <Text style={[styles.chapterCount, { color: colors.textSecondary }]}>
                           {configuredCount}/{courses.length} configurés
                         </Text>
                       </View>
@@ -548,7 +548,7 @@ export default function CoursesScreen() {
                           }}
                           style={[styles.actionButton, styles.planChapterButton]}
                         >
-                          <Ionicons name="calendar" size={18} color="#10B981" />
+                          <Ionicons name="calendar" size={18} color={colors.success} />
                         </TouchableOpacity>
                         {chapter.is_personal && (
                           <TouchableOpacity 
@@ -558,7 +558,7 @@ export default function CoursesScreen() {
                             }}
                             style={styles.actionButton}
                           >
-                            <Ionicons name="pencil-outline" size={18} color="#3B82F6" />
+                            <Ionicons name="pencil-outline" size={18} color={accentColor} />
                           </TouchableOpacity>
                         )}
                         <TouchableOpacity 
@@ -568,7 +568,7 @@ export default function CoursesScreen() {
                           }}
                           style={styles.actionButton}
                         >
-                          <Ionicons name="color-palette-outline" size={18} color="#6B7280" />
+                          <Ionicons name="color-palette-outline" size={18} color={colors.textSecondary} />
                         </TouchableOpacity>
                         <TouchableOpacity 
                           onPress={(e) => {
@@ -602,25 +602,25 @@ export default function CoursesScreen() {
                           <Ionicons 
                             name={chapter.is_personal ? "trash-outline" : "eye-off-outline"} 
                             size={18} 
-                            color={chapter.is_personal ? "#EF4444" : "#6B7280"} 
+                            color={chapter.is_personal ? colors.error : colors.textSecondary} 
                           />
                         </TouchableOpacity>
                         <Ionicons
                           name={isExpanded ? 'chevron-up' : 'chevron-down'}
                           size={24}
-                          color="#6B7280"
+                          color={colors.textSecondary}
                         />
                       </View>
                     </TouchableOpacity>
 
                     {isExpanded && (
-                      <View style={styles.coursesList}>
+                      <View style={[styles.coursesList, { borderTopColor: colors.border }]}>
                         {courses.map((course) => {
                           const settings = getItemSettings(course.id);
                           const courseColor = getItemColor(course.id);
                           
                           return (
-                            <View key={course.id} style={styles.courseItem}>
+                            <View key={course.id} style={[styles.courseItem, { borderBottomColor: colors.border }]}>
                               <View style={[styles.courseColorDot, { backgroundColor: courseColor }]} />
                               <TouchableOpacity
                                 style={styles.courseContent}
@@ -628,51 +628,51 @@ export default function CoursesScreen() {
                                 activeOpacity={0.7}
                               >
                                 <View style={styles.courseInfo}>
-                                  <Text style={styles.courseTitle}>{course.title}</Text>
+                                  <Text style={[styles.courseTitle, { color: colors.text }]}>{course.title}</Text>
                                   <View style={styles.courseBadges}>
                                     {course.is_personal && (
-                                      <View style={styles.personalBadgeSmall}>
+                                      <View style={[styles.personalBadgeSmall, { backgroundColor: isDark ? '#4C1D95' : '#F3E8FF' }]}>
                                         <Text style={styles.personalBadgeText}>Personnel</Text>
                                       </View>
                                     )}
                                     {getMethodBadge(settings?.method)}
                                   </View>
                                 </View>
-                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                               </TouchableOpacity>
                               <TouchableOpacity 
                                 onPress={() => handleOpenColorPicker(course)}
                                 style={styles.colorButton}
                               >
-                                <Ionicons name="color-palette-outline" size={16} color="#6B7280" />
+                                <Ionicons name="color-palette-outline" size={16} color={colors.textSecondary} />
                               </TouchableOpacity>
                               {course.is_personal && (
                                 <TouchableOpacity 
                                   onPress={() => handleOpenRenameModal(course, 'course')}
                                   style={styles.editButton}
                                 >
-                                  <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                                  <Ionicons name="pencil-outline" size={16} color={accentColor} />
                                 </TouchableOpacity>
                               )}
                               <TouchableOpacity 
                                 onPress={() => handleDeleteItem(course)}
                                 style={styles.deleteButton}
                               >
-                                <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                                <Ionicons name="trash-outline" size={16} color={colors.error} />
                               </TouchableOpacity>
                             </View>
                           );
                         })}
                         
                         <TouchableOpacity
-                          style={styles.addToCourseButton}
+                          style={[styles.addToCourseButton, { borderColor: colors.border }]}
                           onPress={() => {
                             setNewCourseParent(chapter.id);
                             setShowAddCourse(true);
                           }}
                         >
-                          <Ionicons name="add" size={18} color="#3B82F6" />
-                          <Text style={styles.addToCourseText}>Ajouter un cours ici</Text>
+                          <Ionicons name="add" size={18} color={accentColor} />
+                          <Text style={[styles.addToCourseText, { color: accentColor }]}>Ajouter un cours ici</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -682,11 +682,11 @@ export default function CoursesScreen() {
 
               {/* Standalone courses */}
               {standaloneCourses.length > 0 && (
-                <View style={[styles.chapterCard, isDesktop && styles.chapterCardDesktop]}>
+                <View style={[styles.chapterCard, { backgroundColor: colors.surface, borderColor: colors.border }, isDesktop && styles.chapterCardDesktop]}>
                   <View style={[styles.chapterHeader, { paddingVertical: 12 }]}>
-                    <View style={[styles.chapterColorBar, { backgroundColor: '#9CA3AF' }]} />
+                    <View style={[styles.chapterColorBar, { backgroundColor: colors.textTertiary }]} />
                     <View style={styles.chapterInfo}>
-                      <Text style={[styles.chapterTitle, { color: '#6B7280' }]}>Cours sans chapitre</Text>
+                      <Text style={[styles.chapterTitle, { color: colors.textSecondary }]}>Cours sans chapitre</Text>
                     </View>
                   </View>
                   <View style={styles.coursesList}>
@@ -695,7 +695,7 @@ export default function CoursesScreen() {
                       const courseColor = getItemColor(course.id);
                       
                       return (
-                        <View key={course.id} style={styles.courseItem}>
+                        <View key={course.id} style={[styles.courseItem, { borderBottomColor: colors.border }]}>
                           <View style={[styles.courseColorDot, { backgroundColor: courseColor }]} />
                           <TouchableOpacity
                             style={styles.courseContent}
@@ -703,22 +703,22 @@ export default function CoursesScreen() {
                             activeOpacity={0.7}
                           >
                             <View style={styles.courseInfo}>
-                              <Text style={styles.courseTitle}>{course.title}</Text>
+                              <Text style={[styles.courseTitle, { color: colors.text }]}>{course.title}</Text>
                               {getMethodBadge(settings?.method)}
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                           </TouchableOpacity>
                           <TouchableOpacity 
                             onPress={() => handleOpenColorPicker(course)}
                             style={styles.colorButton}
                           >
-                            <Ionicons name="color-palette-outline" size={16} color="#6B7280" />
+                            <Ionicons name="color-palette-outline" size={16} color={colors.textSecondary} />
                           </TouchableOpacity>
                           <TouchableOpacity 
                             onPress={() => handleDeleteItem(course)}
                             style={styles.deleteButton}
                           >
-                            <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                            <Ionicons name="trash-outline" size={16} color={colors.error} />
                           </TouchableOpacity>
                         </View>
                       );
