@@ -755,14 +755,8 @@ const styles = StyleSheet.create({
   },
   // Week Calendar
   weekCalendarCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   weekNavHeader: {
     flexDirection: 'row',
@@ -774,7 +768,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EBF5FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -785,11 +778,9 @@ const styles = StyleSheet.create({
   weekCalendarTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
   },
   backToTodayText: {
     fontSize: 13,
-    color: '#3B82F6',
     marginTop: 4,
     fontWeight: '500',
   },
@@ -809,24 +800,20 @@ const styles = StyleSheet.create({
   },
   weekDayToday: {
     borderWidth: 2,
-    borderColor: '#3B82F6',
   },
   weekDayName: {
     fontSize: 12,
-    color: '#6B7280',
     textTransform: 'capitalize',
     marginBottom: 4,
   },
   weekDayNumber: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
   },
   weekDayTextSelected: {
     color: '#FFFFFF',
   },
   weekDayNumberToday: {
-    color: '#3B82F6',
   },
   weekDayIndicators: {
     flexDirection: 'row',
@@ -840,13 +827,11 @@ const styles = StyleSheet.create({
   },
   selectedDayDetails: {
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
     paddingTop: 16,
   },
   selectedDayTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
     textTransform: 'capitalize',
     marginBottom: 12,
   },
@@ -855,12 +840,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     padding: 16,
-    backgroundColor: '#F9FAFB',
     borderRadius: 8,
   },
   noDaySessionsText: {
     fontSize: 14,
-    color: '#9CA3AF',
   },
   daySessionsList: {
     gap: 8,
@@ -870,7 +853,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     padding: 10,
-    backgroundColor: '#F9FAFB',
     borderRadius: 8,
   },
   miniSessionDot: {
@@ -881,29 +863,20 @@ const styles = StyleSheet.create({
   miniSessionTitle: {
     flex: 1,
     fontSize: 14,
-    color: '#374151',
   },
   moreSessions: {
     fontSize: 13,
-    color: '#3B82F6',
     textAlign: 'center',
     marginTop: 4,
   },
   // Progress Card Desktop
   progressCardDesktop: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   progressTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 16,
   },
   progressGrid: {
@@ -915,7 +888,6 @@ const styles = StyleSheet.create({
     width: '47%',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#F9FAFB',
     borderRadius: 12,
   },
   progressGridIcon: {
@@ -929,15 +901,12 @@ const styles = StyleSheet.create({
   progressGridValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
   },
   progressGridLabel: {
     fontSize: 12,
-    color: '#6B7280',
     marginTop: 2,
   },
   totalCard: {
-    backgroundColor: '#3B82F6',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',

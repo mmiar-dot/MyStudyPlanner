@@ -423,18 +423,18 @@ export default function CalendarScreen() {
 
           {/* Sessions/Events Column */}
           <View style={[styles.sessionsColumn, isDesktop && styles.sessionsColumnDesktop]}>
-            <Text style={styles.dateTitle}>
+            <Text style={[styles.dateTitle, { color: colors.text }]}>
               {format(new Date(selectedDate), "EEEE d MMMM", { locale: fr })}
             </Text>
 
             {/* Personal Events */}
             {personalEvents.length > 0 && (
               <View style={styles.eventsSection}>
-                <Text style={styles.eventsSectionTitle}>Événements personnels</Text>
+                <Text style={[styles.eventsSectionTitle, { color: colors.textSecondary }]}>Événements personnels</Text>
                 {personalEvents.map((event) => (
                   <TouchableOpacity 
                     key={event.id} 
-                    style={styles.eventCard}
+                    style={[styles.eventCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     onPress={() => {
                       // Open edit modal
                       setEditingEvent(event);
@@ -450,12 +450,12 @@ export default function CalendarScreen() {
                   >
                     <View style={[styles.eventColor, { backgroundColor: event.color }]} />
                     <View style={styles.eventInfo}>
-                      <Text style={styles.eventTitle}>{event.title}</Text>
-                      <Text style={styles.eventTime}>
+                      <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
+                      <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
                         {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
                       </Text>
                       {event.description && (
-                        <Text style={styles.eventDescription}>{event.description}</Text>
+                        <Text style={[styles.eventDescription, { color: colors.textTertiary }]}>{event.description}</Text>
                       )}
                     </View>
                     <View style={styles.eventActions}>
@@ -475,7 +475,7 @@ export default function CalendarScreen() {
                           openEventModal();
                         }}
                       >
-                        <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                        <Ionicons name="pencil-outline" size={16} color={accentColor} />
                       </TouchableOpacity>
                       <TouchableOpacity 
                         style={styles.eventActionBtn}
@@ -484,7 +484,7 @@ export default function CalendarScreen() {
                           handleDeleteEvent(event.id, event.title);
                         }}
                       >
-                        <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                        <Ionicons name="trash-outline" size={16} color={colors.error} />
                       </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
@@ -495,8 +495,8 @@ export default function CalendarScreen() {
             {/* ICS Events (University Calendar) */}
             {icsEvents.length > 0 && (
               <View style={styles.eventsSection}>
-                <Text style={styles.eventsSectionTitle}>
-                  <Ionicons name="school-outline" size={14} color="#10B981" /> Calendrier universitaire
+                <Text style={[styles.eventsSectionTitle, { color: colors.textSecondary }]}>
+                  <Ionicons name="school-outline" size={14} color={colors.success} /> Calendrier universitaire
                 </Text>
                 {icsEvents.map((event) => (
                   <View key={event.id} style={styles.icsEventCard}>
@@ -536,7 +536,7 @@ export default function CalendarScreen() {
               <>
                 {pendingSessions.length > 0 && (
                   <View style={styles.sessionGroup}>
-                    <Text style={styles.groupTitle}>
+                    <Text style={[styles.groupTitle, { color: colors.text }]}>
                       Sessions à faire ({pendingSessions.length})
                     </Text>
                     {pendingSessions.map((session) => (
@@ -553,7 +553,7 @@ export default function CalendarScreen() {
 
                 {completedSessions.length > 0 && (
                   <View style={styles.sessionGroup}>
-                    <Text style={styles.groupTitleCompleted}>
+                    <Text style={[styles.groupTitleCompleted, { color: colors.success }]}>
                       Terminées ({completedSessions.length})
                     </Text>
                     {completedSessions.map((session) => (
@@ -578,13 +578,13 @@ export default function CalendarScreen() {
         {Platform.OS === 'web' ? (
           // On web/desktop, don't use KeyboardAvoidingView as it interferes with keyboard input
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, isDesktop && styles.modalContentDesktop]}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
                   {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
                 </Text>
                 <TouchableOpacity onPress={() => { setShowEventModal(false); resetEventForm(); }}>
-                  <Ionicons name="close" size={24} color="#6B7280" />
+                  <Ionicons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
 
@@ -594,10 +594,10 @@ export default function CalendarScreen() {
               >
                 {/* Date selector */}
                 <TouchableOpacity 
-                  style={styles.dateSelector}
+                  style={[styles.dateSelector, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
                   onPress={() => setShowEventDatePicker(!showEventDatePicker)}
                 >
-                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+                  <Ionicons name="calendar" size={20} color={accentColor} />
                   <Text style={styles.dateSelectorText}>
                     {format(new Date(editingEvent ? editingEvent.start_time.split('T')[0] : eventDate), "EEEE d MMMM yyyy", { locale: fr })}
                   </Text>
