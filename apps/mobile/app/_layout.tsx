@@ -30,6 +30,7 @@ export default function RootLayout() {
 
   const [isReady, setIsReady] = useState(false);
   const [updateState, setUpdateState] = useState<UpdateState>({ status: "idle" });
+  const [debugInfo, setDebugInfo] = useState<string>("Starting...");
 
   // Determine actual theme
   const actualTheme = theme === 'system' ? systemColorScheme || 'light' : theme;
