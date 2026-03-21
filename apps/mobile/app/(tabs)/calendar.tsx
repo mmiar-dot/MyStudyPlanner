@@ -71,7 +71,7 @@ export default function CalendarScreen() {
   const { fetchSessionsByDate, completeSession, createManualSession } = useSessionStore();
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
   const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, updateEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
-  const { allItems, fetchAllItems, itemColors } = useCatalogStore();
+  const { allItems, fetchAllItems, itemColors, fetchItemColors } = useCatalogStore();
 
   // Helper function to format event time (handles both datetime and date-only formats)
   const formatEventTime = (timeStr: string): string => {
@@ -104,6 +104,7 @@ export default function CalendarScreen() {
       fetchAllCalendarEvents(startDate, endDate),
       fetchICSSubscriptions(),
       fetchAllItems(),
+      fetchItemColors(),
     ]);
   }, [currentMonth]);
 
@@ -577,6 +578,7 @@ export default function CalendarScreen() {
                         onComplete={() => handleCompleteSession(session)}
                         onPress={() => {}}
                         onStatusChange={loadDaySessions}
+                        customColor={itemColors[session.item_id]}
                       />
                     ))}
                   </View>
@@ -588,6 +590,15 @@ export default function CalendarScreen() {
                       Terminées ({completedSessions.length})
                     </Text>
                     {completedSessions.map((session) => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onComplete={() => handleCompleteSession(session)}
+                        onPress={() => {}}
+                        onStatusChange={loadDaySessions}
+                        customColor={itemColors[session.item_id]}
+                      />
+                    ))}
                       <SessionCard
                         key={session.id}
                         session={session}

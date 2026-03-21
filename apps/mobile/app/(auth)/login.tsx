@@ -129,6 +129,16 @@ export default function LoginScreen() {
   };
 
   const handleAppleSignIn = async () => {
+    // Check if we're on web/desktop (Tauri)
+    if (Platform.OS === 'web') {
+      Alert.alert(
+        'Non disponible',
+        'La connexion avec Apple n\'est disponible que sur iOS et macOS natif. Veuillez utiliser une autre méthode de connexion.',
+        [{ text: 'OK', style: 'cancel' }]
+      );
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       setLocalError('');

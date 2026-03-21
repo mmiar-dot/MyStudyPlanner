@@ -14,6 +14,7 @@ interface SessionCardProps {
   onSkip?: (session: StudySession) => void;
   showActions?: boolean;
   onStatusChange?: () => void; // Called when session status changes (uncomplete, reschedule, etc.)
+  customColor?: string; // Custom color for the course
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -22,6 +23,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onSkip,
   showActions = true,
   onStatusChange,
+  customColor,
 }) => {
   const { uncompleteSession, rescheduleSession, courseNotes, fetchCourseNotes, addCourseNote } = useSessionStore();
   
@@ -85,7 +87,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     if (isCompleted) return '#10B981';
     if (isLate) return '#EF4444';
     if (isSkipped) return '#9CA3AF';
-    return '#3B82F6';
+    return customColor || '#3B82F6';
   };
 
   const handleUncomplete = async () => {

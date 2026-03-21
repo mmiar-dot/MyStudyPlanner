@@ -84,6 +84,11 @@ export default function CoursesScreen() {
   const [renameItem, setRenameItem] = useState<CatalogItem | CustomSection | null>(null);
   const [renameType, setRenameType] = useState<'course' | 'section'>('course');
   const [newName, setNewName] = useState('');
+  
+  // Delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<CatalogItem | null>(null);
+  const [deleteAction, setDeleteAction] = useState<'delete' | 'hide'>('delete');
 
   const loadData = useCallback(async () => {
     await Promise.all([
@@ -202,63 +207,31 @@ export default function CoursesScreen() {
   };
 
   const handleDeleteItem = (item: CatalogItem) => {
-    if (item.is_personal) {
-      // Really delete personal courses
-      if (Platform.OS === 'web') {
-        if (window.confirm(`Supprimer définitivement "${item.title}" et toutes ses données ?`)) {
-          deletePersonalCourse(item.id)
-            .then(() => {
-              loadData();
-              alert('Cours supprimé avec succès');
-            })
-            .catch(() => {
-              alert('Erreur: Impossible de supprimer le cours');
-            });
+    setDeleteItem(item);
+    setDeleteAction(item.is_personal ? 'delete' : 'hide');
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItem) return;
+    
+    try {
+      if (deleteAction === 'delete' && deleteItem.is_personal) {
+        await deletePersonalCourse(deleteItem.id);
+        await loadData();
+        if (Platform.OS !== 'web') {
+          Alert.alert('Succès', 'Cours supprimé');
         }
       } else {
-        Alert.alert(
-          'Supprimer',
-          `Supprimer définitivement "${item.title}" et toutes ses données ?`,
-          [
-            { text: 'Annuler', style: 'cancel' },
-            {
-              text: 'Supprimer',
-              style: 'destructive',
-              onPress: async () => {
-                try {
-                  await deletePersonalCourse(item.id);
-                  await loadData(); // Refresh
-                  Alert.alert('Succès', 'Cours supprimé');
-                } catch (error) {
-                  Alert.alert('Erreur', 'Impossible de supprimer le cours');
-                }
-              },
-            },
-          ]
-        );
+        await hideItem(deleteItem.id);
       }
-    } else {
-      // Hide admin courses
-      if (Platform.OS === 'web') {
-        if (window.confirm(`Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`)) {
-          hideItem(item.id);
-        }
-      } else {
-        Alert.alert(
-          'Masquer',
-          `Masquer "${item.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`,
-          [
-            { text: 'Annuler', style: 'cancel' },
-            {
-              text: 'Masquer',
-              style: 'destructive',
-              onPress: async () => {
-                await hideItem(item.id);
-              },
-            },
-          ]
-        );
+    } catch (error) {
+      if (Platform.OS !== 'web') {
+        Alert.alert('Erreur', 'Impossible de supprimer/masquer le cours');
       }
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteItem(null);
     }
   };
 
@@ -935,6 +908,51 @@ export default function CoursesScreen() {
         </View>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
+      <Modal visible={showDeleteModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }, isDesktop && styles.modalContentDesktop]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {deleteAction === 'delete' ? 'Supprimer' : 'Masquer'}
+              </Text>
+              <TouchableOpacity onPress={() => {
+                setShowDeleteModal(false);
+                setDeleteItem(null);
+              }}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.deleteConfirmText, { color: colors.textSecondary }]}>
+              {deleteAction === 'delete'
+                ? `Supprimer définitivement "${deleteItem?.title}" et toutes ses données ?`
+                : `Masquer "${deleteItem?.title}" de votre liste ? Vous pourrez le restaurer depuis le filtre "Masqués".`}
+            </Text>
+
+            <View style={styles.deleteButtonRow}>
+              <TouchableOpacity
+                style={[styles.cancelDeleteButton, { borderColor: colors.border }]}
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  setDeleteItem(null);
+                }}
+              >
+                <Text style={[styles.cancelDeleteText, { color: colors.text }]}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmDeleteButton, { backgroundColor: '#EF4444' }]}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.confirmDeleteText}>
+                  {deleteAction === 'delete' ? 'Supprimer' : 'Masquer'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Method Selector Modal */}
       <MethodSelector
         visible={showMethodSelector}
@@ -1375,5 +1393,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#10B981',
     marginTop: 8,
+  },
+  deleteConfirmText: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  deleteButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelDeleteButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  cancelDeleteText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmDeleteButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmDeleteText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
