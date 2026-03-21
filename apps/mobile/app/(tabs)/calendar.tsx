@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Calendar, DateData } from 'react-native-calendars';
 import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useSessionStore } from '@mystudyplanner/api-client';
+import { useSessionStore, useCatalogStore } from '@mystudyplanner/api-client';
 import { useAnalyticsStore } from '@mystudyplanner/api-client';
 import { useEventStore, CalendarEvent } from '@mystudyplanner/api-client';
 import { setCalendarRefreshCallback } from '@mystudyplanner/api-client';
@@ -62,10 +62,16 @@ export default function CalendarScreen() {
   const [icsName, setIcsName] = useState('');
   const [icsUrl, setIcsUrl] = useState('');
   const [icsColor, setIcsColor] = useState('#10B981');
+  
+  // Manual session modal states
+  const [showAddSessionModal, setShowAddSessionModal] = useState(false);
+  const [sessionCourseId, setSessionCourseId] = useState('');
+  const [sessionTime, setSessionTime] = useState('09:00');
 
-  const { fetchSessionsByDate, completeSession } = useSessionStore();
+  const { fetchSessionsByDate, completeSession, createManualSession } = useSessionStore();
   const { calendarData, fetchCalendarData } = useAnalyticsStore();
   const { events, allCalendarEvents, icsSubscriptions, fetchEvents, fetchAllCalendarEvents, fetchICSSubscriptions, createEvent, updateEvent, deleteEvent, subscribeICS, syncICS, deleteICSSubscription } = useEventStore();
+  const { allItems, fetchAllItems, itemColors } = useCatalogStore();
 
   // Helper function to format event time (handles both datetime and date-only formats)
   const formatEventTime = (timeStr: string): string => {
@@ -97,6 +103,7 @@ export default function CalendarScreen() {
       fetchEvents(),
       fetchAllCalendarEvents(startDate, endDate),
       fetchICSSubscriptions(),
+      fetchAllItems(),
     ]);
   }, [currentMonth]);
 
@@ -257,6 +264,30 @@ export default function CalendarScreen() {
     setIcsUrl('');
     setIcsColor('#10B981');
   };
+
+  const handleCreateManualSession = async () => {
+    if (!sessionCourseId) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un cours');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await createManualSession(sessionCourseId, selectedDate, sessionTime || undefined);
+      setShowAddSessionModal(false);
+      setSessionCourseId('');
+      setSessionTime('09:00');
+      await loadDaySessions();
+      await loadMonthData();
+      Alert.alert('Succès', 'Session créée avec succès');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de créer la session');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Get courses that are leaf items (not chapters)
+  const availableCourses = (allItems || []).filter(item => item.type === 'course');
 
   // Get events for selected date (combine personal + ICS events)
   const dayEvents = (allCalendarEvents || []).filter(e => {

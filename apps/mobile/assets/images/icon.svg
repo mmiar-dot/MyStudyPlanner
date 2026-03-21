@@ -1,20 +1,30 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background - Matching login page accent color -->
-  <rect width="1024" height="1024" rx="224" fill="#3B82F6"/>
+  <!-- Background - Pale blue with iOS-style rounded corners -->
+  <rect width="1024" height="1024" rx="224" fill="#DBEAFE"/>
   
-  <!-- Ionicons 'book' icon - White on blue background -->
-  <!-- Recreated to match the exact Ionicons book icon from login page -->
-  <g transform="translate(512, 512) scale(8)">
-    <!-- Book outline based on Ionicons book icon -->
-    <!-- Left page -->
-    <path d="M-4,-40 L-4,32 C-4,36 -8,40 -12,40 C-24,40 -36,36 -44,32 L-44,-36 C-44,-40 -40,-44 -36,-44 C-24,-44 -12,-44 -4,-40 Z" 
-          fill="#FFFFFF" fill-opacity="0.95"/>
+  <!-- Open Book Icon - Blue (#3B82F6) on light blue background -->
+  <!-- Matches the exact design from the reference image -->
+  <g transform="translate(512, 512)">
+    <!-- Left page - curved bottom edge -->
+    <path d="M-30 -180 
+             L-30 140 
+             Q-30 180 -70 200 
+             L-240 200 
+             Q-280 200 -280 160 
+             L-280 -140 
+             Q-280 -180 -240 -180 
+             Z" 
+          fill="#3B82F6"/>
     
-    <!-- Right page -->
-    <path d="M4,-40 L4,32 C4,36 8,40 12,40 C24,40 36,36 44,32 L44,-36 C44,-40 40,-44 36,-44 C24,-44 12,-44 4,-40 Z" 
-          fill="#FFFFFF" fill-opacity="0.9"/>
-    
-    <!-- Center spine highlight -->
-    <rect x="-2" y="-44" width="4" height="88" fill="#3B82F6" fill-opacity="0.3" rx="2"/>
+    <!-- Right page - curved bottom edge -->
+    <path d="M30 -180 
+             L30 140 
+             Q30 180 70 200 
+             L240 200 
+             Q280 200 280 160 
+             L280 -140 
+             Q280 -180 240 -180 
+             Z" 
+          fill="#3B82F6"/>
   </g>
 </svg>

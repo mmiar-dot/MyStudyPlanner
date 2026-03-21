@@ -1632,6 +1632,46 @@ async def uncomplete_session(session_id: str, user: dict = Depends(get_current_u
 class SessionReschedule(BaseModel):
     new_date: str  # YYYY-MM-DD format
 
+class ManualSessionCreate(BaseModel):
+    item_id: str
+    scheduled_date: str  # YYYY-MM-DD format
+    scheduled_time: Optional[str] = None  # HH:MM format
+    note: Optional[str] = None
+
+@api_router.post("/sessions/manual")
+async def create_manual_session(data: ManualSessionCreate, user: dict = Depends(get_current_user)):
+    """Create a manual study session without a revision method"""
+    # Validate date format
+    try:
+        datetime.strptime(data.scheduled_date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Format de date invalide (YYYY-MM-DD)")
+    
+    # Verify the item exists
+    item = await db.catalog.find_one({"id": data.item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Cours non trouvé")
+    
+    # Create session
+    session_id = str(uuid.uuid4())
+    session = {
+        "id": session_id,
+        "user_id": user["id"],
+        "item_id": data.item_id,
+        "method": "manual",  # Special method for manual sessions
+        "scheduled_date": data.scheduled_date,
+        "scheduled_time": data.scheduled_time,
+        "status": SessionStatus.PENDING,
+        "created_at": datetime.utcnow(),
+    }
+    
+    await db.study_sessions.insert_one(session)
+    
+    return {
+        "id": session_id,
+        "message": f"Session créée pour le {data.scheduled_date}"
+    }
+
 @api_router.put("/sessions/{session_id}/reschedule")
 async def reschedule_session(session_id: str, data: SessionReschedule, user: dict = Depends(get_current_user)):
     """Move a session to a different date"""

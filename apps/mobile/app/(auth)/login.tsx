@@ -293,12 +293,10 @@ export default function LoginScreen() {
                     <TouchableOpacity 
                       style={styles.appleButton}
                       onPress={handleAppleSignIn}
-                      disabled={isSubmitting || Platform.OS === 'web'}
+                      disabled={isSubmitting}
                     >
                       <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
-                      <Text style={styles.appleButtonText}>
-                        {Platform.OS === 'web' ? 'Apple (iOS uniquement)' : 'Continuer avec Apple'}
-                      </Text>
+                      <Text style={styles.appleButtonText}>Continuer avec Apple</Text>
                     </TouchableOpacity>
                   )}
 

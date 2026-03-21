@@ -75,6 +75,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     if (session.method === 'tours' && session.tour_number) {
       return `Tour ${session.tour_number}`;
     }
+    if (session.method === 'manual') {
+      return 'Manuel';
+    }
     return session.method;
   };
 

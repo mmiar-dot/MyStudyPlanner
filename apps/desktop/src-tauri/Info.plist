@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>MyStudyPlanner</string>
+    <key>CFBundleDisplayName</key>
+    <string>MyStudyPlanner</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.miaropiret.mystudyplanner</string>
+    <key>CFBundleVersion</key>
+    <string>1.3.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.3.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleExecutable</key>
+    <string>MyStudyPlanner</string>
+    <key>CFBundleIconFile</key>
+    <string>icon.icns</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.education</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.13</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2026 Mia Ropiret. All rights reserved.</string>
+    
+    <!-- Spotlight indexing -->
+    <key>UTExportedTypeDeclarations</key>
+    <array/>
+    
+    <!-- Allow network access -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    
+    <!-- Apple Sign In capability -->
+    <key>com.apple.developer.applesignin</key>
+    <array>
+        <string>Default</string>
+    </array>
+</dict>
+</plist>

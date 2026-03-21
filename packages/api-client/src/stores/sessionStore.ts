@@ -28,6 +28,7 @@ interface SessionState {
   skipSession: (sessionId: string) => Promise<void>;
   rescheduleSession: (sessionId: string, newDate: string) => Promise<void>;
   setSessionTime: (sessionId: string, time: string) => Promise<void>;
+  createManualSession: (itemId: string, scheduledDate: string, scheduledTime?: string) => Promise<void>;
   fetchCourseNotes: (itemId: string) => Promise<void>;
   addCourseNote: (itemId: string, content: string) => Promise<void>;
   updateCourseNote: (itemId: string, noteId: string, content: string) => Promise<void>;
@@ -131,6 +132,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   rescheduleSession: async (sessionId: string, newDate: string) => {
     try {
       await api.put(`/sessions/${sessionId}/reschedule`, { new_date: newDate });
+      await get().fetchTodaySessions();
+      await get().fetchLateSessions();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  createManualSession: async (itemId: string, scheduledDate: string, scheduledTime?: string) => {
+    try {
+      await api.post('/sessions/manual', {
+        item_id: itemId,
+        scheduled_date: scheduledDate,
+        scheduled_time: scheduledTime,
+      });
       await get().fetchTodaySessions();
       await get().fetchLateSessions();
     } catch (error: any) {
