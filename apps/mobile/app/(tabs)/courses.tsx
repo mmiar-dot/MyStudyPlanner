@@ -224,8 +224,10 @@ export default function CoursesScreen() {
         }
       } else {
         await hideItem(deleteItem.id);
+        await loadData();
       }
     } catch (error) {
+      console.error('Delete/hide error:', error);
       if (Platform.OS !== 'web') {
         Alert.alert('Erreur', 'Impossible de supprimer/masquer le cours');
       }
@@ -547,29 +549,7 @@ export default function CoursesScreen() {
                         <TouchableOpacity 
                           onPress={(e) => {
                             e.stopPropagation();
-                            if (chapter.is_personal) {
-                              handleDeleteItem(chapter);
-                            } else {
-                              // Hide admin course
-                              const doHide = async () => {
-                                await hideItem(chapter.id);
-                                loadData();
-                              };
-                              if (Platform.OS === 'web') {
-                                if (window.confirm(`Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`)) {
-                                  doHide();
-                                }
-                              } else {
-                                Alert.alert(
-                                  'Masquer le chapitre',
-                                  `Voulez-vous masquer "${chapter.title}" ? Vous pourrez le réafficher depuis le filtre "Masqués".`,
-                                  [
-                                    { text: 'Annuler', style: 'cancel' },
-                                    { text: 'Masquer', onPress: doHide }
-                                  ]
-                                );
-                              }
-                            }
+                            handleDeleteItem(chapter);
                           }}
                           style={styles.actionButton}
                         >
