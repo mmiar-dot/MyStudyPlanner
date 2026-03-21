@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSessionStore } from '@mystudyplanner/api-client';
-import { useAnalyticsStore } from '@mystudyplanner/api-client';
+import { useAnalyticsStore, useCatalogStore } from '@mystudyplanner/api-client';
 import { useAuthStore } from '../../src/store/authStore';
 import { setSessionRefreshCallback, setCalendarRefreshCallback } from '@mystudyplanner/api-client';
 import { SessionCard } from '@mystudyplanner/shared-ui';
@@ -30,6 +30,7 @@ export default function TodayScreen() {
   const { user } = useAuthStore();
   const { todaySessions, lateSessions, fetchTodaySessions, fetchLateSessions, completeSession, fetchSessionsByDate } = useSessionStore();
   const { progress, fetchProgress, calendarData, fetchCalendarData } = useAnalyticsStore();
+  const { itemColors, fetchItemColors } = useCatalogStore();
   const [refreshing, setRefreshing] = useState(false);
   const [showLateSessions, setShowLateSessions] = useState(true);
   const [srsSession, setSrsSession] = useState<StudySession | null>(null);
@@ -68,6 +69,7 @@ export default function TodayScreen() {
       fetchLateSessions(),
       fetchProgress(),
       fetchCalendarData(today.getMonth() + 1, today.getFullYear()),
+      fetchItemColors(),
     ]);
     
     // Load week sessions
@@ -450,6 +452,7 @@ export default function TodayScreen() {
                         session={session}
                         onComplete={() => handleCompleteSession(session)}
                         onPress={() => {}}
+                        customColor={itemColors[session.item_id]}
                       />
                     ))}
                   </View>
@@ -489,6 +492,7 @@ export default function TodayScreen() {
                       onComplete={() => handleCompleteSession(session)}
                       onPress={() => {}}
                       onStatusChange={loadData}
+                      customColor={itemColors[session.item_id]}
                     />
                   ))}
                 </View>
@@ -516,6 +520,7 @@ export default function TodayScreen() {
                       onComplete={() => {}}
                       onPress={() => {}}
                       onStatusChange={loadData}
+                      customColor={itemColors[session.item_id]}
                     />
                   ))}
                 </View>
