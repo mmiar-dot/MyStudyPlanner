@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false, // Changed to false by default
   isAuthenticated: false,
   error: null,
-  theme: 'light',
+  theme: 'system', // Default to system theme
   accentColor: '#3B82F6',
 
   setTheme: (theme: 'light' | 'dark' | 'system') => {

@@ -521,15 +521,15 @@ export default function CalendarScreen() {
 
             {/* Study Sessions */}
             {(daySessions || []).length === 0 && (dayEvents || []).length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="calendar-outline" size={40} color="#9CA3AF" />
-                <Text style={styles.emptyText}>Aucune session ni événement</Text>
+              <View style={[styles.emptyState, { backgroundColor: colors.surface }]}>
+                <Ionicons name="calendar-outline" size={40} color={colors.textTertiary} />
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Aucune session ni événement</Text>
                 <TouchableOpacity 
-                  style={styles.addEventButton}
+                  style={[styles.addEventButton, { borderColor: accentColor }]}
                   onPress={() => openEventModal()}
                 >
-                  <Ionicons name="add" size={18} color="#3B82F6" />
-                  <Text style={styles.addEventButtonText}>Ajouter un événement</Text>
+                  <Ionicons name="add" size={18} color={accentColor} />
+                  <Text style={[styles.addEventButtonText, { color: accentColor }]}>Ajouter un événement</Text>
                 </TouchableOpacity>
               </View>
             ) : (

@@ -136,19 +136,19 @@ export default function AppearanceScreen() {
 
         {/* Preview Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Aperçu</Text>
-          <View style={styles.previewCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Aperçu</Text>
+          <View style={[styles.previewCard, { backgroundColor: colors.surface }]}>
             <View style={[styles.previewHeader, { backgroundColor: accentColor }]}>
               <Text style={styles.previewHeaderText}>Ma session</Text>
             </View>
             <View style={styles.previewBody}>
               <View style={styles.previewRow}>
                 <View style={[styles.previewDot, { backgroundColor: accentColor }]} />
-                <Text style={styles.previewText}>Cardiologie - J1</Text>
+                <Text style={[styles.previewText, { color: colors.text }]}>Cardiologie - J1</Text>
               </View>
               <View style={styles.previewRow}>
                 <View style={[styles.previewDot, { backgroundColor: '#10B981' }]} />
-                <Text style={styles.previewText}>Neurologie - Terminé</Text>
+                <Text style={[styles.previewText, { color: colors.text }]}>Neurologie - Terminé</Text>
               </View>
               <TouchableOpacity style={[styles.previewButton, { backgroundColor: accentColor }]}>
                 <Text style={styles.previewButtonText}>Terminer</Text>
@@ -210,7 +210,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
     marginBottom: 8,
   },
   sectionDescription: {
