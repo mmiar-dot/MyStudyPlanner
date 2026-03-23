@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { StudySession } from '@mystudyplanner/api-client';
@@ -265,7 +265,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Options Modal */}
       <Modal visible={showOptionsModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{session.item_title}</Text>
@@ -441,12 +444,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Reschedule Modal */}
       <Modal visible={showRescheduleModal} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.rescheduleModal}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Déplacer la session</Text>
@@ -536,12 +542,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Upcoming Sessions Modal */}
       <Modal visible={showUpcomingModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.upcomingModal}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Sessions planifiées</Text>
@@ -690,7 +699,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               </View>
             )}
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );

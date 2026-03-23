@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, useWindowDimensions, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, useWindowDimensions, Alert, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
@@ -264,7 +264,10 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.overlay}
+      >
         <View style={[styles.modal, isDesktop && styles.modalDesktop]}>
           <View style={styles.header}>
             <Text style={styles.title}>Méthode de révision</Text>
@@ -275,7 +278,7 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
           <Text style={styles.itemTitle}>{itemTitle}</Text>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">>
             {/* Method Options */}
             <TouchableOpacity
               style={[styles.methodOption, selectedMethod === 'j_method' && styles.methodSelected]}
@@ -678,11 +681,11 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
 
           <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
             <Text style={styles.confirmText}>
-              {selectedMethod === 'none' ? 'Désactiver' : 'Activer la révision'}
+              {selectedMethod === 'none' ? 'Désactiver' : selectedMethod === 'single_session' ? 'Créer la session' : 'Activer la révision'}
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
