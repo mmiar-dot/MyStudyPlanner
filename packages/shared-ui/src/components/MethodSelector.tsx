@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, useWindowDimensions, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+// Extended type to include single_session
+type MethodType = RevisionMethod | 'single_session';
 
 interface MethodSelectorProps {
   visible: boolean;
@@ -15,7 +18,9 @@ interface MethodSelectorProps {
     srsSettings?: SRSSettings,
     toursSettings?: ToursSettings
   ) => void;
+  onCreateSingleSession?: (date: string, time?: string) => Promise<void>;
   itemTitle: string;
+  itemId?: string;
   currentMethod?: RevisionMethod;
   isChapter?: boolean; // For Tours method - only chapters can use it
 }
@@ -34,16 +39,21 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
   visible,
   onClose,
   onSelect,
+  onCreateSingleSession,
   itemTitle,
+  itemId,
   currentMethod,
   isChapter = false,
 }) => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   
-  const [selectedMethod, setSelectedMethod] = useState<RevisionMethod>(currentMethod || 'none');
+  const [selectedMethod, setSelectedMethod] = useState<MethodType>(currentMethod || 'none');
   const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [showCalendar, setShowCalendar] = useState(false);
+  const [singleSessionDate, setSingleSessionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [singleSessionTime, setSingleSessionTime] = useState('');
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   
   // J-method settings
   const [selectedPreset, setSelectedPreset] = useState<string>('classic');
@@ -167,7 +177,29 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
     return [];
   }, [selectedMethod, adjustedStartDate, totalTours, tourDuration, activeIntervals, hasExistingProgress, existingJDay, enableRecurring, recurringInterval, existingSRSInterval]);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    // Handle single session creation
+    if (selectedMethod === 'single_session') {
+      if (onCreateSingleSession) {
+        try {
+          setIsCreatingSession(true);
+          await onCreateSingleSession(singleSessionDate, singleSessionTime || undefined);
+          if (Platform.OS !== 'web') {
+            Alert.alert('Succès', 'Session créée avec succès');
+          }
+          onClose();
+        } catch (error) {
+          console.error('Error creating session:', error);
+          if (Platform.OS !== 'web') {
+            Alert.alert('Erreur', 'Impossible de créer la session');
+          }
+        } finally {
+          setIsCreatingSession(false);
+        }
+      }
+      return;
+    }
+
     let jSettings: JMethodSettings | undefined;
     let srsSettings: SRSSettings | undefined;
     let toursSettings: ToursSettings | undefined;
@@ -200,7 +232,7 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
       };
     }
 
-    onSelect(selectedMethod, jSettings, srsSettings, toursSettings);
+    onSelect(selectedMethod as RevisionMethod, jSettings, srsSettings, toursSettings);
     onClose();
   };
 
@@ -311,8 +343,74 @@ export const MethodSelector: React.FC<MethodSelectorProps> = ({
               )}
             </TouchableOpacity>
 
+            {/* Session unique option */}
+            <TouchableOpacity
+              style={[styles.methodOption, selectedMethod === 'single_session' && styles.methodSelected]}
+              onPress={() => setSelectedMethod('single_session')}
+            >
+              <View style={[styles.methodIcon, { backgroundColor: '#F59E0B' }]}>
+                <Ionicons name="calendar-number" size={20} color="#FFF" />
+              </View>
+              <View style={styles.methodInfo}>
+                <Text style={styles.methodTitle}>Session unique</Text>
+                <Text style={styles.methodDesc}>Ajouter une session à une date précise</Text>
+              </View>
+              {selectedMethod === 'single_session' && (
+                <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
+              )}
+            </TouchableOpacity>
+
+            {/* Single Session Settings */}
+            {selectedMethod === 'single_session' && (
+              <View style={styles.settings}>
+                <Text style={styles.settingsTitle}>Date de la session</Text>
+                
+                <TouchableOpacity
+                  style={styles.datePickerButton}
+                  onPress={() => setShowCalendar(true)}
+                >
+                  <Ionicons name="calendar" size={20} color="#3B82F6" />
+                  <Text style={styles.datePickerText}>
+                    {format(new Date(singleSessionDate), 'EEEE d MMMM yyyy', { locale: fr })}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+
+                {showCalendar && (
+                  <Calendar
+                    current={singleSessionDate}
+                    onDayPress={(day: any) => {
+                      setSingleSessionDate(day.dateString);
+                      setShowCalendar(false);
+                    }}
+                    markedDates={{
+                      [singleSessionDate]: { selected: true, selectedColor: '#3B82F6' },
+                    }}
+                    theme={{
+                      backgroundColor: '#FFFFFF',
+                      calendarBackground: '#FFFFFF',
+                      selectedDayBackgroundColor: '#3B82F6',
+                      todayTextColor: '#3B82F6',
+                      arrowColor: '#3B82F6',
+                    }}
+                    firstDay={1}
+                    style={styles.inlineCalendar}
+                  />
+                )}
+
+                <Text style={[styles.settingsTitle, { marginTop: 16 }]}>Heure (optionnel)</Text>
+                <TextInput
+                  style={styles.timeInput}
+                  placeholder="Ex: 09:00"
+                  placeholderTextColor="#9CA3AF"
+                  value={singleSessionTime}
+                  onChangeText={setSingleSessionTime}
+                />
+              </View>
+            )}
+
             {/* Settings based on method */}
-            {selectedMethod !== 'none' && (
+            {selectedMethod !== 'none' && selectedMethod !== 'single_session' && (
               <View style={styles.settings}>
                 {/* Existing Progress Toggle */}
                 <TouchableOpacity
@@ -1000,5 +1098,32 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F3F4F6',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  datePickerText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+    textTransform: 'capitalize',
+  },
+  inlineCalendar: {
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  timeInput: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    color: '#1F2937',
   },
 });

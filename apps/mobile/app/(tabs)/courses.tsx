@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCatalogStore, CustomSection } from '@mystudyplanner/api-client';
 import { MethodSelector } from '@mystudyplanner/shared-ui';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
-import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings } from '@mystudyplanner/api-client';
+import { CatalogItem, RevisionMethod, JMethodSettings, SRSSettings, ToursSettings, useSessionStore } from '@mystudyplanner/api-client';
 import { api } from '@mystudyplanner/api-client';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
@@ -29,6 +29,8 @@ export default function CoursesScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   const { colors, isDark, accentColor } = useTheme();
+  
+  const { createManualSession } = useSessionStore();
   
   const { 
     allItems, 
@@ -941,7 +943,15 @@ export default function CoursesScreen() {
           setSelectedItem(null);
         }}
         onSelect={handleMethodConfirm}
+        onCreateSingleSession={async (date, time) => {
+          if (selectedItem) {
+            await createManualSession(selectedItem.id, date, time);
+            setShowMethodSelector(false);
+            setSelectedItem(null);
+          }
+        }}
         itemTitle={selectedItem?.title || ''}
+        itemId={selectedItem?.id}
         currentMethod={selectedItem ? getItemSettings(selectedItem.id)?.method : undefined}
         isChapter={selectedItem?.level === 0}
       />
