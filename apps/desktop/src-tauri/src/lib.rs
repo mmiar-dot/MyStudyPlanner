@@ -3,15 +3,9 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
-    .setup(|app| {
-      // Enable devtools in debug mode
-      #[cfg(debug_assertions)]
-      {
-        if let Some(window) = app.get_webview_window("main") {
-          window.open_devtools();
-        }
-      }
-      
+    .setup(|_app| {
+      // Devtools can be opened manually with keyboard shortcut (Cmd+Alt+I on macOS, Ctrl+Shift+I on Windows/Linux)
+      // Removed automatic opening of devtools
       Ok(())
     })
     .plugin(tauri_plugin_updater::Builder::new().build())
