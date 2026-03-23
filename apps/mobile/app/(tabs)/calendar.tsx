@@ -603,14 +603,6 @@ export default function CalendarScreen() {
                         colors={colors}
                       />
                     ))}
-                      <SessionCard
-                        key={session.id}
-                        session={session}
-                        onComplete={() => {}}
-                        onPress={() => {}}
-                        onStatusChange={loadDaySessions}
-                      />
-                    ))}
                   </View>
                 )}
               </>
