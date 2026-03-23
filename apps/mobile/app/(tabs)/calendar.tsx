@@ -423,21 +423,21 @@ export default function CalendarScreen() {
 
             {/* ICS Subscriptions */}
             {icsSubscriptions.length > 0 && (
-              <View style={styles.icsSection}>
-                <Text style={styles.icsSectionTitle}>Calendriers abonnés</Text>
+              <View style={[styles.icsSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.icsSectionTitle, { color: colors.text }]}>Calendriers abonnés</Text>
                 {icsSubscriptions.map((sub) => (
-                  <View key={sub.id} style={styles.icsItem}>
+                  <View key={sub.id} style={[styles.icsItem, { borderBottomColor: colors.border }]}>
                     <View style={[styles.icsColor, { backgroundColor: sub.color }]} />
                     <View style={styles.icsInfo}>
-                      <Text style={styles.icsName}>{sub.name}</Text>
+                      <Text style={[styles.icsName, { color: colors.text }]}>{sub.name}</Text>
                       {sub.last_synced && (
-                        <Text style={styles.icsLastSync}>
+                        <Text style={[styles.icsLastSync, { color: colors.textTertiary }]}>
                           Sync: {format(parseISO(sub.last_synced), 'dd/MM HH:mm')}
                         </Text>
                       )}
                     </View>
                     <TouchableOpacity onPress={() => syncICS(sub.id)}>
-                      <Ionicons name="sync" size={20} color="#6B7280" />
+                      <Ionicons name="sync" size={20} color={colors.textSecondary} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
                       Alert.alert('Supprimer', `Supprimer "${sub.name}" ?`, [
@@ -579,6 +579,8 @@ export default function CalendarScreen() {
                         onPress={() => {}}
                         onStatusChange={loadDaySessions}
                         customColor={itemColors[session.item_id]}
+                        isDark={isDark}
+                        colors={colors}
                       />
                     ))}
                   </View>
@@ -597,6 +599,8 @@ export default function CalendarScreen() {
                         onPress={() => {}}
                         onStatusChange={loadDaySessions}
                         customColor={itemColors[session.item_id]}
+                        isDark={isDark}
+                        colors={colors}
                       />
                     ))}
                       <SessionCard

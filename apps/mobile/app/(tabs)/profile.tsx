@@ -1169,36 +1169,36 @@ export default function ProfileScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.inputLabel}>Type de signalement</Text>
+              <Text style={[styles.inputLabel, { color: colors.text, marginBottom: 12 }]}>Type de signalement</Text>
               <View style={styles.reportTypeContainer}>
                 <TouchableOpacity 
-                  style={[styles.reportTypeButton, reportType === 'bug' && styles.reportTypeSelected]}
+                  style={[styles.reportTypeButton, { backgroundColor: colors.surfaceVariant }, reportType === 'bug' && styles.reportTypeSelected]}
                   onPress={() => setReportType('bug')}
                 >
                   <Ionicons name="bug" size={20} color={reportType === 'bug' ? '#FFFFFF' : '#EF4444'} />
-                  <Text style={[styles.reportTypeText, reportType === 'bug' && styles.reportTypeTextSelected]}>Bug</Text>
+                  <Text style={[styles.reportTypeText, { color: colors.text }, reportType === 'bug' && styles.reportTypeTextSelected]}>Bug</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.reportTypeButton, reportType === 'suggestion' && styles.reportTypeSelected]}
+                  style={[styles.reportTypeButton, { backgroundColor: colors.surfaceVariant }, reportType === 'suggestion' && styles.reportTypeSelected]}
                   onPress={() => setReportType('suggestion')}
                 >
                   <Ionicons name="bulb" size={20} color={reportType === 'suggestion' ? '#FFFFFF' : '#F59E0B'} />
-                  <Text style={[styles.reportTypeText, reportType === 'suggestion' && styles.reportTypeTextSelected]}>Suggestion</Text>
+                  <Text style={[styles.reportTypeText, { color: colors.text }, reportType === 'suggestion' && styles.reportTypeTextSelected]}>Suggestion</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.reportTypeButton, reportType === 'other' && styles.reportTypeSelected]}
+                  style={[styles.reportTypeButton, { backgroundColor: colors.surfaceVariant }, reportType === 'other' && styles.reportTypeSelected]}
                   onPress={() => setReportType('other')}
                 >
                   <Ionicons name="chatbox" size={20} color={reportType === 'other' ? '#FFFFFF' : '#3B82F6'} />
-                  <Text style={[styles.reportTypeText, reportType === 'other' && styles.reportTypeTextSelected]}>Autre</Text>
+                  <Text style={[styles.reportTypeText, { color: colors.text }, reportType === 'other' && styles.reportTypeTextSelected]}>Autre</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.inputLabel}>Description</Text>
+              <Text style={[styles.inputLabel, { color: colors.text, marginTop: 20, marginBottom: 12 }]}>Description</Text>
               <TextInput
-                style={[styles.input, styles.textArea]}
+                style={[styles.input, styles.textArea, { backgroundColor: colors.surfaceVariant, color: colors.text, borderColor: colors.border }]}
                 placeholder="Décrivez le problème ou votre suggestion..."
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.textTertiary}
                 value={reportMessage}
                 onChangeText={setReportMessage}
                 multiline

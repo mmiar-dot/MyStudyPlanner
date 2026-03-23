@@ -15,6 +15,16 @@ interface SessionCardProps {
   showActions?: boolean;
   onStatusChange?: () => void; // Called when session status changes (uncomplete, reschedule, etc.)
   customColor?: string; // Custom color for the course
+  isDark?: boolean; // Dark mode flag
+  colors?: {
+    card: string;
+    text: string;
+    textSecondary: string;
+    textTertiary: string;
+    border: string;
+    surface: string;
+    surfaceVariant: string;
+  };
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -24,7 +34,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   showActions = true,
   onStatusChange,
   customColor,
+  isDark = false,
+  colors: themeColors,
 }) => {
+  // Default colors for light mode
+  const colors = themeColors || {
+    card: '#FFFFFF',
+    text: '#1F2937',
+    textSecondary: '#6B7280',
+    textTertiary: '#9CA3AF',
+    border: '#E5E7EB',
+    surface: '#FFFFFF',
+    surfaceVariant: '#F3F4F6',
+  };
   const { uncompleteSession, rescheduleSession, courseNotes, fetchCourseNotes, addCourseNote } = useSessionStore();
   
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -189,7 +211,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   return (
     <>
       <TouchableOpacity 
-        style={[styles.card, isCompleted && styles.cardCompleted, isLate && styles.cardLate]}
+        style={[
+          styles.card, 
+          { backgroundColor: colors.card, borderColor: colors.border },
+          isCompleted && styles.cardCompleted, 
+          isLate && styles.cardLate
+        ]}
         onPress={() => setShowOptionsModal(true)}
         activeOpacity={0.7}
       >
@@ -198,7 +225,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </View>
         
         <View style={styles.content}>
-          <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }, isCompleted && styles.titleCompleted]} numberOfLines={2}>
             {session.item_title}
           </Text>
           
@@ -206,12 +233,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           {notes.length > 0 && (
             <View style={styles.notesIndicator}>
               <Ionicons name="document-text" size={12} color="#F59E0B" />
-              <Text style={styles.notesCount}>{notes.length} note(s)</Text>
+              <Text style={[styles.notesCount, { color: colors.textSecondary }]}>{notes.length} note(s)</Text>
             </View>
           )}
           
           {session.scheduled_time && (
-            <Text style={styles.time}>
+            <Text style={[styles.time, { color: colors.textTertiary }]}>
               <Ionicons name="time-outline" size={12} /> {session.scheduled_time}
             </Text>
           )}

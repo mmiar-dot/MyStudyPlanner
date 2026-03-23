@@ -453,6 +453,8 @@ export default function TodayScreen() {
                         onComplete={() => handleCompleteSession(session)}
                         onPress={() => {}}
                         customColor={itemColors[session.item_id]}
+                        isDark={isDark}
+                        colors={colors}
                       />
                     ))}
                   </View>
@@ -493,6 +495,8 @@ export default function TodayScreen() {
                       onPress={() => {}}
                       onStatusChange={loadData}
                       customColor={itemColors[session.item_id]}
+                      isDark={isDark}
+                      colors={colors}
                     />
                   ))}
                 </View>
@@ -521,6 +525,8 @@ export default function TodayScreen() {
                       onPress={() => {}}
                       onStatusChange={loadData}
                       customColor={itemColors[session.item_id]}
+                      isDark={isDark}
+                      colors={colors}
                     />
                   ))}
                 </View>
