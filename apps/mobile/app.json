@@ -27,7 +27,12 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.miaropiret.mystudyplanner",
-      "versionCode": 9
+      "versionCode": 9,
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +51,14 @@
         }
       ],
       "expo-secure-store",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3B82F6"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

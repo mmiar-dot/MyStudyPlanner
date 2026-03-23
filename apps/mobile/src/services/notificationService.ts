@@ -9,6 +9,7 @@ if (Platform.OS !== 'web') {
 }
 
 const NOTIFICATION_SETTINGS_KEY = 'notification_settings';
+const NOTIFICATION_PREFS_KEY = 'notification_preferences_v2';
 
 export interface NotificationSettings {
   enabled: boolean;
@@ -76,6 +77,14 @@ export async function registerForPushNotifications(): Promise<string | null> {
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#3B82F6',
+      });
+      
+      await Notifications.setNotificationChannelAsync('late-sessions', {
+        name: 'Sessions en retard',
+        description: 'Alertes pour les sessions en retard',
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#EF4444',
       });
     }
 
@@ -188,46 +197,46 @@ export async function clearBadge(): Promise<void> {
   await Notifications.setBadgeCountAsync(0);
 }
 
-// Singleton pattern for notification service (used by profile page)
-class NotificationService {
-  private settings = {
-    dailyReminder: true,
-    lateSessionAlerts: true,
-    morningBrief: true,
-  };
-  private initialized: boolean = false;
+// =====================================
+// Enhanced NotificationService class
+// =====================================
 
-  async init() {
-    if (this.initialized) return;
+export interface SessionData {
+  id: string;
+  title: string;
+  method?: string;
+  scheduled_date?: string;
+}
+
+class NotificationService {
+  private initialized: boolean = false;
+  private permissionGranted: boolean = false;
+
+  async init(): Promise<boolean> {
+    if (this.initialized) return this.permissionGranted;
     
     try {
       if (Platform.OS !== 'web') {
-        await registerForPushNotifications();
-      }
-      
-      // Load settings from storage
-      const stored = await AsyncStorage.getItem('profile_notif_settings');
-      if (stored) {
-        this.settings = { ...this.settings, ...JSON.parse(stored) };
+        const token = await registerForPushNotifications();
+        this.permissionGranted = token !== null;
+      } else {
+        this.permissionGranted = false;
       }
       this.initialized = true;
+      return this.permissionGranted;
     } catch (error) {
       console.log('Notification init error:', error);
+      this.initialized = true;
+      this.permissionGranted = false;
+      return false;
     }
   }
 
-  getSettings() {
-    return this.settings;
+  isPermissionGranted(): boolean {
+    return this.permissionGranted;
   }
 
-  async updateSettings(newSettings: typeof this.settings) {
-    this.settings = newSettings;
-    try {
-      await AsyncStorage.setItem('profile_notif_settings', JSON.stringify(newSettings));
-    } catch {}
-  }
-
-  async sendImmediateNotification(title: string, body: string) {
+  async sendImmediateNotification(title: string, body: string, data?: Record<string, any>) {
     if (Platform.OS === 'web' || !Notifications) {
       console.log('Web notification:', title, body);
       return;
@@ -237,9 +246,151 @@ class NotificationService {
       content: {
         title,
         body,
+        data: data || {},
       },
       trigger: null, // Immediate
     });
+  }
+
+  /**
+   * Schedule the daily sessions notification
+   */
+  async scheduleDailySummary(
+    hour: number,
+    minute: number,
+    enabled: boolean
+  ): Promise<void> {
+    if (Platform.OS === 'web' || !Notifications) return;
+    
+    // Cancel existing daily notifications first
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notif of scheduled) {
+      if (notif.content.data?.type === 'daily_sessions') {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      }
+    }
+    
+    if (!enabled) return;
+    
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '📚 Vos révisions du jour',
+        body: 'Consultez vos sessions de révision pour aujourd\'hui !',
+        data: { type: 'daily_sessions' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute,
+      },
+    });
+    
+    console.log(`Daily sessions notification scheduled at ${hour}:${minute}`);
+  }
+
+  /**
+   * Schedule the late sessions notification (runs daily at same time as daily summary)
+   */
+  async scheduleLateSessionsReminder(
+    hour: number,
+    minute: number,
+    enabled: boolean
+  ): Promise<void> {
+    if (Platform.OS === 'web' || !Notifications) return;
+    
+    // Cancel existing late notifications first
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notif of scheduled) {
+      if (notif.content.data?.type === 'late_sessions') {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      }
+    }
+    
+    if (!enabled) return;
+    
+    // Schedule a few minutes after the daily summary
+    const lateMinute = (minute + 5) % 60;
+    const lateHour = minute + 5 >= 60 ? (hour + 1) % 24 : hour;
+    
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '⚠️ Sessions en retard',
+        body: 'Vous avez des sessions de révision en retard à rattraper !',
+        data: { type: 'late_sessions' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: lateHour,
+        minute: lateMinute,
+      },
+    });
+    
+    console.log(`Late sessions notification scheduled at ${lateHour}:${lateMinute}`);
+  }
+
+  /**
+   * Reschedule all notifications based on current preferences
+   */
+  async rescheduleAllNotifications(
+    dailyEnabled: boolean,
+    lateEnabled: boolean,
+    hour: number,
+    minute: number
+  ): Promise<void> {
+    await this.scheduleDailySummary(hour, minute, dailyEnabled);
+    await this.scheduleLateSessionsReminder(hour, minute, lateEnabled);
+  }
+
+  /**
+   * Send an immediate notification about today's sessions
+   */
+  async notifyTodaySessions(sessions: SessionData[]): Promise<void> {
+    if (Platform.OS === 'web' || !Notifications || sessions.length === 0) return;
+    
+    const count = sessions.length;
+    const title = `📚 ${count} session${count > 1 ? 's' : ''} aujourd'hui`;
+    const body = count === 1 
+      ? sessions[0].title 
+      : `${sessions.slice(0, 3).map(s => s.title).join(', ')}${count > 3 ? ` et ${count - 3} autre(s)` : ''}`;
+    
+    await this.sendImmediateNotification(title, body, { 
+      type: 'today_sessions_summary',
+      count 
+    });
+  }
+
+  /**
+   * Send an immediate notification about late sessions
+   */
+  async notifyLateSessions(sessions: SessionData[]): Promise<void> {
+    if (Platform.OS === 'web' || !Notifications || sessions.length === 0) return;
+    
+    const count = sessions.length;
+    const title = `⚠️ ${count} session${count > 1 ? 's' : ''} en retard`;
+    const body = count === 1 
+      ? `"${sessions[0].title}" doit être révisé` 
+      : `${sessions.slice(0, 3).map(s => s.title).join(', ')}${count > 3 ? ` et ${count - 3} autre(s)` : ''}`;
+    
+    await this.sendImmediateNotification(title, body, { 
+      type: 'late_sessions_summary',
+      count 
+    });
+  }
+
+  // Legacy method for backward compatibility with profile.tsx
+  getSettings() {
+    return {
+      dailyReminder: true,
+      lateSessionAlerts: true,
+      morningBrief: true,
+    };
+  }
+
+  async updateSettings(newSettings: { dailyReminder: boolean; lateSessionAlerts: boolean; morningBrief: boolean }) {
+    // Legacy method - preferences are now managed by notificationStore
+    try {
+      await AsyncStorage.setItem('profile_notif_settings', JSON.stringify(newSettings));
+    } catch {}
   }
 }
 

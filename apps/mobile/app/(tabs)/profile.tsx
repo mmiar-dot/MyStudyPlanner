@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
-import { useAnalyticsStore } from '@mystudyplanner/api-client';
+import { useAnalyticsStore, useNotificationStore } from '@mystudyplanner/api-client';
 import { useEventStore } from '@mystudyplanner/api-client';
 import { useSessionStore, useCatalogStore } from '@mystudyplanner/api-client';
 import { ColorPicker } from '@mystudyplanner/shared-ui';
@@ -29,12 +29,6 @@ import { StatsDetailModal } from '@mystudyplanner/shared-ui';
 import notificationService from '../../src/services/notificationService';
 import { api } from '@mystudyplanner/api-client';
 import { useTheme } from '../../src/contexts/ThemeContext';
-
-type LocalNotificationSettings = {
-  dailyReminder: boolean;
-  lateSessionAlerts: boolean;
-  morningBrief: boolean;
-};
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();
@@ -79,14 +73,26 @@ export default function ProfileScreen() {
   const [editICSName, setEditICSName] = useState('');
   const [editICSColor, setEditICSColor] = useState('#10B981');
 
-  // Notification settings
-  const [notifSettings, setNotifSettings] = useState<LocalNotificationSettings>(notificationService.getSettings());
+  // Notification settings - using Zustand store
+  const { 
+    preferences: notifPrefs, 
+    loadPreferences: loadNotifPrefs, 
+    updatePreferences: updateNotifPrefs,
+    reset: resetNotifications 
+  } = useNotificationStore();
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
 
   useEffect(() => {
-    // Initial load only for notifications
-    if (Platform.OS !== 'web') {
-      notificationService.init();
-    }
+    // Initial load for notifications
+    const initNotifications = async () => {
+      await loadNotifPrefs();
+      if (Platform.OS !== 'web') {
+        const granted = await notificationService.init();
+        setPermissionStatus(granted ? 'granted' : 'denied');
+      }
+    };
+    initNotifications();
   }, []);
 
   // Auto-refresh stats when page gains focus
@@ -105,6 +111,7 @@ export default function ProfileScreen() {
       resetCatalog();
       resetAnalytics();
       resetEvents();
+      resetNotifications();
       
       await logout();
     } catch (error) {
@@ -808,80 +815,230 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.notifSection}>
-              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
-                <View style={styles.notifInfo}>
-                  <Text style={[styles.notifTitle, { color: colors.text }]}>Rappels de révision</Text>
-                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Notification quotidienne pour vos sessions</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Permission Status */}
+              {Platform.OS !== 'web' && permissionStatus === 'denied' && (
+                <View style={[styles.notifNoteBox, { backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2', marginBottom: 16 }]}>
+                  <Ionicons name="warning" size={20} color="#EF4444" />
+                  <Text style={[styles.notifNote, { color: isDark ? '#FCA5A5' : '#991B1B' }]}>
+                    Les notifications sont désactivées. Activez-les dans les paramètres de votre téléphone.
+                  </Text>
                 </View>
-                <Switch
-                  value={notifSettings.dailyReminder}
-                  onValueChange={(value) => {
-                    const newSettings = { ...notifSettings, dailyReminder: value };
-                    setNotifSettings(newSettings);
-                    notificationService.updateSettings(newSettings);
-                  }}
-                  trackColor={{ false: colors.border, true: '#93C5FD' }}
-                  thumbColor={notifSettings.dailyReminder ? accentColor : colors.surfaceVariant}
-                />
+              )}
+
+              <View style={styles.notifSection}>
+                {/* Daily Sessions Toggle */}
+                <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
+                  <View style={styles.notifItemIcon}>
+                    <Ionicons name="calendar" size={22} color={accentColor} />
+                  </View>
+                  <View style={styles.notifInfo}>
+                    <Text style={[styles.notifTitle, { color: colors.text }]}>Sessions du jour</Text>
+                    <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>
+                      Notification quotidienne avec vos sessions à réviser
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifPrefs.dailySessionsEnabled}
+                    onValueChange={async (value) => {
+                      await updateNotifPrefs({ dailySessionsEnabled: value });
+                      await notificationService.rescheduleAllNotifications(
+                        value,
+                        notifPrefs.lateSessionsEnabled,
+                        notifPrefs.dailyReminderHour,
+                        notifPrefs.dailyReminderMinute
+                      );
+                    }}
+                    trackColor={{ false: colors.border, true: '#93C5FD' }}
+                    thumbColor={notifPrefs.dailySessionsEnabled ? accentColor : colors.surfaceVariant}
+                  />
+                </View>
+
+                {/* Late Sessions Toggle */}
+                <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
+                  <View style={styles.notifItemIcon}>
+                    <Ionicons name="alert-circle" size={22} color="#EF4444" />
+                  </View>
+                  <View style={styles.notifInfo}>
+                    <Text style={[styles.notifTitle, { color: colors.text }]}>Sessions en retard</Text>
+                    <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>
+                      Alerte pour les révisions manquées
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifPrefs.lateSessionsEnabled}
+                    onValueChange={async (value) => {
+                      await updateNotifPrefs({ lateSessionsEnabled: value });
+                      await notificationService.rescheduleAllNotifications(
+                        notifPrefs.dailySessionsEnabled,
+                        value,
+                        notifPrefs.dailyReminderHour,
+                        notifPrefs.dailyReminderMinute
+                      );
+                    }}
+                    trackColor={{ false: colors.border, true: '#FCA5A5' }}
+                    thumbColor={notifPrefs.lateSessionsEnabled ? '#EF4444' : colors.surfaceVariant}
+                  />
+                </View>
+
+                {/* Time Picker */}
+                <View style={[styles.notifItem, { borderBottomColor: 'transparent' }]}>
+                  <View style={styles.notifItemIcon}>
+                    <Ionicons name="time" size={22} color="#10B981" />
+                  </View>
+                  <View style={styles.notifInfo}>
+                    <Text style={[styles.notifTitle, { color: colors.text }]}>Heure du rappel</Text>
+                    <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>
+                      Les notifications seront envoyées à cette heure
+                    </Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.timePickerButton, { backgroundColor: colors.surfaceVariant }]}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <Text style={[styles.timePickerText, { color: colors.text }]}>
+                      {String(notifPrefs.dailyReminderHour).padStart(2, '0')}:{String(notifPrefs.dailyReminderMinute).padStart(2, '0')}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
-                <View style={styles.notifInfo}>
-                  <Text style={[styles.notifTitle, { color: colors.text }]}>Sessions en retard</Text>
-                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Alerte pour les révisions manquées</Text>
-                </View>
-                <Switch
-                  value={notifSettings.lateSessionAlerts}
-                  onValueChange={(value) => {
-                    const newSettings = { ...notifSettings, lateSessionAlerts: value };
-                    setNotifSettings(newSettings);
-                    notificationService.updateSettings(newSettings);
-                  }}
-                  trackColor={{ false: colors.border, true: '#FCA5A5' }}
-                  thumbColor={notifSettings.lateSessionAlerts ? '#EF4444' : colors.surfaceVariant}
-                />
+              {/* Quick Time Options */}
+              <Text style={[styles.timeOptionsLabel, { color: colors.textSecondary }]}>Heures populaires</Text>
+              <View style={styles.timeOptionsRow}>
+                {[
+                  { hour: 7, minute: 0, label: '7h00' },
+                  { hour: 8, minute: 0, label: '8h00' },
+                  { hour: 9, minute: 0, label: '9h00' },
+                  { hour: 12, minute: 0, label: '12h00' },
+                  { hour: 18, minute: 0, label: '18h00' },
+                  { hour: 20, minute: 0, label: '20h00' },
+                ].map((opt) => {
+                  const isSelected = notifPrefs.dailyReminderHour === opt.hour && notifPrefs.dailyReminderMinute === opt.minute;
+                  return (
+                    <TouchableOpacity
+                      key={opt.label}
+                      style={[
+                        styles.timeOption,
+                        { backgroundColor: isSelected ? accentColor : colors.surfaceVariant },
+                      ]}
+                      onPress={async () => {
+                        await updateNotifPrefs({ dailyReminderHour: opt.hour, dailyReminderMinute: opt.minute });
+                        await notificationService.rescheduleAllNotifications(
+                          notifPrefs.dailySessionsEnabled,
+                          notifPrefs.lateSessionsEnabled,
+                          opt.hour,
+                          opt.minute
+                        );
+                      }}
+                    >
+                      <Text style={[styles.timeOptionText, { color: isSelected ? '#FFFFFF' : colors.text }]}>
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
-              <View style={[styles.notifItem, { borderBottomColor: colors.border }]}>
-                <View style={styles.notifInfo}>
-                  <Text style={[styles.notifTitle, { color: colors.text }]}>Rappel matinal</Text>
-                  <Text style={[styles.notifSubtitle, { color: colors.textSecondary }]}>Résumé des tâches à 8h00</Text>
+              {Platform.OS === 'web' ? (
+                <View style={[styles.notifNoteBox, { marginTop: 16 }]}>
+                  <Ionicons name="information-circle-outline" size={20} color="#F59E0B" />
+                  <Text style={styles.notifNote}>
+                    Les notifications push nécessitent l'application mobile. Téléchargez l'app pour recevoir vos rappels.
+                  </Text>
                 </View>
-                <Switch
-                  value={notifSettings.morningBrief}
-                  onValueChange={(value) => {
-                    const newSettings = { ...notifSettings, morningBrief: value };
-                    setNotifSettings(newSettings);
-                    notificationService.updateSettings(newSettings);
+              ) : (
+                <TouchableOpacity 
+                  style={[styles.testNotifButton, { marginTop: 16 }]}
+                  onPress={() => {
+                    notificationService.sendImmediateNotification(
+                      'Test de notification',
+                      'Les notifications fonctionnent correctement !'
+                    );
                   }}
-                  trackColor={{ false: colors.border, true: '#86EFAC' }}
-                  thumbColor={notifSettings.morningBrief ? '#10B981' : '#F4F4F5'}
-                />
+                >
+                  <Ionicons name="notifications" size={18} color={accentColor} />
+                  <Text style={[styles.testNotifText, { color: accentColor }]}>Tester les notifications</Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Custom Time Picker Modal */}
+      <Modal visible={showTimePicker} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.timePickerModal, { backgroundColor: colors.card }]}>
+            <Text style={[styles.timePickerModalTitle, { color: colors.text }]}>Choisir l'heure</Text>
+            <View style={styles.timePickerRow}>
+              {/* Hours Picker */}
+              <View style={styles.timePickerColumn}>
+                <Text style={[styles.timePickerLabel, { color: colors.textSecondary }]}>Heures</Text>
+                <ScrollView style={styles.timePickerScroll} showsVerticalScrollIndicator={false}>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={[
+                        styles.timePickerItem,
+                        notifPrefs.dailyReminderHour === i && { backgroundColor: accentColor },
+                      ]}
+                      onPress={() => updateNotifPrefs({ dailyReminderHour: i })}
+                    >
+                      <Text
+                        style={[
+                          styles.timePickerItemText,
+                          { color: notifPrefs.dailyReminderHour === i ? '#FFFFFF' : colors.text },
+                        ]}
+                      >
+                        {String(i).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              <Text style={[styles.timePickerSeparator, { color: colors.text }]}>:</Text>
+              {/* Minutes Picker */}
+              <View style={styles.timePickerColumn}>
+                <Text style={[styles.timePickerLabel, { color: colors.textSecondary }]}>Minutes</Text>
+                <ScrollView style={styles.timePickerScroll} showsVerticalScrollIndicator={false}>
+                  {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                    <TouchableOpacity
+                      key={m}
+                      style={[
+                        styles.timePickerItem,
+                        notifPrefs.dailyReminderMinute === m && { backgroundColor: accentColor },
+                      ]}
+                      onPress={() => updateNotifPrefs({ dailyReminderMinute: m })}
+                    >
+                      <Text
+                        style={[
+                          styles.timePickerItemText,
+                          { color: notifPrefs.dailyReminderMinute === m ? '#FFFFFF' : colors.text },
+                        ]}
+                      >
+                        {String(m).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             </View>
-
-            {Platform.OS === 'web' ? (
-              <View style={styles.notifNoteBox}>
-                <Ionicons name="information-circle-outline" size={20} color="#F59E0B" />
-                <Text style={styles.notifNote}>
-                  Les notifications push nécessitent l'application mobile. Scannez le QR code pour télécharger l'app.
-                </Text>
-              </View>
-            ) : (
-              <TouchableOpacity 
-                style={styles.testNotifButton}
-                onPress={() => {
-                  notificationService.sendImmediateNotification(
-                    'Test de notification',
-                    'Les notifications fonctionnent correctement !'
-                  );
-                }}
-              >
-                <Ionicons name="notifications" size={18} color={accentColor} />
-                <Text style={[styles.testNotifText, { color: accentColor }]}>Tester les notifications</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={[styles.timePickerConfirm, { backgroundColor: accentColor }]}
+              onPress={async () => {
+                setShowTimePicker(false);
+                await notificationService.rescheduleAllNotifications(
+                  notifPrefs.dailySessionsEnabled,
+                  notifPrefs.lateSessionsEnabled,
+                  notifPrefs.dailyReminderHour,
+                  notifPrefs.dailyReminderMinute
+                );
+              }}
+            >
+              <Text style={styles.timePickerConfirmText}>Confirmer</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1690,6 +1847,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
+  notifItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   notifInfo: {
     flex: 1,
   },
@@ -1749,6 +1915,93 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#3B82F6',
+  },
+  timePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6,
+  },
+  timePickerText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  timeOptionsLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 10,
+    marginTop: 8,
+  },
+  timeOptionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  timeOption: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  timeOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  timePickerModal: {
+    width: 280,
+    borderRadius: 16,
+    padding: 20,
+  },
+  timePickerModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  timePickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timePickerColumn: {
+    alignItems: 'center',
+    width: 80,
+  },
+  timePickerLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  timePickerScroll: {
+    height: 200,
+  },
+  timePickerItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  timePickerItemText: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  timePickerSeparator: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginHorizontal: 12,
+  },
+  timePickerConfirm: {
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  timePickerConfirmText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   // Settings modal styles
   settingsTabs: {
