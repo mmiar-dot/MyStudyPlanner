@@ -394,6 +394,7 @@ export default function CalendarScreen() {
             {/* Calendar */}
             <View style={[styles.calendarContainer, { backgroundColor: colors.surface }]}>
               <Calendar
+                key={`calendar-${isDark ? 'dark' : 'light'}`}
                 current={format(currentMonth, 'yyyy-MM-dd')}
                 onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
                 onMonthChange={(month: DateData) => {
@@ -556,13 +557,22 @@ export default function CalendarScreen() {
               <View style={[styles.emptyState, { backgroundColor: colors.surface }]}>
                 <Ionicons name="calendar-outline" size={40} color={colors.textTertiary} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Aucune session ni événement</Text>
-                <TouchableOpacity 
-                  style={[styles.addEventButton, { borderColor: accentColor }]}
-                  onPress={() => openEventModal()}
-                >
-                  <Ionicons name="add" size={18} color={accentColor} />
-                  <Text style={[styles.addEventButtonText, { color: accentColor }]}>Ajouter un événement</Text>
-                </TouchableOpacity>
+                <View style={styles.emptyButtonsRow}>
+                  <TouchableOpacity 
+                    style={[styles.addEventButton, { borderColor: accentColor }]}
+                    onPress={() => openEventModal()}
+                  >
+                    <Ionicons name="add" size={18} color={accentColor} />
+                    <Text style={[styles.addEventButtonText, { color: accentColor }]}>Événement</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.addEventButton, { borderColor: '#10B981' }]}
+                    onPress={() => setShowAddSessionModal(true)}
+                  >
+                    <Ionicons name="book" size={18} color="#10B981" />
+                    <Text style={[styles.addEventButtonText, { color: '#10B981' }]}>Session</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : (
               <>
@@ -928,6 +938,87 @@ export default function CalendarScreen() {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* Add Manual Session Modal */}
+      <Modal visible={showAddSessionModal} animationType="slide" transparent>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Ajouter une session</Text>
+              <TouchableOpacity onPress={() => {
+                setShowAddSessionModal(false);
+                setSessionCourseId('');
+                setSessionTime('09:00');
+              }}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Date</Text>
+              <View style={[styles.dateDisplay, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
+                <Ionicons name="calendar" size={20} color={accentColor} />
+                <Text style={[styles.dateText, { color: colors.text }]}>
+                  {format(parseISO(selectedDate), 'EEEE d MMMM yyyy', { locale: fr })}
+                </Text>
+              </View>
+
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Cours</Text>
+              <ScrollView style={[styles.courseList, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]} nestedScrollEnabled>
+                {availableCourses.length === 0 ? (
+                  <Text style={[styles.noCourseText, { color: colors.textTertiary }]}>
+                    Aucun cours disponible. Ajoutez d'abord des cours.
+                  </Text>
+                ) : (
+                  availableCourses.map((course) => (
+                    <TouchableOpacity
+                      key={course.id}
+                      style={[
+                        styles.courseOption,
+                        { borderBottomColor: colors.border },
+                        sessionCourseId === course.id && { backgroundColor: isDark ? colors.primaryLight : '#EBF5FF' }
+                      ]}
+                      onPress={() => setSessionCourseId(course.id)}
+                    >
+                      <View style={[styles.courseColorDot, { backgroundColor: itemColors[course.id] || '#3B82F6' }]} />
+                      <Text style={[styles.courseOptionText, { color: colors.text }]} numberOfLines={1}>
+                        {course.title}
+                      </Text>
+                      {sessionCourseId === course.id && (
+                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                      )}
+                    </TouchableOpacity>
+                  ))
+                )}
+              </ScrollView>
+
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Heure (optionnel)</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text, borderColor: colors.border }]}
+                placeholder="09:00"
+                placeholderTextColor={colors.textTertiary}
+                value={sessionTime}
+                onChangeText={setSessionTime}
+              />
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[styles.submitButton, { backgroundColor: '#10B981' }, (!sessionCourseId || isSubmitting) && styles.submitButtonDisabled]}
+              onPress={handleCreateManualSession}
+              disabled={!sessionCourseId || isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Créer la session</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* SRS Rating Modal */}
@@ -1372,5 +1463,50 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  emptyButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  dateDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  dateText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  courseList: {
+    maxHeight: 200,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  noCourseText: {
+    padding: 16,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  courseOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderBottomWidth: 1,
+  },
+  courseColorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  courseOptionText: {
+    flex: 1,
+    fontSize: 15,
   },
 });
